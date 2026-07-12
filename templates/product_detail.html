@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ product.name }} - تفاصيل المنتج</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .detail-page { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .detail-container { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; background: white; border-radius: 10px; padding: 30px; box-shadow: var(--shadow); }
+        .detail-image-section { position: relative; border-radius: 10px; overflow: hidden; min-height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; }
+        .detail-image-section img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+        .detail-info-section h1 { font-size: 28px; color: var(--dark-color); margin-bottom: 10px; }
+        .detail-rating { color: #f39c12; margin-bottom: 15px; font-size: 18px; }
+        .detail-price { font-size: 36px; font-weight: bold; color: var(--primary-color); margin: 20px 0; }
+        .detail-description { color: #666; line-height: 1.8; margin-bottom: 20px; font-size: 15px; }
+        .detail-specs { background: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .spec-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .spec-item:last-child { border-bottom: none; }
+        .spec-label { color: #888; }
+        .spec-value { font-weight: bold; color: var(--dark-color); }
+        .stock-status { display: inline-block; padding: 8px 15px; border-radius: 5px; font-weight: bold; margin-bottom: 20px; }
+        .stock-available { background: #d4edda; color: #155724; }
+        .stock-unavailable { background: #f8d7da; color: #721c24; }
+        .detail-buttons { display: flex; gap: 15px; margin-top: 30px; }
+        .detail-buttons button { flex: 1; padding: 15px 20px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .btn-add-cart { background-color: var(--primary-color); color: white; }
+        .btn-add-cart:hover { background-color: #c0392b; transform: translateY(-2px); }
+        .btn-wishlist { background-color: #f0f0f0; color: var(--primary-color); border: 2px solid var(--primary-color); }
+        .btn-wishlist:hover { background-color: var(--primary-color); color: white; }
+        .btn-back { display: inline-block; padding: 10px 20px; background-color: var(--dark-color); color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px; transition: 0.3s; }
+        .btn-back:hover { background-color: #1a252f; }
+        @media (max-width: 768px) {
+            .detail-container { grid-template-columns: 1fr; gap: 30px; }
+            .detail-image-section { min-height: 300px; }
+            .detail-info-section h1 { font-size: 22px; }
+            .detail-price { font-size: 28px; }
+            .detail-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>👔 متجر الملابس الفاخر</h1>
+                    <p style="color: white; font-size: 12px; margin: 0;">Luxury Clothing Store</p>
+                </div>
+                <nav class="nav">
+                    <a href="/" class="nav-link">🏠 الرئيسية</a>
+                    <a href="/" onclick="filterByCategory('رجالي'); return false;" class="nav-link">👔 رجالي</a>
+                    <a href="/" onclick="filterByCategory('نسائي'); return false;" class="nav-link">👗 نسائي</a>
+                    <a href="/cart" class="nav-link">🛒 السلة (<span id="cart-count">0</span>)</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="detail-page">
+        <a href="/" class="btn-back">← العودة للمتجر</a>
+        
+        <div class="detail-container">
+            <div class="detail-image-section">
+                {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&#39;font-size:100px;&#39;>👔</span>'">
+                {% else %}
+                    <span style="font-size: 100px;">👔</span>
+                {% endif %}
+            </div>
+
+            <div class="detail-info-section">
+                <h1>{{ product.name }}</h1>
+                <div class="detail-rating">⭐⭐⭐⭐⭐ (4.8/5 - 245 تقييم)</div>
+                <div class="detail-price">{{ product.price }} ريال</div>
+                
+                <div class="stock-status {% if product.stock > 0 %}stock-available{% else %}stock-unavailable{% endif %}">
+                    {% if product.stock > 0 %}
+                        ✅ متوفر الآن - {{ product.stock }} قطعة في المخزون
+                    {% else %}
+                        ❌ غير متوفر حالياً
+                    {% endif %}
+                </div>
+
+                <div class="detail-description">{{ product.description }}</div>
+
+                <div class="detail-specs">
+                    <div class="spec-item">
+                        <span class="spec-label">الفئة</span>
+                        <span class="spec-value">{% if product.category == 'رجالي' %}👔 رجالي{% else %}👗 نسائي{% endif %}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">الحجم</span>
+                        <span class="spec-value">{{ product.size }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">اللون</span>
+                        <span class="spec-value">{{ product.color }}</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">السعر</span>
+                        <span class="spec-value">{{ product.price }} ريال</span>
+                    </div>
+                    <div class="spec-item">
+                        <span class="spec-label">المخزون</span>
+                        <span class="spec-value">{{ product.stock }} قطعة</span>
+                    </div>
+                </div>
+
+                <div class="detail-buttons">
+                    <button class="btn-add-cart" onclick="addToCart({{ product.id }})" {% if product.stock <= 0 %}disabled{% endif %}>
+                        🛒 أضف للسلة
+                    </button>
+                    <button class="btn-wishlist" onclick="addToWishlist({{ product.id }})">
+                        ❤️ أضف للمفضلة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 متجر الملابس. جميع الحقوق محفوظة. | مرحباً بك في متجرنا الإلكتروني</p>
+            <p>☎️ اتصل بنا: +966-XX-XXXXX | 📧 البريد: store@clothing.com</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            fetch('/api/products')
+                .then(r => r.json())
+                .then(products => { window.allProducts = products; })
+                .catch(e => console.error('Error loading products:', e));
+        });
+    </script>
+</body>
+</html>

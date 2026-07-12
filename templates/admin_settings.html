@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>اعدادات الحساب</title>
+    <style>
+        body{font-family: Arial; background:#f5f5f5; padding:30px}
+       .box{background:white; padding:25px; border-radius:10px; max-width:420px; margin:auto; box-shadow:0 0 10px #ddd}
+        input{width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:5px}
+        button{background:#28a745; color:white; border:none; padding:12px; width:100%; border-radius:5px; cursor:pointer; font-size:16px}
+        button:hover{background:#218838}
+    </style>
+</head>
+<body>
+<div class="box">
+    <h2>⚙️ تغيير بيانات الدخول</h2>
+    
+    {% if message %}
+    <div style="padding: 12px; margin-bottom: 15px; border-radius: 8px; background: {% if message_type == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message_type == 'success' %}#155724{% else %}#721c24{% endif %}; border: 2px solid {% if message_type == 'success' %}#c3e6cb{% else %}#f5c6cb{% endif %}; font-weight: bold; text-align: center;">
+        {% if message_type == 'success' %}✅{% else %}❌{% endif %} {{ message }}
+    </div>
+    {% endif %}
+    
+    <form method="POST">
+        <label>اسم المستخدم الجديد:</label>
+        <input type="text" name="new_username" required>
+
+        <label>كلمة السر الحالية:</label>
+        <input type="password" name="old_password" required>
+
+        <label>كلمة السر الجديدة:</label>
+        <input type="password" name="new_password" required>
+
+        <button type="submit">حفظ التغييرات</button>
+    </form>
+    <br>
+    <a href="/admin">← الرجوع للوحة التحكم</a>
+</div>
+</body>
+</html>

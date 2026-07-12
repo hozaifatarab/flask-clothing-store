@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر الملابس - Clothing Store</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- الرأس (Header) -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-main">
+                        <div class="dress-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="url(#dressGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <defs>
+                                    <linearGradient id="dressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#c8b8ff;stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#a78bfa;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#6a11cb;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M12 2L9 9L4 10L6 17L12 22L18 17L20 10L15 9L12 2Z"/>
+                                <path d="M12 2C12 2 10 6 10 8C10 10 12 11 12 11C12 11 14 10 14 8C14 6 12 2 12 2Z"/>
+                                <path d="M9 9L12 11L15 9"/>
+                                <path d="M6 17L12 22L18 17"/>
+                                <path d="M4 10L6 17"/>
+                                <path d="M20 10L18 17"/>
+                            </svg>
+                        </div>
+                        <h1>متجر الملابس الفاخر</h1>
+                    </div>
+                    <p class="logo-subtitle">LUXURY CLOTHING STORE</p>
+                    <span class="logo-sparkle logo-sparkle-1">✨</span>
+                    <span class="logo-sparkle logo-sparkle-2">✦</span>
+                    <span class="logo-sparkle logo-sparkle-3">✧</span>
+                </div>
+                <nav class="nav">
+                    <a href="#" class="nav-link">🏠 الرئيسية</a>
+                    <a href="#" class="nav-link" onclick="filterByCategory('رجالي'); return false;">👔 رجالي</a>
+                    <a href="#" class="nav-link" onclick="filterByCategory('نسائي'); return false;">👗 نسائي</a>
+                    <a href="#" class="nav-link" onclick="openCart(); return false;">🛒 السلة (<span id="cart-count">0</span>)</a>
+                    <a href="/admin" class="nav-link" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;">⚙️ الإدارة</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- شريط البحث -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="ابحث عن المنتجات..."
+                    onkeyup="searchProducts()"
+                >
+                <button onclick="searchProducts()" class="search-btn">🔍 بحث</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- قسم المنتجات -->
+    <main class="main">
+        <div class="container">
+            <div class="products-grid" id="productsGrid">
+                {% for product in products %}
+                <div class="product-card">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/200?text=صورة'">
+                    <div class="product-info">
+                        <div class="product-name">{{ product.name }}</div>
+                        <div class="product-description">{{ product.description }}</div>
+                        <div class="product-meta">
+                            <span class="meta-item">الحجم: {{ product.size }}</span>
+                            <span class="meta-item">اللون: {{ product.color }}</span>
+                        </div>
+                        <div class="product-price price">{{ product.price }} ريال</div>
+                        <div class="product-stock">
+                            {% if product.stock > 0 %}
+                                ✅ متوفر ({{ product.stock }} بالمخزون)
+                            {% else %}
+                                ❌ غير متوفر
+                            {% endif %}
+                        </div>
+                        <div class="product-buttons">
+                            <button class="btn-details" onclick="viewProductDetails({{ product.id }})">📋 التفاصيل</button>
+                            <button class="btn-add" onclick="addToCart({{ product.id }})" {% if product.stock <= 0 %}disabled{% endif %}>🛒 أضف للسلة</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <!-- قسم الشات -->
+    <div id="chatPanel" class="chat-panel">
+        <div class="chat-header">
+            <h3>💬 تحدث مع البائع كارم</h3>
+            <div class="chat-header-buttons">
+                <button onclick="minimizeChat()" class="chat-header-btn" title="تصغير">⏬</button>
+                <button onclick="maximizeChat()" class="chat-header-btn" title="تكبير">⏫</button>
+                <button onclick="closeChatWithPrompt()" class="close-btn">✕</button>
+            </div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <!-- الرسائل ستظهر هنا -->
+        </div>
+        <div class="chat-input-area">
+            <input 
+                type="text" 
+                id="messageInput" 
+                placeholder="اكتب رسالتك..." 
+                class="chat-input"
+                onkeypress="handleChatKeypress(event)"
+            >
+            <button onclick="sendMessage()" class="chat-send-btn">📤 إرسال</button>
+        </div>
+    </div>
+
+    <!-- زر الشات العائم (الأساسي) -->
+    <button class="chat-button" id="chat-button" onclick="toggleChat()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="28" height="28">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+        <circle cx="12" cy="13" r="1.5" fill="#FFC107"/>
+      </svg>
+    </button>
+
+    <!-- أيقونة الشات المصغرة (تظهر عند التصغير) -->
+    <div id="chatMinimizedIcon" class="chat-minimized-icon" onclick="restoreChat()" style="display: none;">
+        <span class="minimized-icon-badge" id="minimizedBadge">1</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="32" height="32">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+            <circle cx="12" cy="13" r="1.5" fill="#FFC107"/>
+        </svg>
+    </div>
+
+    <!-- نافذة السلة -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCart()">&times;</span>
+            <h2>🛒 سلة التسوق</h2>
+            
+            <div id="cartItems" class="cart-items">
+                <!-- عناصر السلة ستظهر هنا -->
+            </div>
+            
+            <div class="cart-summary">
+                <h3>الإجمالي: <span id="cartTotal">0</span> ريال</h3>
+            </div>
+            
+            <div id="checkoutSection" style="margin-top: 20px;">
+                <h3>بيانات الشراء:</h3>
+                <input 
+                    type="text" 
+                    id="customerName" 
+                    placeholder="اسمك الكامل" 
+                    class="input-field"
+                >
+                <input 
+                    type="text" 
+                    id="customerPhone" 
+                    placeholder="رقم الهاتف" 
+                    class="input-field"
+                >
+                <input 
+                    type="email" 
+                    id="customerEmail" 
+                    placeholder="البريد الإلكتروني (اختياري)" 
+                    class="input-field"
+                >
+                <button onclick="checkoutCart()" class="checkout-btn">✅ إتمام الشراء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل المنتج -->
+    <div id="productModal" class="modal">
+        <div class="modal-content product-detail-modal">
+            <span class="close" onclick="closeProductModal()">&times;</span>
+            <div id="productDetail">
+                <!-- تفاصيل المنتج ستظهر هنا -->
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تأكيد الخروج مع خيار تحميل PDF -->
+    <div id="exitChatModal" class="modal">
+        <div class="modal-content exit-chat-modal">
+            <div class="exit-chat-icon">💬</div>
+            <h3>هل ترغب في تحميل المحادثة قبل الخروج؟</h3>
+            <p class="exit-chat-desc">سيتم مسح المحادثة بعد التحميل للحفاظ على خصوصيتك</p>
+            <div class="exit-chat-buttons">
+                <button onclick="downloadChatAsPDF()" class="exit-btn exit-btn-pdf">
+                    <span class="exit-btn-icon">📥</span>
+                    تحميل PDF
+                </button>
+                <button onclick="clearChatAndExit()" class="exit-btn exit-btn-delete">
+                    <span class="exit-btn-icon">🗑️</span>
+                    مسح وخروج
+                </button>
+            </div>
+            <button onclick="cancelExitChat()" class="exit-btn-cancel">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- التذييل (Footer) -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 متجر الملابس. جميع الحقوق محفوظة. | مرحباً بك في متجرنا الإلكتروني</p>
+            <p>☎️ اتصل بنا: +966-XX-XXXXX | 📧 البريد: store@clothing.com</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

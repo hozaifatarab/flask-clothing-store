@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سلة التسوق - Cart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .cart-page {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .cart-page h1 {
+            color: var(--dark-color);
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .cart-items-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .cart-summary-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+        }
+
+        .cart-summary-section h3 {
+            color: var(--dark-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-row.total {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: none;
+            margin-top: 10px;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-cart-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-cart p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .continue-shopping {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .continue-shopping:hover {
+            background-color: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- الرأس (Header) -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>👔 متجر الملابس الفاخر</h1>
+                    <p style="color: white; font-size: 12px; margin: 0;">Luxury Clothing Store</p>
+                </div>
+                <nav class="nav">
+                    <a href="/" class="nav-link">🏠 الرئيسية</a>
+                    <a href="/cart" class="nav-link" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;">🛒 السلة (<span id="cart-count">0</span>)</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <div class="cart-page">
+        <h1>🛒 سلة التسوق</h1>
+        
+        <div class="cart-layout">
+            <div class="cart-items-section">
+                <div id="cartItems" class="cart-items">
+                    <!-- سيتم ملؤها بواسطة JavaScript -->
+                </div>
+            </div>
+
+            <div class="cart-summary-section">
+                <h3>📋 ملخص الطلب</h3>
+                <div id="summaryDetails">
+                    <div class="summary-row">
+                        <span>عدد المنتجات</span>
+                        <span id="itemCount">0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>المجموع الفرعي</span>
+                        <span id="subtotal">0 ريال</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>الشحن</span>
+                        <span id="shipping">مجاني</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>الإجمالي</span>
+                        <span id="cartTotal">0 ريال</span>
+                    </div>
+                </div>
+
+                <div id="checkoutSection" style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px;">بيانات الشراء:</h4>
+                    <input 
+                        type="text" 
+                        id="customerName" 
+                        placeholder="اسمك الكامل" 
+                        class="input-field"
+                    >
+                    <input 
+                        type="text" 
+                        id="customerPhone" 
+                        placeholder="رقم الهاتف" 
+                        class="input-field"
+                    >
+                    <input 
+                        type="email" 
+                        id="customerEmail" 
+                        placeholder="البريد الإلكتروني (اختياري)" 
+                        class="input-field"
+                    >
+                    <button onclick="checkoutCart()" class="checkout-btn">✅ إتمام الشراء</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التذييل (Footer) -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 متجر الملابس. جميع الحقوق محفوظة. | مرحباً بك في متجرنا الإلكتروني</p>
+            <p>☎️ اتصل بنا: +966-XX-XXXXX | 📧 البريد: store@clothing.com</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // تهيئة صفحة السلة
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            displayCart();
+        });
+    </script>
+</body>
+</html>

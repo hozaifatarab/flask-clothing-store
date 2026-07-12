@@ -1,0 +1,222 @@
+[
+  {
+    "id": 1,
+    "name": "فستان سهرة اسود طويل",
+    "description": "فستان انيق للمناسبات والحفلات",
+    "price": 550,
+    "image_url": "/static/images/black_evening_dress.jpg",
+    "category": "نسائي",
+    "stock": 6,
+    "color": "اسود",
+    "size": "M"
+  },
+  {
+    "id": 2,
+    "name": "قميص رجالي ابيض كلاسيك",
+    "description": "قميص رسمي قطن 100% للعمل",
+    "price": 180,
+    "image_url": "/static/images/white_shirt.jpg",
+    "category": "رجالي",
+    "stock": 12,
+    "color": "ابيض",
+    "size": "L"
+  },
+  {
+    "id": 3,
+    "name": "عباية نسائية مطرزة",
+    "description": "عباية سوداء فاخرة بتطريز ذهبي",
+    "price": 420,
+    "image_url": "/static/images/abaya.jpg",
+    "category": "نسائي",
+    "stock": 8,
+    "color": "اسود",
+    "size": "XL"
+  },
+  {
+    "id": 4,
+    "name": "بنطلون جينز رجالي ازرق",
+    "description": "جينز Slim Fit مريح وعصري",
+    "price": 220,
+    "image_url": "/static/images/blue_jeans.jpg",
+    "category": "رجالي",
+    "stock": 15,
+    "color": "ازرق",
+    "size": "32"
+  },
+  {
+    "id": 5,
+    "name": "بلوزة نسائية وردي حرير",
+    "description": "بلوزة ناعمة للمكتب والخروجات",
+    "price": 160,
+    "image_url": "/static/images/pink_blouse.jpg",
+    "category": "نسائي",
+    "stock": 10,
+    "color": "وردي",
+    "size": "M"
+  },
+  {
+    "id": 6,
+    "name": "بدلة رجالية رمادية",
+    "description": "بدلة رسمية كاملة للمناسبات والاجتماعات",
+    "price": 600,
+    "image_url": "/static/images/gray_suit.jpg",
+    "category": "رجالي",
+    "stock": 4,
+    "color": "رمادي",
+    "size": "L"
+  },
+  {
+    "id": 7,
+    "name": "فستان صيفي مشجر ملون",
+    "description": "فستان خفيف مناسب للصيف والبحر",
+    "price": 190,
+    "image_url": "/static/images/summer_dress.jpg",
+    "category": "نسائي",
+    "stock": 9,
+    "color": "متعدد",
+    "size": "M"
+  },
+  {
+    "id": 8,
+    "name": "جاكيت جينز رجالي",
+    "description": "جاكيت جينز كلاسيكي متعدد الاستخدام",
+    "price": 250,
+    "image_url": "/static/images/denim_jacket_men.jpg",
+    "category": "رجالي",
+    "stock": 7,
+    "color": "ازرق",
+    "size": "M"
+  },
+  {
+    "id": 9,
+    "name": "تنورة ميدي سوداء",
+    "description": "تنورة كلاسيك للمكتب والجامعة",
+    "price": 170,
+    "image_url": "/static/images/black_skirt.jpg",
+    "category": "نسائي",
+    "stock": 11,
+    "color": "اسود",
+    "size": "M"
+  },
+  {
+    "id": 10,
+    "name": "تيشرت رجالي اسود قطن",
+    "description": "تيشرت اساسي مريح لكل الاوقات",
+    "price": 90,
+    "image_url": "/static/images/black_tshirt.jpg",
+    "category": "رجالي",
+    "stock": 20,
+    "color": "اسود",
+    "size": "L"
+  },
+  {
+    "id": 11,
+    "name": "حزام جلد رجالي",
+    "description": "حزام جلد طبيعي اصلي ببكلة كلاسيك",
+    "price": 80,
+    "image_url": "/static/images/leather_belt.jpg",
+    "category": "اكسسوارات",
+    "stock": 20,
+    "color": "بني",
+    "size": "واحد"
+  },
+  {
+    "id": 12,
+    "name": "جاكيت جينز نسائي",
+    "description": "جاكيت جينز عصري انيق للخروجات",
+    "price": 220,
+    "image_url": "/static/images/denim_jacket_women.jpg",
+    "category": "نسائي",
+    "stock": 6,
+    "color": "ازرق",
+    "size": "M"
+  },
+  {
+    "id": 13,
+    "name": "جمبسوت نسائي اسود",
+    "description": "جمبسوت عصري للسهرات والمناسبات",
+    "price": 380,
+    "image_url": "/static/images/black_jumpsuit.jpg",
+    "category": "نسائي",
+    "stock": 5,
+    "color": "اسود",
+    "size": "M"
+  },
+  {
+    "id": 14,
+    "name": "حذاء كعب عالي",
+    "description": "حذاء انيق كعب عالي للسهرات",
+    "price": 280,
+    "image_url": "/static/images/high_heels.jpg",
+    "category": "احذية",
+    "stock": 8,
+    "color": "اسود",
+    "size": "38"
+  },
+  {
+    "id": 15,
+    "name": "فستان كاجوال ازرق",
+    "description": "فستان يومي مريح وانيق",
+    "price": 210,
+    "image_url": "/static/images/blue_casual_dress.jpg",
+    "category": "نسائي",
+    "stock": 13,
+    "color": "ازرق",
+    "size": "M"
+  },
+  {
+    "id": 16,
+    "name": "هودي رجالي رمادي",
+    "description": "هودي دافئ للشتاء والطلعات",
+    "price": 230,
+    "image_url": "/static/images/gray_hoodie.jpg",
+    "category": "رجالي",
+    "stock": 14,
+    "color": "رمادي",
+    "size": "L"
+  },
+  {
+    "id": 17,
+    "name": "فستان مخمل احمر",
+    "description": "فستان مخمل فاخر للسهرات",
+    "price": 480,
+    "image_url": "/static/images/red_velvet_dress.jpg",
+    "category": "نسائي",
+    "stock": 4,
+    "color": "احمر",
+    "size": "M"
+  },
+  {
+    "id": 18,
+    "name": "قميص كاروهات رجالي",
+    "description": "قميص كاجوال كاروهات متعدد الالوان",
+    "price": 170,
+    "image_url": "/static/images/checkered_shirt.jpg",
+    "category": "رجالي",
+    "stock": 9,
+    "color": "متعدد",
+    "size": "L"
+  },
+  {
+    "id": 19,
+    "name": "بلايزر نسائي ابيض",
+    "description": "بلايزر رسمي للمكتب والاجتماعات",
+    "price": 350,
+    "image_url": "/static/images/white_blazer.jpg",
+    "category": "نسائي",
+    "stock": 6,
+    "color": "ابيض",
+    "size": "M"
+  },
+  {
+    "id": 20,
+    "name": "حذاء رياضي ابيض",
+    "description": "حذاء مريح للمشي والرياضة والجيم",
+    "price": 250,
+    "image_url": "/static/images/white_sneakers.jpg",
+    "category": "احذية",
+    "stock": 18,
+    "color": "ابيض",
+    "size": "42"
+  }
+]

@@ -1,0 +1,30 @@
+# قاعدة البيانات - لا ترفعها
+products.db
+
+# ملفات بايثون
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# ملفات النظام
+.env
+*.log
+*.sqlite3
+
+# مجلد الرفع
+uploads/
+
+# ملفات IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
