@@ -12,18 +12,23 @@ import os
 from functools import wraps
 from werkzeug.utils import secure_filename
 from products import products as products_list
+from dotenv import load_dotenv
+
+# ==================== تحميل المتغيرات البيئية ====================
+load_dotenv()
 
 # ==================== الإعدادات ====================
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
 DATABASE = 'products.db'
-ADMIN_PASSWORD = "admin123"
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 app = Flask(__name__)
-app.secret_key = 'clothing-store-secret-key-2026'
+app.secret_key = os.environ.get('SECRET_KEY', 'clothing-store-secret-key-2026')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///products.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 CORS(app)
 
