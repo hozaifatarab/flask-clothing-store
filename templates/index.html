@@ -43,7 +43,10 @@
                     <a href="#" class="nav-link" onclick="filterByCategory('رجالي'); return false;">👔 رجالي</a>
                     <a href="#" class="nav-link" onclick="filterByCategory('نسائي'); return false;">👗 نسائي</a>
                     <a href="#" class="nav-link" onclick="openCart(); return false;">🛒 السلة (<span id="cart-count">0</span>)</a>
+                    {% if is_admin %}
                     <a href="/admin" class="nav-link" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;">⚙️ الإدارة</a>
+                    <a href="/admin/logout" class="nav-link" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;">🚪 تسجيل خروج</a>
+                    {% endif %}
                 </nav>
             </div>
         </div>

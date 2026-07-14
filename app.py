@@ -2,7 +2,7 @@
 متجر ملابس اون لاين - لوحة تحكم ادمن + شات بوت كارم
 Online Clothing Store with Admin Panel & Chatbot
 """
-from flask import Flask, render_template, request, jsonify, session, g, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, g, redirect, url_for, send_from_directory, flash
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 import sqlite3
@@ -22,10 +22,10 @@ UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 DATABASE = 'products.db'
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'clothing-store-secret-key-2026')
+app.secret_key = os.environ.get('SECRET_KEY')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///products.db'
@@ -122,13 +122,33 @@ with app.app_context():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def admin_required(f):
+def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('admin_logged_in'):
+        if session.get('logged_in') != True:
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return decorated_function
+
+# ==================== التحكم في تسجيل الدخول ====================
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        if request.form.get('password') == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('admin_panel'))
+        else:
+            flash('كلمة السر غلط')
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('index'))
+
+@app.context_processor
+def inject_user():
+    return dict(is_admin=session.get('logged_in', False))
 
 # ==================== خدمة الملفات المرفوعة ====================
 @app.route('/uploads/<filename>')
@@ -300,29 +320,14 @@ def api_get_order(order_id):
     return jsonify(order_dict)
 
 # ==================== لوحة التحكم ====================
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    if request.method == 'POST':
-        password = request.form.get('password', '')
-        if password == ADMIN_PASSWORD:
-            session['admin_logged_in'] = True
-            return redirect(url_for('admin_panel'))
-        return render_template('admin_login.html', error='كلمة المرور غير صحيحة')
-    return render_template('admin_login.html', error='')
-
-@app.route('/admin/logout')
-def admin_logout():
-    session.pop('admin_logged_in', None)
-    return redirect(url_for('admin_login'))
-
 @app.route('/admin')
-@admin_required
+@login_required
 def admin_panel():
     return render_template('admin.html')
 
 @app.route('/admin_settings', methods=['GET', 'POST'])
 def admin_settings():
-    if not session.get('admin_logged_in'):
+    if not session.get('logged_in'):
         return redirect(url_for('admin_login'))
     
     message = None
