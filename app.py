@@ -136,7 +136,7 @@ def admin_login():
     if request.method == 'POST':
         if request.form.get('password') == ADMIN_PASSWORD:
             session['logged_in'] = True
-            return redirect(url_for('admin_panel'))
+            return redirect(url_for('admin'))
         else:
             flash('كلمة السر غلط')
     return render_template('admin_login.html')
@@ -144,7 +144,7 @@ def admin_login():
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('logged_in', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('home'))
 
 @app.context_processor
 def inject_user():
@@ -157,6 +157,10 @@ def uploaded_file(filename):
 
 # ==================== الصفحات الرئيسية ====================
 @app.route('/')
+def home():
+    return redirect(url_for('index'))
+
+@app.route('/index')
 def index():
     conn = get_db()
     cursor = conn.cursor()
@@ -322,7 +326,7 @@ def api_get_order(order_id):
 # ==================== لوحة التحكم ====================
 @app.route('/admin')
 @login_required
-def admin_panel():
+def admin():
     return render_template('admin.html')
 
 @app.route('/admin_settings', methods=['GET', 'POST'])
