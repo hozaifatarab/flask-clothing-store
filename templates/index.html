@@ -8,44 +8,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <!-- الرأس (Header) -->
+    <!-- الرأس (Header) - تحديث عصري -->
     <header class="header">
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <div class="logo-main">
-                        <div class="dress-icon-wrapper">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="url(#dressGradient)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                                <defs>
-                                    <linearGradient id="dressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" style="stop-color:#c8b8ff;stop-opacity:1" />
-                                        <stop offset="50%" style="stop-color:#a78bfa;stop-opacity:1" />
-                                        <stop offset="100%" style="stop-color:#6a11cb;stop-opacity:1" />
-                                    </linearGradient>
-                                </defs>
-                                <path d="M12 2L9 9L4 10L6 17L12 22L18 17L20 10L15 9L12 2Z"/>
-                                <path d="M12 2C12 2 10 6 10 8C10 10 12 11 12 11C12 11 14 10 14 8C14 6 12 2 12 2Z"/>
-                                <path d="M9 9L12 11L15 9"/>
-                                <path d="M6 17L12 22L18 17"/>
-                                <path d="M4 10L6 17"/>
-                                <path d="M20 10L18 17"/>
-                            </svg>
-                        </div>
-                        <h1>متجر الملابس الفاخر</h1>
-                    </div>
-                    <p class="logo-subtitle">LUXURY CLOTHING STORE</p>
-                    <span class="logo-sparkle logo-sparkle-1">✨</span>
-                    <span class="logo-sparkle logo-sparkle-2">✦</span>
-                    <span class="logo-sparkle logo-sparkle-3">✧</span>
+                    <div class="brand-name">FASHION HUB</div>
+                    <div class="brand-subtitle">وجهتك للأناقة</div>
                 </div>
                 <nav class="nav">
-                    <a href="#" class="nav-link">🏠 الرئيسية</a>
-                    <a href="#" class="nav-link" onclick="filterByCategory('رجالي'); return false;">👔 رجالي</a>
-                    <a href="#" class="nav-link" onclick="filterByCategory('نسائي'); return false;">👗 نسائي</a>
-                    <a href="#" class="nav-link" onclick="openCart(); return false;">🛒 السلة (<span id="cart-count">0</span>)</a>
+                    <a href="#" class="nav-link">الرئيسية</a>
+                    <a href="#" class="nav-link" onclick="filterByCategory('رجالي'); return false;">رجالي</a>
+                    <a href="#" class="nav-link" onclick="filterByCategory('نسائي'); return false;">نسائي</a>
+                    <a href="#" class="nav-link" onclick="openCart(); return false;">السلة (<span id="cart-count">0</span>)</a>
                     {% if is_admin %}
-                    <a href="/admin" class="nav-link" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;">⚙️ الإدارة</a>
-                    <a href="/admin/logout" class="nav-link" style="background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 5px;">🚪 تسجيل خروج</a>
+                    <a href="/admin" class="nav-link">الإدارة</a>
+                    <a href="/admin/logout" class="nav-link logout-link">تسجيل خروج</a>
                     {% endif %}
                 </nav>
             </div>
