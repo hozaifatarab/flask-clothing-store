@@ -4,7 +4,6 @@ Online Clothing Store with Admin Panel & Chatbot
 """
 from flask import Flask, render_template, request, jsonify, session, g, redirect, url_for, send_from_directory, flash
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 import sqlite3
 import json
 from datetime import datetime
@@ -22,14 +21,11 @@ UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 DATABASE = 'products.db'
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY')
+app.secret_key = os.environ.get('SECRET_KEY', 'default-secret-key-change-in-production')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///products.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 CORS(app)
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -52,8 +48,15 @@ def get_db():
         g.db.row_factory = sqlite3.Row
     return g.db
 
+@app.teardown_appcontext
+def close_db(exception):
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
+
 def init_db():
-    conn = get_db()
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
     cursor.execute('''CREATE TABLE IF NOT EXISTS products (
@@ -64,7 +67,7 @@ def init_db():
         category TEXT NOT NULL,
         stock INTEGER DEFAULT 0,
         available INTEGER DEFAULT 1,
-        image_url TEXT,
+        image TEXT,
         size TEXT DEFAULT '',
         color TEXT DEFAULT '',
         created_at TEXT
@@ -105,9 +108,9 @@ def init_db():
     
     if product_count == 0:
         for p in products_list:
-            cursor.execute('''INSERT INTO products (name, description, price, category, stock, available, image_url, size, color, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                (p['name_ar'], p['desc'], p['price'], p['category'], p['stock'], 1 if p['stock'] > 0 else 0, p['image'], p.get('size', ''), p.get('color', ''), datetime.now().isoformat()))
+            cursor.execute('''INSERT INTO products (name, description, price, category, image, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)''',
+                (p['name'], p.get('description', ''), p['price'], p['category'], p['image'], datetime.now().isoformat()))
         conn.commit()
         print(f"[OK] Database initialized with {len(products_list)} products")
     else:
@@ -122,6 +125,16 @@ with app.app_context():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def get_admin_password_from_db():
+    """جلب كلمة السر من قاعدة البيانات"""
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('SELECT password FROM admin_credentials WHERE id = 1')
+    row = cursor.fetchone()
+    conn.close()
+    return row['password'] if row else None
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -134,7 +147,11 @@ def login_required(f):
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
-        if request.form.get('password') == ADMIN_PASSWORD:
+        entered_password = request.form.get('password', '')
+        env_password = os.environ.get('ADMIN_PASSWORD')
+        db_password = get_admin_password_from_db()
+        
+        if entered_password == env_password or entered_password == db_password:
             session['logged_in'] = True
             return redirect(url_for('admin'))
         else:
@@ -166,7 +183,6 @@ def index():
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM products ORDER BY id')
     products = cursor.fetchall()
-    conn.close()
     return render_template('index.html', products=products)
 
 @app.route('/product/<int:product_id>')
@@ -175,10 +191,25 @@ def product_detail(product_id):
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM products WHERE id = ?', (product_id,))
     product = cursor.fetchone()
-    conn.close()
     if not product:
         return jsonify({'error': 'المنتج غير موجود'}), 404
     return render_template('product_detail.html', product=product)
+
+@app.route('/mens')
+def mens():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products WHERE category = 'mens' ORDER BY id")
+    products = cursor.fetchall()
+    return render_template('index.html', products=products)
+
+@app.route('/womens')
+def womens():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM products WHERE category = 'womens' ORDER BY id")
+    products = cursor.fetchall()
+    return render_template('index.html', products=products)
 
 @app.route('/cart')
 def cart():
@@ -207,7 +238,6 @@ def api_get_products():
             cursor.execute('SELECT * FROM products WHERE category = ? ORDER BY id', (category,))
     
     products = cursor.fetchall()
-    conn.close()
     return jsonify([dict(p) for p in products])
 
 @app.route('/api/product/<int:product_id>')
@@ -216,7 +246,6 @@ def api_get_product(product_id):
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM products WHERE id = ?', (product_id,))
     product = cursor.fetchone()
-    conn.close()
     if not product:
         return jsonify({'error': 'المنتج غير موجود'}), 404
     return jsonify(dict(product))
@@ -229,7 +258,6 @@ def api_messages():
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM messages ORDER BY timestamp ASC LIMIT 100')
         messages = cursor.fetchall()
-        conn.close()
         return jsonify([dict(m) for m in messages])
     
     elif request.method == 'POST':
@@ -249,7 +277,6 @@ def api_messages():
         msg_id = cursor.lastrowid
         cursor.execute('SELECT * FROM messages WHERE id = ?', (msg_id,))
         new_msg = cursor.fetchone()
-        conn.close()
         return jsonify(dict(new_msg))
 
 @app.route('/api/messages', methods=['DELETE'])
@@ -259,7 +286,6 @@ def api_delete_messages():
     cursor = conn.cursor()
     cursor.execute('DELETE FROM messages')
     conn.commit()
-    conn.close()
     return jsonify({'success': True, 'message': 'تم مسح المحادثة بنجاح'})
 
 @app.route('/api/messages/admin', methods=['POST'])
@@ -279,7 +305,6 @@ def api_admin_message():
     msg_id = cursor.lastrowid
     cursor.execute('SELECT * FROM messages WHERE id = ?', (msg_id,))
     new_msg = cursor.fetchone()
-    conn.close()
     return jsonify(dict(new_msg))
 
 # ==================== API الطلبات ====================
@@ -288,7 +313,7 @@ def api_create_order():
     data = request.get_json()
     customer_name = data.get('customer_name', '').strip()
     customer_phone = data.get('customer_phone', '').strip()
-    customer_address = data.get('customer_address', '').strip()
+    customer_address = data.get('customer_address', data.get('customer_email', '')).strip()
     items = data.get('items', [])
     total_price = data.get('total_price', 0)
     
@@ -307,7 +332,6 @@ def api_create_order():
         cursor.execute('UPDATE products SET stock = stock - ? WHERE id = ?', (quantity, product_id))
     
     conn.commit()
-    conn.close()
     return jsonify({'success': True, 'order_id': order_id, 'message': f'تم استلام طلبك برقم {order_id}.'})
 
 @app.route('/api/orders/<int:order_id>')
@@ -316,7 +340,6 @@ def api_get_order(order_id):
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM orders WHERE id = ?', (order_id,))
     order = cursor.fetchone()
-    conn.close()
     if not order:
         return jsonify({'error': 'الطلب غير موجود'}), 404
     order_dict = dict(order)
@@ -330,10 +353,8 @@ def admin():
     return render_template('admin.html')
 
 @app.route('/admin_settings', methods=['GET', 'POST'])
+@login_required
 def admin_settings():
-    if not session.get('logged_in'):
-        return redirect(url_for('admin_login'))
-    
     message = None
     message_type = None
     
@@ -354,16 +375,13 @@ def admin_settings():
             if not admin:
                 message = 'خطأ في النظام'
                 message_type = 'error'
-                conn.close()
             elif admin['password'] != old_password:
                 message = 'كلمة السر الحالية غير صحيحة'
                 message_type = 'error'
-                conn.close()
             else:
                 cursor.execute('UPDATE admin_credentials SET username = ?, password = ? WHERE id = 1',
                     (new_username, new_password))
                 conn.commit()
-                conn.close()
                 message = 'تم تحديث بيانات الدخول بنجاح'
                 message_type = 'success'
     
@@ -377,19 +395,18 @@ def api_admin_products():
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM products ORDER BY id')
         products = cursor.fetchall()
-        conn.close()
         return jsonify([dict(p) for p in products])
     
     elif request.method == 'POST':
-        image_url = ''
+        image = ''
         if 'image' in request.files:
             file = request.files['image']
-            if file and allowed_file(file.filename):
+            if file and file.filename and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 name_parts = filename.rsplit('.', 1)
                 filename = f"{name_parts[0]}_{int(datetime.now().timestamp())}.{name_parts[1]}"
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                image_url = f'/uploads/{filename}'
+                image = f'/uploads/{filename}'
         
         if request.is_json:
             data = request.get_json()
@@ -403,36 +420,35 @@ def api_admin_products():
         stock = int(data.get('stock', 0))
         available = 1 if stock > 0 else 0
         
-        if not image_url:
-            image_url = data.get('image_url', '')
+        if not image:
+            image = data.get('image', '')
         
         if not name or not price:
             return jsonify({'error': 'اسم المنتج والسعر مطلوبين'}), 400
         
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO products (name, description, price, category, stock, available, image_url, created_at)
+        cursor.execute('''INSERT INTO products (name, description, price, category, stock, available, image, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-            (name, description, price, category, stock, available, image_url, datetime.now().isoformat()))
+            (name, description, price, category, stock, available, image, datetime.now().isoformat()))
         conn.commit()
         product_id = cursor.lastrowid
         cursor.execute('SELECT * FROM products WHERE id = ?', (product_id,))
         product = cursor.fetchone()
-        conn.close()
         return jsonify(dict(product))
 
 @app.route('/api/admin/products/<int:product_id>', methods=['PUT', 'DELETE'])
 def api_admin_product(product_id):
     if request.method == 'PUT':
-        image_url = ''
+        image = ''
         if 'image' in request.files:
             file = request.files['image']
-            if file and allowed_file(file.filename):
+            if file and file.filename and allowed_file(file.filename):
                 filename = secure_filename(file.filename)
                 name_parts = filename.rsplit('.', 1)
                 filename = f"{name_parts[0]}_{int(datetime.now().timestamp())}.{name_parts[1]}"
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                image_url = f'/uploads/{filename}'
+                image = f'/uploads/{filename}'
         
         if request.is_json:
             data = request.get_json()
@@ -446,15 +462,15 @@ def api_admin_product(product_id):
         stock = int(data.get('stock', 0))
         available = 1 if stock > 0 else 0
         
-        if not image_url:
-            image_url = data.get('image_url', '')
+        if not image:
+            image = data.get('image', '')
         
         conn = get_db()
         cursor = conn.cursor()
         
-        if image_url:
-            cursor.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=?, image_url=? WHERE id=?''',
-                (name, description, price, category, stock, available, image_url, product_id))
+        if image:
+            cursor.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=?, image=? WHERE id=?''',
+                (name, description, price, category, stock, available, image, product_id))
         else:
             cursor.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=? WHERE id=?''',
                 (name, description, price, category, stock, available, product_id))
@@ -462,7 +478,6 @@ def api_admin_product(product_id):
         conn.commit()
         cursor.execute('SELECT * FROM products WHERE id = ?', (product_id,))
         product = cursor.fetchone()
-        conn.close()
         return jsonify(dict(product))
     
     elif request.method == 'DELETE':
@@ -470,7 +485,6 @@ def api_admin_product(product_id):
         cursor = conn.cursor()
         cursor.execute('DELETE FROM products WHERE id = ?', (product_id,))
         conn.commit()
-        conn.close()
         return jsonify({'success': True, 'message': 'تم حذف المنتج بنجاح'})
 
 # ==================== API إدارة الطلبات ====================
@@ -480,7 +494,6 @@ def api_admin_get_orders():
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM orders ORDER BY created_at DESC')
     orders = cursor.fetchall()
-    conn.close()
     orders_list = []
     for order in orders:
         order_dict = dict(order)
@@ -498,7 +511,6 @@ def api_update_order_status(order_id):
     cursor = conn.cursor()
     cursor.execute('UPDATE orders SET status = ? WHERE id = ?', (status, order_id))
     conn.commit()
-    conn.close()
     return jsonify({'success': True, 'message': f'تم تحديث الحالة'})
 
 # ==================== الشات الذكي - كارم (نسخة سوداني) ====================
@@ -526,7 +538,6 @@ def search_product_in_db(user_message):
     search_query = search_query.strip()
     
     if len(search_query) < 2:
-        conn.close()
         return None
     
     keywords = {
@@ -577,15 +588,11 @@ def search_product_in_db(user_message):
                 if products:
                     break
         
-        conn.close()
-        
         if products:
             return [dict(p) for p in products]
     except Exception:
-        conn.close()
         return None
     
-    conn.close()
     return None
 
 def get_products_by_category(category_name):
@@ -594,15 +601,13 @@ def get_products_by_category(category_name):
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM products WHERE category = ? AND stock > 0', (category_name,))
     products = cursor.fetchall()
-    conn.close()
     return [dict(p) for p in products] if products else None
 
 def build_product_card_html(product):
     """بناء HTML كارت المنتج"""
-    image_url = product.get('image_url', '')
+    image_url = product.get('image', '')
     name = product.get('name', '')
     price = product.get('price', 0)
-    product_id = product.get('id', 0)
     stock = product.get('stock', 0)
     desc = product.get('description', '')
     
@@ -655,7 +660,6 @@ def generate_smart_response(user_message):
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM products WHERE (name LIKE '%بوت%' OR name LIKE '%صندل%') AND stock > 0")
         products = cursor.fetchall()
-        conn.close()
         
         cards = ''
         for p in products:
@@ -709,7 +713,6 @@ def generate_smart_response(user_message):
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM products WHERE name LIKE '%حذاء%' OR name LIKE '%بوت%' OR name LIKE '%صندل%' OR name LIKE '%كعب%'")
         shoes = cursor.fetchall()
-        conn.close()
         for s in shoes:
             s_dict = dict(s)
             if s_dict not in products:
@@ -744,7 +747,6 @@ def generate_smart_response(user_message):
             cursor = conn.cursor()
             cursor.execute("SELECT * FROM products WHERE name LIKE '%عمل%' OR name LIKE '%اوفيس%' OR name LIKE '%رسمي%'")
             products = cursor.fetchall()
-            conn.close()
             if products:
                 reply = "فستان العمل المثالي ليكي 👗\n\n"
                 cards = ''

@@ -5,6 +5,9 @@ let currentCategory = 'all';
 
 // ===== تهيئة الصفحة =====
 document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة النافبار
+    initNavbar();
+    
     loadProducts();
     loadChat();
     updateCartCount();
@@ -16,6 +19,35 @@ document.addEventListener('DOMContentLoaded', function() {
         minimizeChat();
     }
 });
+
+// ===== النافبار (القائمة المتنقلة) =====
+function initNavbar() {
+    const navToggle = document.getElementById('navToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    if (!navToggle || !navMenu) return;
+    
+    navToggle.addEventListener('click', function() {
+        navToggle.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+    
+    // إغلاق القائمة عند الضغط على رابط
+    navMenu.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function() {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+        });
+    });
+    
+    // إغلاق القائمة عند الضغط خارجها
+    document.addEventListener('click', function(e) {
+        if (!navToggle.contains(e.target) && !navMenu.contains(e.target)) {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+        }
+    });
+}
 
 // ===== تحميل المنتجات =====
 async function loadProducts() {
@@ -33,6 +65,8 @@ async function loadProducts() {
 function displayProducts(products) {
     const productsGrid = document.getElementById('productsGrid');
     
+    if (!productsGrid) return;
+    
     if (products.length === 0) {
         productsGrid.innerHTML = `
             <div class="empty-state" style="grid-column: 1/-1;">
@@ -45,13 +79,13 @@ function displayProducts(products) {
     
     productsGrid.innerHTML = products.map(product => `
         <div class="product-card">
-            <img src="${product.image_url}" alt="${product.name}" style="width:100%; height:200px; object-fit:cover; border-radius:15px;" onerror="this.src='https://via.placeholder.com/200?text=صورة'">
+            <img src="${product.image || product.image_url}" alt="${product.name}" style="width:100%; height:200px; object-fit:cover; border-radius:15px;" onerror="this.src='https://via.placeholder.com/200?text=صورة'">
             <div class="product-info">
                 <div class="product-name">${product.name}</div>
-                <div class="product-description">${product.description}</div>
+                <div class="product-description">${product.description || ''}</div>
                 <div class="product-meta">
-                    <span class="meta-item">الحجم: ${product.size}</span>
-                    <span class="meta-item">اللون: ${product.color}</span>
+                    <span class="meta-item">الحجم: ${product.size || 'قياسي'}</span>
+                    <span class="meta-item">اللون: ${product.color || 'متنوع'}</span>
                 </div>
                 <div class="product-price price">${product.price} ريال</div>
                 <div class="product-stock">
@@ -77,7 +111,7 @@ function searchProducts() {
     
     const filtered = allProducts.filter(product => 
         product.name.toLowerCase().includes(searchTerm) ||
-        product.description.toLowerCase().includes(searchTerm)
+        (product.description || '').toLowerCase().includes(searchTerm)
     );
     
     displayProducts(filtered);
@@ -85,7 +119,8 @@ function searchProducts() {
 
 function filterByCategory(category) {
     currentCategory = category;
-    document.getElementById('searchInput').value = '';
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
     
     if (category === 'all') {
         displayProducts(allProducts);
@@ -104,16 +139,18 @@ async function viewProductDetails(productId) {
         const modal = document.getElementById('productModal');
         const detailDiv = document.getElementById('productDetail');
         
+        if (!modal || !detailDiv) return;
+        
         detailDiv.innerHTML = `
             <div class="product-detail">
                 <div class="product-detail-image">
-                    <img src="${product.image_url}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='https://via.placeholder.com/400?text=صورة+المنتج'">
+                    <img src="${product.image || product.image_url}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='https://via.placeholder.com/400?text=صورة+المنتج'">
                 </div>
                 <div class="product-detail-info">
                     <h2>${product.name}</h2>
                     <div class="detail-rating">⭐⭐⭐⭐⭐ (4.8/5 - 245 تقييم)</div>
                     <div class="detail-price">${product.price} ريال</div>
-                    <div class="detail-description">${product.description}</div>
+                    <div class="detail-description">${product.description || ''}</div>
                     
                     <div class="detail-specs">
                         <div class="spec-item">
@@ -122,11 +159,11 @@ async function viewProductDetails(productId) {
                         </div>
                         <div class="spec-item">
                             <span>الحجم:</span>
-                            <strong>${product.size}</strong>
+                            <strong>${product.size || 'قياسي'}</strong>
                         </div>
                         <div class="spec-item">
                             <span>اللون:</span>
-                            <strong>${product.color}</strong>
+                            <strong>${product.color || 'متنوع'}</strong>
                         </div>
                         <div class="spec-item">
                             <span>المخزون:</span>
@@ -159,7 +196,8 @@ async function viewProductDetails(productId) {
 }
 
 function closeProductModal() {
-    document.getElementById('productModal').classList.remove('active');
+    const modal = document.getElementById('productModal');
+    if (modal) modal.classList.remove('active');
 }
 
 // ===== سلة التسوق =====
@@ -191,8 +229,8 @@ function addToCart(productId) {
             id: product.id,
             name: product.name,
             price: product.price,
-            color: product.color,
-            size: product.size,
+            color: product.color || 'متنوع',
+            size: product.size || 'قياسي',
             quantity: 1
         });
     }
@@ -208,20 +246,27 @@ function saveCart() {
 
 function updateCartCount() {
     const count = cart.reduce((total, item) => total + item.quantity, 0);
-    document.getElementById('cart-count').textContent = count;
+    const badge = document.getElementById('cartBadge') || document.getElementById('cart-count');
+    if (badge) {
+        badge.textContent = count;
+    }
 }
 
 function openCart() {
     displayCart();
-    document.getElementById('cartModal').classList.add('active');
+    const modal = document.getElementById('cartModal');
+    if (modal) modal.classList.add('active');
 }
 
 function closeCart() {
-    document.getElementById('cartModal').classList.remove('active');
+    const modal = document.getElementById('cartModal');
+    if (modal) modal.classList.remove('active');
 }
 
 function displayCart() {
     const cartItemsDiv = document.getElementById('cartItems');
+    
+    if (!cartItemsDiv) return;
     
     if (cart.length === 0) {
         cartItemsDiv.innerHTML = `
@@ -230,11 +275,13 @@ function displayCart() {
                 <p>السلة فارغة</p>
             </div>
         `;
-        document.getElementById('checkoutSection').style.display = 'none';
+        const checkoutSection = document.getElementById('checkoutSection');
+        if (checkoutSection) checkoutSection.style.display = 'none';
         return;
     }
     
-    document.getElementById('checkoutSection').style.display = 'block';
+    const checkoutSection = document.getElementById('checkoutSection');
+    if (checkoutSection) checkoutSection.style.display = 'block';
     
     cartItemsDiv.innerHTML = cart.map((item, index) => `
         <div class="cart-item">
@@ -260,6 +307,8 @@ function displayCart() {
 function updateQuantity(index, change) {
     const product = allProducts.find(p => p.id === cart[index].id);
     
+    if (!product) return;
+    
     if (cart[index].quantity + change > 0 && cart[index].quantity + change <= product.stock) {
         cart[index].quantity += change;
         saveCart();
@@ -279,13 +328,20 @@ function removeFromCart(index) {
 
 function updateCartTotal() {
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    document.getElementById('cartTotal').textContent = total.toFixed(2);
+    const cartTotal = document.getElementById('cartTotal');
+    const subtotal = document.getElementById('subtotal');
+    const itemCount = document.getElementById('itemCount');
+    
+    if (cartTotal) cartTotal.textContent = total.toFixed(2);
+    if (subtotal) subtotal.textContent = total.toFixed(2) + ' ريال';
+    if (itemCount) itemCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
 }
 
 async function checkoutCart() {
     const name = document.getElementById('customerName').value.trim();
     const phone = document.getElementById('customerPhone').value.trim();
-    const email = document.getElementById('customerEmail').value.trim();
+    const email = document.getElementById('customerEmail');
+    const emailValue = email ? email.value.trim() : '';
     
     if (!name || !phone) {
         showAlert('يرجى إدخال الاسم ورقم الهاتف', 'error');
@@ -308,7 +364,7 @@ async function checkoutCart() {
             body: JSON.stringify({
                 customer_name: name,
                 customer_phone: phone,
-                customer_email: email,
+                customer_address: emailValue,
                 items: cart,
                 total_price: total
             })
@@ -322,9 +378,9 @@ async function checkoutCart() {
             saveCart();
             updateCartCount();
             closeCart();
-            document.getElementById('customerName').value = '';
-            document.getElementById('customerPhone').value = '';
-            document.getElementById('customerEmail').value = '';
+            if (document.getElementById('customerName')) document.getElementById('customerName').value = '';
+            if (document.getElementById('customerPhone')) document.getElementById('customerPhone').value = '';
+            if (email) email.value = '';
         } else {
             showAlert(result.error, 'error');
         }
@@ -344,11 +400,13 @@ function minimizeChat() {
     const chatButton = document.getElementById('chat-button');
     const minimizedIcon = document.getElementById('chatMinimizedIcon');
     
+    if (!chatPanel) return;
+    
     // إخفاء الشات وإظهار الأيقونة المصغرة
     chatPanel.classList.remove('active');
     chatPanel.classList.remove('maximized');
-    chatButton.style.display = 'none';
-    minimizedIcon.style.display = 'flex';
+    if (chatButton) chatButton.style.display = 'none';
+    if (minimizedIcon) minimizedIcon.style.display = 'flex';
     
     // حفظ الحالة
     localStorage.setItem('chatMinimized', 'true');
@@ -359,18 +417,21 @@ function maximizeChat() {
     const chatButton = document.getElementById('chat-button');
     const minimizedIcon = document.getElementById('chatMinimizedIcon');
     
+    if (!chatPanel) return;
+    
     // إظهار الشات بحجم كبير
     chatPanel.classList.add('active');
     chatPanel.classList.add('maximized');
-    chatButton.style.display = 'none';
-    minimizedIcon.style.display = 'none';
+    if (chatButton) chatButton.style.display = 'none';
+    if (minimizedIcon) minimizedIcon.style.display = 'none';
     
     // حفظ الحالة
     localStorage.setItem('chatMinimized', 'false');
     
     // التمرير للأسفل
     setTimeout(() => {
-        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     }, 200);
 }
 
@@ -379,11 +440,13 @@ function restoreChat() {
     const chatButton = document.getElementById('chat-button');
     const minimizedIcon = document.getElementById('chatMinimizedIcon');
     
+    if (!chatPanel) return;
+    
     // إظهار الشات بحجم عادي
     chatPanel.classList.add('active');
     chatPanel.classList.remove('maximized');
-    chatButton.style.display = 'none';
-    minimizedIcon.style.display = 'none';
+    if (chatButton) chatButton.style.display = 'none';
+    if (minimizedIcon) minimizedIcon.style.display = 'none';
     
     // حفظ الحالة
     localStorage.setItem('chatMinimized', 'false');
@@ -396,18 +459,20 @@ function restoreChat() {
     
     // التمرير للأسفل
     setTimeout(() => {
-        document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
     }, 200);
 }
 
 // ===== دوال الخروج ومسح الشات =====
 function closeChatWithPrompt() {
-    // إظهار نافذة تأكيد الخروج
-    document.getElementById('exitChatModal').classList.add('active');
+    const modal = document.getElementById('exitChatModal');
+    if (modal) modal.classList.add('active');
 }
 
 function cancelExitChat() {
-    document.getElementById('exitChatModal').classList.remove('active');
+    const modal = document.getElementById('exitChatModal');
+    if (modal) modal.classList.remove('active');
 }
 
 async function downloadChatAsPDF() {
@@ -471,7 +536,8 @@ async function downloadChatAsPDF() {
         `;
         
         // إخفاء المودال أولاً
-        document.getElementById('exitChatModal').classList.remove('active');
+        const exitModal = document.getElementById('exitChatModal');
+        if (exitModal) exitModal.classList.remove('active');
         
         // تحويل إلى PDF باستخدام html2pdf
         const element = document.createElement('div');
@@ -507,7 +573,8 @@ async function downloadChatAsPDF() {
 
 async function clearChatAndExit() {
     // إخفاء المودال
-    document.getElementById('exitChatModal').classList.remove('active');
+    const exitModal = document.getElementById('exitChatModal');
+    if (exitModal) exitModal.classList.remove('active');
     
     // مسح الرسائل
     await clearMessages();
@@ -526,10 +593,12 @@ async function clearMessages() {
         
         // إخفاء الشات
         const chatPanel = document.getElementById('chatPanel');
-        chatPanel.classList.remove('active');
-        chatPanel.classList.remove('maximized');
-        document.getElementById('chat-button').style.display = 'flex';
-        document.getElementById('chatMinimizedIcon').style.display = 'none';
+        if (chatPanel) chatPanel.classList.remove('active');
+        if (chatPanel) chatPanel.classList.remove('maximized');
+        const chatButton = document.getElementById('chat-button');
+        if (chatButton) chatButton.style.display = 'flex';
+        const minimizedIcon = document.getElementById('chatMinimizedIcon');
+        if (minimizedIcon) minimizedIcon.style.display = 'none';
         
         // إلغاء حفظ حالة التصغير
         localStorage.setItem('chatMinimized', 'false');
@@ -553,7 +622,7 @@ async function loadChat() {
         
         // إذا الشات فاتح ولسه ما انرسلت التحية, نرسل ترحيب تلقائي
         const chatPanel = document.getElementById('chatPanel');
-        if (chatPanel.classList.contains('active') && !chatInitialized) {
+        if (chatPanel && chatPanel.classList.contains('active') && !chatInitialized) {
             chatInitialized = true;
             // نتحقق إذا في رسايل أصلاً
             const hasMessages = messages.length > 0;
@@ -608,6 +677,8 @@ async function sendAutoGreeting() {
 function displayChat(messages) {
     const chatDiv = document.getElementById('chatMessages');
     
+    if (!chatDiv) return;
+    
     if (messages.length === 0) {
         chatDiv.innerHTML = `
             <div style="text-align: center; padding: 20px; color: #999;">
@@ -647,8 +718,10 @@ async function toggleChat() {
     const chatButton = document.getElementById('chat-button');
     const minimizedIcon = document.getElementById('chatMinimizedIcon');
     
+    if (!chatPanel) return;
+    
     // إذا كان الشات مصغر، نرجعه
-    if (minimizedIcon.style.display === 'flex') {
+    if (minimizedIcon && minimizedIcon.style.display === 'flex') {
         restoreChat();
         return;
     }
@@ -656,8 +729,8 @@ async function toggleChat() {
     chatPanel.classList.toggle('active');
     
     if (chatPanel.classList.contains('active')) {
-        chatButton.style.display = 'none';
-        minimizedIcon.style.display = 'none';
+        if (chatButton) chatButton.style.display = 'none';
+        if (minimizedIcon) minimizedIcon.style.display = 'none';
         
         // نرسل التحية التلقائية أول ما العميل يفتح الشات
         if (!chatInitialized) {
@@ -665,10 +738,11 @@ async function toggleChat() {
             await sendAutoGreeting();
         }
         setTimeout(() => {
-            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) chatMessages.scrollTop = chatMessages.scrollHeight;
         }, 200);
     } else {
-        chatButton.style.display = 'flex';
+        if (chatButton) chatButton.style.display = 'flex';
     }
 }
 
@@ -703,7 +777,8 @@ async function sendMessage() {
         });
         
         if (response.ok) {
-            document.getElementById('messageInput').value = '';
+            const messageInput = document.getElementById('messageInput');
+            if (messageInput) messageInput.value = '';
             
             // الحصول على رد ذكي من الشات
             try {

@@ -3,47 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}FASHION HUB - متجر الملابس{% endblock %}</title>
+    <title>متجر الملابس</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-    {% block extra_head %}{% endblock %}
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- الرأس (Header) - تصميم عصري فاخر -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="brand-name">FASHION HUB</div>
-                    <div class="brand-subtitle">وجهتك للأناقة</div>
-                </div>
-                <nav class="nav">
-                    <a href="/" class="nav-link">الرئيسية</a>
-                    <a href="/" class="nav-link" onclick="filterByCategory('رجالي'); return false;">رجالي</a>
-                    <a href="/" class="nav-link" onclick="filterByCategory('نسائي'); return false;">نسائي</a>
-                    <a href="/cart" class="nav-link">السلة (<span id="cart-count">0</span>)</a>
-                    {% if is_admin %}
-                    <a href="/admin" class="nav-link">الإدارة</a>
-                    <a href="/admin/logout" class="nav-link logout-link">تسجيل خروج</a>
-                    {% endif %}
-                </nav>
-            </div>
-        </div>
-    </header>
+<header class="modern-header">
+    <h1>FASHION HUB</h1>
+    <p>وجهتك للأناقة</p>
+    <nav class="vertical-menu">
+        <a href="/">الرئيسية</a>
+        <a href="/mens">رجالي</a>
+        <a href="/womens">نسائي</a>
+        <a href="/cart">السلة</a>
+    </nav>
+</header>
 
-    {% block content %}{% endblock %}
-
-    <!-- التذييل (Footer) -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2026 متجر الملابس. جميع الحقوق محفوظة. | مرحباً بك في متجرنا الإلكتروني</p>
-            <p>☎️ اتصل بنا: +966-XX-XXXXX | 📧 البريد: store@clothing.com</p>
-        </div>
-    </footer>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-    {% block extra_scripts %}{% endblock %}
+{% block content %}{% endblock %}
 </body>
 </html>

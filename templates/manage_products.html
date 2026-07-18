@@ -411,7 +411,7 @@
             tbody.innerHTML = products.map(product => `
                 <tr>
                     <td>
-                        <img src="${product.image_url}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/50?text=No+Image'">
+                        <img src="${product.image}" alt="${product.name}" class="product-image" onerror="this.src='https://via.placeholder.com/50?text=No+Image'">
                     </td>
                     <td><strong>${product.name}</strong></td>
                     <td>${product.category}</td>
@@ -455,7 +455,7 @@
             document.getElementById('productColor').value = product.color;
             document.getElementById('productPrice').value = product.price;
             document.getElementById('productStock').value = product.stock;
-            document.getElementById('productImageUrl').value = product.image_url;
+            document.getElementById('productImageUrl').value = product.image;
 
             document.getElementById('productModal').classList.add('active');
         }
@@ -477,7 +477,7 @@
                 color: document.getElementById('productColor').value,
                 price: parseFloat(document.getElementById('productPrice').value),
                 stock: parseInt(document.getElementById('productStock').value),
-                image_url: document.getElementById('productImageUrl').value
+                image: document.getElementById('productImageUrl').value
             };
 
             try {

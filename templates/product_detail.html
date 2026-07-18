@@ -51,7 +51,7 @@
                     <a href="/" class="nav-link">الرئيسية</a>
                     <a href="/" onclick="filterByCategory('رجالي'); return false;" class="nav-link">رجالي</a>
                     <a href="/" onclick="filterByCategory('نسائي'); return false;" class="nav-link">نسائي</a>
-                    <a href="/cart" class="nav-link">السلة (<span id="cart-count">0</span>)</a>
+                    <a href="/cart" class="nav-link">السلة (<span id="cartBadge">0</span>)</a>
                 </nav>
             </div>
         </div>
@@ -62,8 +62,8 @@
         
         <div class="detail-container">
             <div class="detail-image-section">
-                {% if product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&#39;font-size:100px;&#39;>👔</span>'">
+                {% if product.image %}
+                    <img src="{{ product.image }}" alt="{{ product.name }}" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&#39;font-size:100px;&#39;>👔</span>'">
                 {% else %}
                     <span style="font-size: 100px;">👔</span>
                 {% endif %}

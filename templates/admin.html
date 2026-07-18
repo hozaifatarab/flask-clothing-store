@@ -341,7 +341,7 @@
 
             tbody.innerHTML = products.map(p => `
                 <tr>
-                    <td><img src="${p.image_url}" class="product-img" onerror="this.src='https://via.placeholder.com/50?text=?'"></td>
+                    <td><img src="${p.image}" class="product-img" onerror="this.src='https://via.placeholder.com/50?text=?'"></td>
                     <td><strong>${p.name}</strong></td>
                     <td>${p.price} ريال</td>
                     <td>${p.stock}</td>
@@ -389,7 +389,7 @@
                     formData.append('image', imageFile);
                 }
                 if (imageUrl) {
-                    formData.append('image_url', imageUrl);
+                    formData.append('image', imageUrl);
                 }
 
                 const response = await fetch('/api/admin/products', {
@@ -425,12 +425,12 @@
                 document.getElementById('editStock').value = product.stock || 0;
                 document.getElementById('editCategory').value = product.category || 'رجالي';
                 document.getElementById('editAvailable').value = product.available || 0;
-                document.getElementById('editImageUrl').value = product.image_url || '';
+                document.getElementById('editImageUrl').value = product.image || '';
                 
                 // معاينة الصورة الحالية
                 const preview = document.getElementById('editImagePreview');
-                if (product.image_url) {
-                    preview.src = product.image_url;
+                if (product.image) {
+                    preview.src = product.image;
                     preview.classList.add('show');
                 } else {
                     preview.classList.remove('show');
@@ -477,7 +477,7 @@
                     formData.append('image', imageFile);
                 }
                 if (imageUrl) {
-                    formData.append('image_url', imageUrl);
+                    formData.append('image', imageUrl);
                 }
 
                 const response = await fetch(`/api/admin/products/${id}`, {

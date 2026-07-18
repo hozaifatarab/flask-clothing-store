@@ -20,7 +20,7 @@
                     <a href="#" class="nav-link">الرئيسية</a>
                     <a href="#" class="nav-link" onclick="filterByCategory('رجالي'); return false;">رجالي</a>
                     <a href="#" class="nav-link" onclick="filterByCategory('نسائي'); return false;">نسائي</a>
-                    <a href="#" class="nav-link" onclick="openCart(); return false;">السلة (<span id="cart-count">0</span>)</a>
+                    <a href="#" class="nav-link" onclick="openCart(); return false;">السلة (<span id="cartBadge">0</span>)</a>
                     {% if is_admin %}
                     <a href="/admin" class="nav-link">الإدارة</a>
                     <a href="/admin/logout" class="nav-link logout-link">تسجيل خروج</a>
@@ -51,7 +51,7 @@
             <div class="products-grid" id="productsGrid">
                 {% for product in products %}
                 <div class="product-card">
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/200?text=صورة'">
+                    <img src="{{ product.image }}" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/200?text=صورة'">
                     <div class="product-info">
                         <div class="product-name">{{ product.name }}</div>
                         <div class="product-description">{{ product.description }}</div>
@@ -104,7 +104,7 @@
     </div>
 
     <!-- زر الشات العائم (الأساسي) -->
-    <button class="chat-button" id="chat-button" onclick="toggleChat()">
+    <button id="chat-button" class="chat-toggle-btn" onclick="toggleChat()">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="28" height="28">
         <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
         <circle cx="12" cy="13" r="1.5" fill="#FFC107"/>
