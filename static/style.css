@@ -63,7 +63,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     background: rgba(15, 14, 23, 0.95);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
-    position: relative;
 }
 
 .navbar::after {
@@ -181,7 +180,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     top: 0;
     z-index: 1000;
     backdrop-filter: blur(20px);
-    position: relative;
 }
 
 .modern-header::before {
@@ -246,37 +244,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     width: 200px;
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--primary), transparent);
-}
-
-/* Decorative corner ornaments for hero */
-.hero .corner-ornament {
-    position: absolute;
-    font-size: 18px;
-    color: var(--primary);
-    opacity: 0.3;
-}
-
-.hero .corner-ornament.top-right {
-    top: 20px;
-    right: 20px;
-}
-
-.hero .corner-ornament.top-left {
-    top: 20px;
-    left: 20px;
-    transform: scaleX(-1);
-}
-
-.hero .corner-ornament.bottom-right {
-    bottom: 20px;
-    right: 20px;
-    transform: scaleY(-1);
-}
-
-.hero .corner-ornament.bottom-left {
-    bottom: 20px;
-    left: 20px;
-    transform: scale(-1, -1);
 }
 
 .hero h1 {
@@ -849,22 +816,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     transition: var(--transition);
     z-index: 999;
     animation: pulse 2s infinite;
-    position: relative;
-}
-
-.chat-btn::before {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-    opacity: 0;
-    transition: var(--transition);
-    z-index: -1;
-}
-
-.chat-btn:hover::before {
-    opacity: 0.5;
 }
 
 @keyframes pulse {
@@ -909,22 +860,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
     z-index: 999;
     transition: var(--transition);
-    position: relative;
-}
-
-.chat-mini::before {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
-    opacity: 0;
-    transition: var(--transition);
-    z-index: -1;
-}
-
-.chat-mini:hover::before {
-    opacity: 0.5;
 }
 
 .chat-mini:hover { transform: scale(1.1); }
@@ -1267,31 +1202,9 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     transition: var(--transition);
 }
 
-.btn-add-cart { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; position: relative; overflow: hidden; }
-.btn-add-cart::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-    transition: left 0.5s ease;
-}
-.btn-add-cart:hover::before { left: 100%; }
+.btn-add-cart { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
 .btn-add-cart:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3); }
-.btn-wishlist { background: rgba(108, 92, 231, 0.1); color: var(--accent); border: 1px solid rgba(253, 121, 168, 0.2) !important; position: relative; overflow: hidden; }
-.btn-wishlist::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(253, 121, 168, 0.1), transparent);
-    transition: left 0.5s ease;
-}
-.btn-wishlist:hover::before { left: 100%; }
+.btn-wishlist { background: rgba(108, 92, 231, 0.1); color: var(--accent); border: 1px solid rgba(253, 121, 168, 0.2) !important; }
 .btn-wishlist:hover { background: rgba(253, 121, 168, 0.15); }
 
 /* ===== Exit Chat Modal ===== */
@@ -1300,32 +1213,10 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 .exit-modal h3 { font-size: 18px; margin-bottom: 8px; border: none !important; justify-content: center; }
 .exit-desc { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
 .exit-btns { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; }
-.exit-btn { flex: 1; padding: 14px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 14px; transition: var(--transition); display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; overflow: hidden; }
+.exit-btn { flex: 1; padding: 14px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 14px; transition: var(--transition); display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .exit-btn-pdf { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-.exit-btn-pdf::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    transition: left 0.5s ease;
-}
-.exit-btn-pdf:hover::before { left: 100%; }
 .exit-btn-pdf:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4); }
 .exit-btn-del { background: var(--danger); color: white; }
-.exit-btn-del::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    transition: left 0.5s ease;
-}
-.exit-btn-del:hover::before { left: 100%; }
 .exit-btn-del:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4); }
 .exit-cancel { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 30px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; transition: var(--transition); }
 .exit-cancel:hover { border-color: var(--primary); color: var(--text); }
@@ -1345,18 +1236,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     animation: alertIn 0.3s ease;
     min-width: 280px;
     text-align: center;
-    position: relative;
-}
-
-.alert::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px 2px 0 0;
 }
 
 @keyframes alertIn {
@@ -1437,7 +1316,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     display: flex;
     align-items: center;
     gap: 6px;
-    position: relative;
     overflow: hidden;
 }
 
@@ -1479,7 +1357,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     flex-direction: column;
     padding-top: 80px;
     transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
 }
 
 .sidebar::before {
