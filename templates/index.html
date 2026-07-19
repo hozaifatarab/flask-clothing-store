@@ -8,35 +8,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <!-- ===== النافبار ===== -->
-    <nav class="navbar">
-        <div class="nav-inner">
-            <div class="nav-brand">
-                <span class="brand-icon">👕</span>
-                <div>
-                    <span class="brand-text">FASHION HUB</span>
-                    <span class="brand-sub">وجهتك للأناقة</span>
-                </div>
-            </div>
-            <div class="nav-links" id="navMenu">
-                <a href="/" class="nav-link active">🏠 الرئيسية</a>
-                <a href="#" class="nav-link" onclick="filterCategory('رجالي'); return false;">👔 رجالي</a>
-                <a href="#" class="nav-link" onclick="filterCategory('نسائي'); return false;">👗 نسائي</a>
-                <a href="#" class="nav-link" onclick="filterCategory('احذية'); return false;">👟 أحذية</a>
-                <a href="#" class="nav-link nav-cart" onclick="openCart(); return false;">
-                    🛒 السلة
-                    <span class="chat-badge cart-count" id="cartBadge" style="position:static;width:auto;height:auto;padding:2px 8px;font-size:11px;margin-right:4px;">0</span>
-                </a>
-                {% if is_admin %}
-                <a href="/admin" class="nav-link">⚙️ الإدارة</a>
-                <a href="/admin/logout" class="nav-link" style="color:#FF6B6B;">🚪 خروج</a>
-                {% endif %}
-            </div>
-            <button class="nav-toggle" id="navToggle">
-                <span></span><span></span><span></span>
-            </button>
-        </div>
-    </nav>
+    <!-- ===== الهيدر الجديد ===== -->
+    <header class="modern-header">
+        <h1>FASHION HUB</h1>
+        <p>وجهتك للأناقة</p>
+        <nav class="vertical-menu">
+            <a href="/">🏠 الرئيسية</a>
+            <a href="/men">👔 رجالي</a>
+            <a href="/women">👗 نسائي</a>
+            <a href="/shoes">👟 أحذية</a>
+            {% if is_admin %}
+            <a href="/admin">⚙️ الإدارة</a>
+            <a href="/admin/logout" style="color:#FF6B6B;">🚪 خروج</a>
+            {% endif %}
+        </nav>
+    </header>
 
     <!-- ===== الهيرو ===== -->
     <section class="hero">
