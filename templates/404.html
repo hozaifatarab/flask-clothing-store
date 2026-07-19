@@ -3,30 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الصفحة غير موجودة - 404</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>404 - الصفحة غير موجودة</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #0F0E17, #1A1932);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-box {
+            text-align: center;
+            padding: 40px;
+        }
+        .error-code {
+            font-size: 120px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #6C5CE7, #FD79A8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .error-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #E0E0E0;
+            margin-bottom: 10px;
+        }
+        .error-desc {
+            color: #8888AA;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        .error-btn {
+            display: inline-block;
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #6C5CE7, #5A4BD1);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        .error-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(108,92,231,0.4);
+        }
+    </style>
 </head>
-<body style="background: #f5f5f5;">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;">
-        <div style="text-align: center;">
-            <h1 style="font-size: 80px; margin: 0;">404</h1>
-            <h2 style="color: #e74c3c; margin-bottom: 20px;">الصفحة غير موجودة</h2>
-            <p style="color: #666; font-size: 16px; margin-bottom: 30px;">
-                عذراً، الصفحة التي تبحث عنها غير موجودة
-            </p>
-            <a href="/" style="
-                display: inline-block;
-                padding: 12px 30px;
-                background-color: #e74c3c;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-                transition: 0.3s;
-            " onmouseover="this.style.backgroundColor='#c0392b'" onmouseout="this.style.backgroundColor='#e74c3c'">
-                العودة للمتجر
-            </a>
-        </div>
+<body>
+    <div class="error-box">
+        <div class="error-code">404</div>
+        <div class="error-title">الصفحة غير موجودة</div>
+        <div class="error-desc">عذراً، الصفحة التي تبحث عنها غير متوفرة</div>
+        <a href="/" class="error-btn">🏠 العودة للمتجر</a>
     </div>
 </body>
 </html>

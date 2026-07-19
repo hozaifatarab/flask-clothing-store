@@ -3,199 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجر الملابس - Clothing Store</title>
+    <title>FASHION HUB - متجر ملابس</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <!-- الرأس (Header) - تحديث عصري -->
-    <header class="header">
-        <div class="container">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="brand-name">FASHION HUB</div>
-                    <div class="brand-subtitle">وجهتك للأناقة</div>
+    <!-- ===== النافبار ===== -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <span class="brand-icon">👕</span>
+                <div>
+                    <span class="brand-text">FASHION HUB</span>
+                    <span class="brand-sub">وجهتك للأناقة</span>
                 </div>
-                <nav class="nav">
-                    <a href="#" class="nav-link">الرئيسية</a>
-                    <a href="#" class="nav-link" onclick="filterByCategory('رجالي'); return false;">رجالي</a>
-                    <a href="#" class="nav-link" onclick="filterByCategory('نسائي'); return false;">نسائي</a>
-                    <a href="#" class="nav-link" onclick="openCart(); return false;">السلة (<span id="cartBadge">0</span>)</a>
-                    {% if is_admin %}
-                    <a href="/admin" class="nav-link">الإدارة</a>
-                    <a href="/admin/logout" class="nav-link logout-link">تسجيل خروج</a>
-                    {% endif %}
-                </nav>
             </div>
+            <div class="nav-links" id="navMenu">
+                <a href="/" class="nav-link active">🏠 الرئيسية</a>
+                <a href="#" class="nav-link" onclick="filterCategory('رجالي'); return false;">👔 رجالي</a>
+                <a href="#" class="nav-link" onclick="filterCategory('نسائي'); return false;">👗 نسائي</a>
+                <a href="#" class="nav-link" onclick="filterCategory('احذية'); return false;">👟 أحذية</a>
+                <a href="#" class="nav-link nav-cart" onclick="openCart(); return false;">
+                    🛒 السلة
+                    <span class="chat-badge cart-count" id="cartBadge" style="position:static;width:auto;height:auto;padding:2px 8px;font-size:11px;margin-right:4px;">0</span>
+                </a>
+                {% if is_admin %}
+                <a href="/admin" class="nav-link">⚙️ الإدارة</a>
+                <a href="/admin/logout" class="nav-link" style="color:#FF6B6B;">🚪 خروج</a>
+                {% endif %}
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span><span></span><span></span>
+            </button>
         </div>
-    </header>
+    </nav>
 
-    <!-- شريط البحث -->
+    <!-- ===== الهيرو ===== -->
+    <section class="hero">
+        <div class="container">
+            <h1>FASHION HUB</h1>
+            <p>اكتشف أحدث صيحات الموضة في عالم الأزياء</p>
+        </div>
+    </section>
+
+    <!-- ===== التصنيفات ===== -->
+    <div class="categories">
+        <button class="cat-pill active" data-cat="all" onclick="filterCategory('all')">🔥 الكل</button>
+        <button class="cat-pill" data-cat="رجالي" onclick="filterCategory('رجالي')">👔 رجالي</button>
+        <button class="cat-pill" data-cat="نسائي" onclick="filterCategory('نسائي')">👗 نسائي</button>
+        <button class="cat-pill" data-cat="احذية" onclick="filterCategory('احذية')">👟 أحذية</button>
+        <button class="cat-pill" data-cat="اكسسوارات" onclick="filterCategory('اكسسوارات')">⌚ اكسسوارات</button>
+    </div>
+
+    <!-- ===== البحث ===== -->
     <section class="search-section">
         <div class="container">
             <div class="search-box">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    placeholder="ابحث عن المنتجات..."
-                    onkeyup="searchProducts()"
-                >
-                <button onclick="searchProducts()" class="search-btn">🔍 بحث</button>
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 ابحث عن منتج..." oninput="searchProducts()">
+                <button class="search-btn" onclick="searchProducts()">بحث</button>
             </div>
         </div>
     </section>
 
-    <!-- قسم المنتجات -->
-    <main class="main">
+    <!-- ===== المنتجات ===== -->
+    <section class="products-section">
         <div class="container">
             <div class="products-grid" id="productsGrid">
-                {% for product in products %}
+                {% for p in products %}
                 <div class="product-card">
-                    <img src="{{ product.image }}" alt="{{ product.name }}" onerror="this.src='https://via.placeholder.com/200?text=صورة'">
-                    <div class="product-info">
-                        <div class="product-name">{{ product.name }}</div>
-                        <div class="product-description">{{ product.description }}</div>
+                    <div class="product-img-wrap">
+                        <img src="{{ p.image }}" alt="{{ p.name }}" onerror="this.src='https://via.placeholder.com/300?text=?'">
+                        {% if p.stock > 5 %}<span class="product-badge badge-new">جديد</span>{% endif %}
+                    </div>
+                    <div class="product-body">
+                        <div class="product-name">{{ p.name }}</div>
+                        <div class="product-desc">{{ p.description or '' }}</div>
                         <div class="product-meta">
-                            <span class="meta-item">الحجم: {{ product.size }}</span>
-                            <span class="meta-item">اللون: {{ product.color }}</span>
+                            <span class="meta-tag">📐 {{ p.size or 'قياسي' }}</span>
+                            <span class="meta-tag">🎨 {{ p.color or 'متنوع' }}</span>
                         </div>
-                        <div class="product-price price">{{ product.price }} ريال</div>
-                        <div class="product-stock">
-                            {% if product.stock > 0 %}
-                                ✅ متوفر ({{ product.stock }} بالمخزون)
-                            {% else %}
-                                ❌ غير متوفر
-                            {% endif %}
+                        <div class="product-price">{{ p.price }} ريال</div>
+                        <div class="product-stock {{ 'stock-ok' if p.stock > 0 else 'stock-out' }}">
+                            {% if p.stock > 0 %}✅ متوفر ({{ p.stock }}){% else %}❌ غير متوفر{% endif %}
                         </div>
-                        <div class="product-buttons">
-                            <button class="btn-details" onclick="viewProductDetails({{ product.id }})">📋 التفاصيل</button>
-                            <button class="btn-add" onclick="addToCart({{ product.id }})" {% if product.stock <= 0 %}disabled{% endif %}>🛒 أضف للسلة</button>
+                        <div class="product-actions">
+                            <button class="btn-details" onclick="viewDetails({{ p.id }})">📋 تفاصيل</button>
+                            <button class="btn-cart" onclick="addToCart({{ p.id }})" {% if p.stock <= 0 %}disabled{% endif %}>🛒 أضف</button>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
-    </main>
+    </section>
 
-    <!-- قسم الشات -->
+    <!-- ===== الفوتر ===== -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 FASHION HUB. جميع الحقوق محفوظة.</p>
+            <p>📞 +966-XX-XXXXX | 📧 store@fashionhub.com</p>
+        </div>
+    </footer>
+
+    <!-- ===== الشات ===== -->
     <div id="chatPanel" class="chat-panel">
         <div class="chat-header">
-            <h3>💬 تحدث مع البائع كارم</h3>
-            <div class="chat-header-buttons">
-                <button onclick="minimizeChat()" class="chat-header-btn" title="تصغير">⏬</button>
-                <button onclick="maximizeChat()" class="chat-header-btn" title="تكبير">⏫</button>
-                <button onclick="closeChatWithPrompt()" class="close-btn">✕</button>
+            <h3>💬 كارم - مساعد المتجر</h3>
+            <div class="chat-header-btns">
+                <button class="chat-header-btn" onclick="minimizeChat()" title="تصغير">⏬</button>
+                <button class="chat-header-btn" onclick="maximizeChat()" title="تكبير">⏫</button>
+                <button class="chat-header-btn" onclick="closeChatWithPrompt()" title="إغلاق">✕</button>
             </div>
         </div>
-        <div class="chat-messages" id="chatMessages">
-            <!-- الرسائل ستظهر هنا -->
-        </div>
+        <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
-            <input 
-                type="text" 
-                id="messageInput" 
-                placeholder="اكتب رسالتك..." 
-                class="chat-input"
-                onkeypress="handleChatKeypress(event)"
-            >
-            <button onclick="sendMessage()" class="chat-send-btn">📤 إرسال</button>
+            <input type="text" class="chat-input" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKeypress(event)">
+            <button class="chat-send" onclick="sendMessage()">📤 إرسال</button>
         </div>
     </div>
 
-    <!-- زر الشات العائم (الأساسي) -->
-    <button id="chat-button" class="chat-toggle-btn" onclick="toggleChat()">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="28" height="28">
-        <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-        <circle cx="12" cy="13" r="1.5" fill="#FFC107"/>
-      </svg>
+    <!-- ===== زر الشات ===== -->
+    <button id="chatButton" class="chat-btn" onclick="toggleChat()">
+        💬
+        <span class="chat-badge">1</span>
     </button>
 
-    <!-- أيقونة الشات المصغرة (تظهر عند التصغير) -->
-    <div id="chatMinimizedIcon" class="chat-minimized-icon" onclick="restoreChat()" style="display: none;">
-        <span class="minimized-icon-badge" id="minimizedBadge">1</span>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="32" height="32">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            <circle cx="12" cy="13" r="1.5" fill="#FFC107"/>
-        </svg>
+    <!-- ===== أيقونة الشات المصغر ===== -->
+    <div id="chatMini" class="chat-mini" onclick="restoreChat()">
+        💬
+        <span class="chat-badge">1</span>
     </div>
 
-    <!-- نافذة السلة -->
+    <!-- ===== مودال السلة ===== -->
     <div id="cartModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="closeCart()">&times;</span>
+            <button class="modal-close" onclick="closeCart()">&times;</button>
             <h2>🛒 سلة التسوق</h2>
-            
-            <div id="cartItems" class="cart-items">
-                <!-- عناصر السلة ستظهر هنا -->
-            </div>
-            
+            <div id="cartItems" class="cart-items"></div>
             <div class="cart-summary">
                 <h3>الإجمالي: <span id="cartTotal">0</span> ريال</h3>
             </div>
-            
-            <div id="checkoutSection" style="margin-top: 20px;">
-                <h3>بيانات الشراء:</h3>
-                <input 
-                    type="text" 
-                    id="customerName" 
-                    placeholder="اسمك الكامل" 
-                    class="input-field"
-                >
-                <input 
-                    type="text" 
-                    id="customerPhone" 
-                    placeholder="رقم الهاتف" 
-                    class="input-field"
-                >
-                <input 
-                    type="email" 
-                    id="customerEmail" 
-                    placeholder="البريد الإلكتروني (اختياري)" 
-                    class="input-field"
-                >
-                <button onclick="checkoutCart()" class="checkout-btn">✅ إتمام الشراء</button>
+            <div id="checkoutSection" style="margin-top:16px;">
+                <h3 style="font-size:16px;margin-bottom:12px;color:var(--text);">📋 بيانات الشراء:</h3>
+                <input type="text" id="customerName" class="input-field" placeholder="الاسم الكامل">
+                <input type="text" id="customerPhone" class="input-field" placeholder="رقم الهاتف">
+                <input type="text" id="customerEmail" class="input-field" placeholder="العنوان (اختياري)">
+                <button class="checkout-btn" onclick="checkoutCart()">✅ إتمام الشراء</button>
             </div>
         </div>
     </div>
 
-    <!-- نافذة تفاصيل المنتج -->
+    <!-- ===== مودال تفاصيل المنتج ===== -->
     <div id="productModal" class="modal">
-        <div class="modal-content product-detail-modal">
-            <span class="close" onclick="closeProductModal()">&times;</span>
-            <div id="productDetail">
-                <!-- تفاصيل المنتج ستظهر هنا -->
-            </div>
+        <div class="modal-content" style="max-width:800px;">
+            <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
+            <div id="productDetail"></div>
         </div>
     </div>
 
-    <!-- نافذة تأكيد الخروج مع خيار تحميل PDF -->
+    <!-- ===== مودال الخروج من الشات ===== -->
     <div id="exitChatModal" class="modal">
-        <div class="modal-content exit-chat-modal">
-            <div class="exit-chat-icon">💬</div>
-            <h3>هل ترغب في تحميل المحادثة قبل الخروج؟</h3>
-            <p class="exit-chat-desc">سيتم مسح المحادثة بعد التحميل للحفاظ على خصوصيتك</p>
-            <div class="exit-chat-buttons">
-                <button onclick="downloadChatAsPDF()" class="exit-btn exit-btn-pdf">
-                    <span class="exit-btn-icon">📥</span>
+        <div class="modal-content exit-modal">
+            <div class="exit-icon">💬</div>
+            <h3>هل ترغب في تحميل المحادثة؟</h3>
+            <p class="exit-desc">سيتم مسح المحادثة بعد التحميل للحفاظ على خصوصيتك</p>
+            <div class="exit-btns">
+                <button class="exit-btn exit-btn-pdf" onclick="downloadChatAsPDF()">
+                    <span style="font-size:22px;">📥</span>
                     تحميل PDF
                 </button>
-                <button onclick="clearChatAndExit()" class="exit-btn exit-btn-delete">
-                    <span class="exit-btn-icon">🗑️</span>
+                <button class="exit-btn exit-btn-del" onclick="clearChatAndExit()">
+                    <span style="font-size:22px;">🗑️</span>
                     مسح وخروج
                 </button>
             </div>
-            <button onclick="cancelExitChat()" class="exit-btn-cancel">إلغاء</button>
+            <button class="exit-cancel" onclick="cancelExitChat()">إلغاء</button>
         </div>
     </div>
-
-    <!-- التذييل (Footer) -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2026 متجر الملابس. جميع الحقوق محفوظة. | مرحباً بك في متجرنا الإلكتروني</p>
-            <p>☎️ اتصل بنا: +966-XX-XXXXX | 📧 البريد: store@clothing.com</p>
-        </div>
-    </footer>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>

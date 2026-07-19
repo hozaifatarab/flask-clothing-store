@@ -2,39 +2,135 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>اعدادات الحساب</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإعدادات - FASHION HUB</title>
     <style>
-        body{font-family: Arial; background:#f5f5f5; padding:30px}
-       .box{background:white; padding:25px; border-radius:10px; max-width:420px; margin:auto; box-shadow:0 0 10px #ddd}
-        input{width:100%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:5px}
-        button{background:#28a745; color:white; border:none; padding:12px; width:100%; border-radius:5px; cursor:pointer; font-size:16px}
-        button:hover{background:#218838}
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #0F0E17, #1A1932);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .settings-box {
+            background: #1A1932;
+            border: 1px solid #2A2955;
+            border-radius: 20px;
+            padding: 40px;
+            width: 420px;
+            max-width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .settings-icon {
+            text-align: center;
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .settings-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 800;
+            color: #E0E0E0;
+            margin-bottom: 6px;
+        }
+        .settings-sub {
+            text-align: center;
+            color: #8888AA;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .msg {
+            padding: 12px 16px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 16px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .msg-success { background: rgba(0,184,148,0.15); border: 1px solid rgba(0,184,148,0.3); color: #00B894; }
+        .msg-error { background: rgba(255,107,107,0.15); border: 1px solid rgba(255,107,107,0.3); color: #FF6B6B; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            color: #8888AA;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #2A2955;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.05);
+            color: #E0E0E0;
+            font-size: 15px;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #6C5CE7;
+            box-shadow: 0 0 0 3px rgba(108,92,231,0.1);
+        }
+        .form-group input::placeholder { color: #555; }
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00B894, #00A381);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Tajawal', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,184,148,0.4); }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #6C5CE7;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .back-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-<div class="box">
-    <h2>⚙️ تغيير بيانات الدخول</h2>
-    
-    {% if message %}
-    <div style="padding: 12px; margin-bottom: 15px; border-radius: 8px; background: {% if message_type == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; color: {% if message_type == 'success' %}#155724{% else %}#721c24{% endif %}; border: 2px solid {% if message_type == 'success' %}#c3e6cb{% else %}#f5c6cb{% endif %}; font-weight: bold; text-align: center;">
-        {% if message_type == 'success' %}✅{% else %}❌{% endif %} {{ message }}
+    <div class="settings-box">
+        <div class="settings-icon">⚙️</div>
+        <div class="settings-title">الإعدادات</div>
+        <div class="settings-sub">تغيير بيانات الدخول</div>
+        
+        {% if message %}
+        <div class="msg msg-{{ message_type }}">{{ '✅' if message_type == 'success' else '❌' }} {{ message }}</div>
+        {% endif %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label>اسم المستخدم الجديد</label>
+                <input type="text" name="new_username" placeholder="أدخل اسم المستخدم" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة السر الحالية</label>
+                <input type="password" name="old_password" placeholder="أدخل كلمة السر الحالية" required>
+            </div>
+            <div class="form-group">
+                <label>كلمة السر الجديدة</label>
+                <input type="password" name="new_password" placeholder="أدخل كلمة السر الجديدة" required>
+            </div>
+            <button type="submit" class="save-btn">💾 حفظ التغييرات</button>
+        </form>
+        
+        <a href="/admin" class="back-link">← الرجوع للوحة التحكم</a>
     </div>
-    {% endif %}
-    
-    <form method="POST">
-        <label>اسم المستخدم الجديد:</label>
-        <input type="text" name="new_username" required>
-
-        <label>كلمة السر الحالية:</label>
-        <input type="password" name="old_password" required>
-
-        <label>كلمة السر الجديدة:</label>
-        <input type="password" name="new_password" required>
-
-        <button type="submit">حفظ التغييرات</button>
-    </form>
-    <br>
-    <a href="/admin">← الرجوع للوحة التحكم</a>
-</div>
 </body>
 </html>
