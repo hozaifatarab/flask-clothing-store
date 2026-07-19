@@ -63,6 +63,18 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     background: rgba(15, 14, 23, 0.95);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
+    position: relative;
+}
+
+.navbar::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), var(--primary), transparent);
+    opacity: 0.5;
 }
 
 .nav-inner {
@@ -169,6 +181,27 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     top: 0;
     z-index: 1000;
     backdrop-filter: blur(20px);
+    position: relative;
+}
+
+.modern-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), var(--accent), var(--primary), transparent);
+}
+
+.modern-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 5%;
+    right: 5%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(108, 92, 231, 0.3), transparent);
 }
 
 .modern-header h1 {
@@ -194,6 +227,16 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     position: relative;
 }
 
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), var(--primary), transparent);
+}
+
 .hero::after {
     content: '';
     position: absolute;
@@ -203,6 +246,37 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     width: 200px;
     height: 2px;
     background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+
+/* Decorative corner ornaments for hero */
+.hero .corner-ornament {
+    position: absolute;
+    font-size: 18px;
+    color: var(--primary);
+    opacity: 0.3;
+}
+
+.hero .corner-ornament.top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.hero .corner-ornament.top-left {
+    top: 20px;
+    left: 20px;
+    transform: scaleX(-1);
+}
+
+.hero .corner-ornament.bottom-right {
+    bottom: 20px;
+    right: 20px;
+    transform: scaleY(-1);
+}
+
+.hero .corner-ornament.bottom-left {
+    bottom: 20px;
+    left: 20px;
+    transform: scale(-1, -1);
 }
 
 .hero h1 {
@@ -242,11 +316,31 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     font-weight: 600;
     transition: var(--transition);
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.cat-pill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50px;
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    opacity: 0;
+    transition: var(--transition);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+}
+
+.cat-pill:hover::before {
+    opacity: 1;
 }
 
 .cat-pill:hover {
     background: rgba(108, 92, 231, 0.1);
-    border-color: var(--primary);
+    border-color: transparent;
     color: var(--text);
 }
 
@@ -255,6 +349,10 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     border-color: var(--primary);
     color: white;
     box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
+}
+
+.cat-pill.active::before {
+    opacity: 0;
 }
 
 /* ===== Search ===== */
@@ -267,6 +365,25 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     gap: 10px;
     max-width: 600px;
     margin: 0 auto;
+    position: relative;
+}
+
+.search-box::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 53px;
+    background: linear-gradient(135deg, var(--primary), transparent 40%, transparent 60%, var(--secondary));
+    opacity: 0;
+    transition: var(--transition);
+    z-index: -1;
+}
+
+.search-box:focus-within::before {
+    opacity: 0.3;
 }
 
 .search-input {
@@ -293,6 +410,23 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     font-weight: 700;
     transition: var(--transition);
     white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s ease;
+}
+
+.search-btn:hover::before {
+    left: 100%;
 }
 
 .search-btn:hover {
@@ -321,6 +455,45 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     position: relative;
 }
 
+.product-card::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--primary), transparent 30%, transparent 70%, var(--secondary));
+    opacity: 0;
+    transition: var(--transition);
+    z-index: -1;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    padding: 2px;
+}
+
+.product-card:hover::before {
+    opacity: 1;
+}
+
+.product-card::after {
+    content: '✦';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 10px;
+    color: var(--primary);
+    opacity: 0;
+    transition: var(--transition);
+    transform: rotate(0deg);
+}
+
+.product-card:hover::after {
+    opacity: 0.6;
+    transform: rotate(180deg);
+}
+
 .product-card:hover {
     transform: translateY(-6px);
     border-color: var(--primary);
@@ -332,6 +505,23 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     height: 240px;
     overflow: hidden;
     background: #111;
+}
+
+.product-img-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent), var(--primary));
+    background-size: 200% 100%;
+    animation: shimmerBorder 3s linear infinite;
+}
+
+@keyframes shimmerBorder {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 200% 0%; }
 }
 
 .product-img-wrap img {
@@ -473,6 +663,24 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     animation: slideUp 0.3s ease;
 }
 
+.chat-panel::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--primary), transparent 40%, transparent 60%, var(--accent));
+    opacity: 0.15;
+    z-index: -1;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    padding: 2px;
+    pointer-events: none;
+}
+
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -495,6 +703,17 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     padding: 14px 16px;
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
+    position: relative;
+}
+
+.chat-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 5%;
+    right: 5%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
 }
 
 .chat-header h3 {
@@ -630,6 +849,22 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     transition: var(--transition);
     z-index: 999;
     animation: pulse 2s infinite;
+    position: relative;
+}
+
+.chat-btn::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    opacity: 0;
+    transition: var(--transition);
+    z-index: -1;
+}
+
+.chat-btn:hover::before {
+    opacity: 0.5;
 }
 
 @keyframes pulse {
@@ -653,6 +888,7 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px solid var(--bg-dark);
 }
 
 /* ===== Chat Minimized ===== */
@@ -673,6 +909,22 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
     z-index: 999;
     transition: var(--transition);
+    position: relative;
+}
+
+.chat-mini::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+    opacity: 0;
+    transition: var(--transition);
+    z-index: -1;
+}
+
+.chat-mini:hover::before {
+    opacity: 0.5;
 }
 
 .chat-mini:hover { transform: scale(1.1); }
@@ -708,6 +960,66 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     animation: modalIn 0.3s ease;
+    position: relative;
+}
+
+.modal-content::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, var(--primary), transparent 30%, transparent 70%, var(--secondary));
+    opacity: 0.2;
+    z-index: -1;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    padding: 2px;
+    pointer-events: none;
+}
+
+/* Decorative corner diamonds for modal */
+.modal-content .modal-corner {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--primary);
+    opacity: 0.3;
+}
+
+.modal-content .modal-corner.tl {
+    top: 8px;
+    left: 8px;
+    border-right: none;
+    border-bottom: none;
+    border-radius: 2px 0 0 0;
+}
+
+.modal-content .modal-corner.tr {
+    top: 8px;
+    right: 8px;
+    border-left: none;
+    border-bottom: none;
+    border-radius: 0 2px 0 0;
+}
+
+.modal-content .modal-corner.bl {
+    bottom: 8px;
+    left: 8px;
+    border-right: none;
+    border-top: none;
+    border-radius: 0 0 0 2px;
+}
+
+.modal-content .modal-corner.br {
+    bottom: 8px;
+    right: 8px;
+    border-left: none;
+    border-top: none;
+    border-radius: 0 0 2px 0;
 }
 
 @keyframes modalIn {
@@ -750,6 +1062,18 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     border-radius: var(--radius-sm);
     margin-bottom: 8px;
     border-right: 3px solid var(--primary);
+    position: relative;
+    overflow: hidden;
+}
+
+.cart-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(108, 92, 231, 0.2), transparent);
 }
 
 .cart-item-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
@@ -798,6 +1122,18 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     padding: 16px;
     text-align: center;
     margin-top: 16px;
+    position: relative;
+    border: 1px solid rgba(108, 92, 231, 0.15);
+}
+
+.cart-summary::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
 }
 
 .cart-summary h3 { font-size: 18px; color: var(--accent); }
@@ -828,6 +1164,23 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     font-weight: 700;
     transition: var(--transition);
     margin-top: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.checkout-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s ease;
+}
+
+.checkout-btn:hover::before {
+    left: 100%;
 }
 
 .checkout-btn:hover {
@@ -847,6 +1200,17 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     border-radius: var(--radius-sm);
     overflow: hidden;
     background: #111;
+    position: relative;
+}
+
+.detail-img::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
 }
 
 .detail-img img {
@@ -866,6 +1230,18 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     border-radius: var(--radius-sm);
     padding: 14px;
     margin-bottom: 16px;
+    position: relative;
+    border: 1px solid rgba(108, 92, 231, 0.1);
+}
+
+.detail-specs::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
 }
 
 .spec-row {
@@ -891,9 +1267,31 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     transition: var(--transition);
 }
 
-.btn-add-cart { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+.btn-add-cart { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; position: relative; overflow: hidden; }
+.btn-add-cart::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s ease;
+}
+.btn-add-cart:hover::before { left: 100%; }
 .btn-add-cart:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3); }
-.btn-wishlist { background: rgba(108, 92, 231, 0.1); color: var(--accent); border: 1px solid rgba(253, 121, 168, 0.2) !important; }
+.btn-wishlist { background: rgba(108, 92, 231, 0.1); color: var(--accent); border: 1px solid rgba(253, 121, 168, 0.2) !important; position: relative; overflow: hidden; }
+.btn-wishlist::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(253, 121, 168, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+.btn-wishlist:hover::before { left: 100%; }
 .btn-wishlist:hover { background: rgba(253, 121, 168, 0.15); }
 
 /* ===== Exit Chat Modal ===== */
@@ -902,10 +1300,32 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 .exit-modal h3 { font-size: 18px; margin-bottom: 8px; border: none !important; justify-content: center; }
 .exit-desc { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
 .exit-btns { display: flex; gap: 12px; justify-content: center; margin-bottom: 12px; }
-.exit-btn { flex: 1; padding: 14px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 14px; transition: var(--transition); display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.exit-btn { flex: 1; padding: 14px; border-radius: var(--radius-sm); border: none; font-weight: 700; font-size: 14px; transition: var(--transition); display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; overflow: hidden; }
 .exit-btn-pdf { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+.exit-btn-pdf::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s ease;
+}
+.exit-btn-pdf:hover::before { left: 100%; }
 .exit-btn-pdf:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4); }
 .exit-btn-del { background: var(--danger); color: white; }
+.exit-btn-del::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s ease;
+}
+.exit-btn-del:hover::before { left: 100%; }
 .exit-btn-del:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4); }
 .exit-cancel { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 30px; border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; transition: var(--transition); }
 .exit-cancel:hover { border-color: var(--primary); color: var(--text); }
@@ -925,6 +1345,18 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     animation: alertIn 0.3s ease;
     min-width: 280px;
     text-align: center;
+    position: relative;
+}
+
+.alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px 2px 0 0;
 }
 
 @keyframes alertIn {
@@ -946,6 +1378,31 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     color: var(--text-muted);
     font-size: 14px;
     margin-top: 40px;
+    position: relative;
+}
+
+.footer::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--primary), var(--secondary), var(--accent), var(--primary), transparent);
+    border-radius: 2px;
+}
+
+.footer::after {
+    content: '✦ ✦ ✦';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-dark);
+    padding: 0 16px;
+    color: var(--primary);
+    font-size: 10px;
+    letter-spacing: 6px;
 }
 
 .footer p { margin: 6px 0; }
@@ -980,6 +1437,26 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     display: flex;
     align-items: center;
     gap: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.menu-toggle::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    padding: 2px;
+    background: linear-gradient(135deg, #D4AF37, #FFD700, #D4AF37);
+    opacity: 0;
+    transition: var(--transition);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+}
+
+.menu-toggle:hover::before {
+    opacity: 1;
 }
 
 .menu-toggle:hover {
@@ -1002,6 +1479,31 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     flex-direction: column;
     padding-top: 80px;
     transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #D4AF37, #FFD700, #D4AF37);
+    background-size: 200% 100%;
+    animation: shimmerBorder 3s linear infinite;
+}
+
+.sidebar::after {
+    content: '✦ ✦ ✦';
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #D4AF37;
+    font-size: 10px;
+    letter-spacing: 8px;
+    opacity: 0.3;
 }
 
 .sidebar.active {
@@ -1020,6 +1522,21 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     border-bottom: 1px solid rgba(212, 175, 55, 0.1);
     transition: all 0.3s ease;
     font-family: 'Tajawal', sans-serif;
+    position: relative;
+}
+
+.sidebar a::before {
+    content: '◆';
+    position: absolute;
+    right: 8px;
+    font-size: 6px;
+    color: #D4AF37;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.sidebar a:hover::before {
+    opacity: 0.5;
 }
 
 .sidebar a:hover {
