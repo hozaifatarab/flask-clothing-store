@@ -8,6 +8,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
+    <!-- ===== زر القائمة الجانبية ===== -->
+    <button class="menu-toggle" onclick="toggleMenu()">☰ القائمة</button>
+
+    <!-- ===== القائمة الجانبية ===== -->
+    <div id="sidebar" class="sidebar">
+        <a href="/">🏠 الرئيسية</a>
+        <a href="/men">👔 رجالي</a>
+        <a href="/women">👗 نسائي</a>
+        <a href="/shoes">👟 احذية</a>
+    </div>
+
+    <!-- ===== خلفية القائمة ===== -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
+
+    <script>
+    function toggleMenu() {
+        document.getElementById("sidebar").classList.toggle("active");
+        document.getElementById("sidebarOverlay").classList.toggle("active");
+    }
+    </script>
+
     <!-- ===== الهيدر الجديد ===== -->
     <header class="modern-header">
         <h1>FASHION HUB</h1>
