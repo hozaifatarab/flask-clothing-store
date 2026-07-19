@@ -267,6 +267,16 @@ def api_create_order():
     
     conn = get_db()
     c = conn.cursor()
+    
+    # التحقق من المخزون المتوفر
+    for item in items:
+        product = c.execute('SELECT stock FROM products WHERE id = ?', (item['id'],)).fetchone()
+        if not product:
+            return jsonify({'error': f'المنتج رقم {item["id"]} غير موجود'}), 400
+        qty = item.get('quantity', 1)
+        if product['stock'] < qty:
+            return jsonify({'error': f'الكمية المطلوبة من "{item.get("name", "")}" غير متوفرة (المتوفر: {product["stock"]})'}), 400
+    
     c.execute('INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, status, items, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
               (name, phone, address, total, 'pending', json.dumps(items), datetime.now().isoformat()))
     order_id = c.lastrowid
@@ -320,6 +330,7 @@ def admin_settings():
 
 # ==================== API الإدارة ====================
 @app.route('/api/admin/products', methods=['GET', 'POST'])
+@login_required
 def api_admin_products():
     if request.method == 'GET':
         conn = get_db()
@@ -358,6 +369,7 @@ def api_admin_products():
     return jsonify(dict(c.fetchone()))
 
 @app.route('/api/admin/products/<int:pid>', methods=['PUT', 'DELETE'])
+@login_required
 def api_admin_product(pid):
     conn = get_db()
     c = conn.cursor()
@@ -398,6 +410,7 @@ def api_admin_product(pid):
     return jsonify(dict(c.fetchone()))
 
 @app.route('/api/admin/orders')
+@login_required
 def api_admin_orders():
     conn = get_db()
     orders = conn.cursor().execute('SELECT * FROM orders ORDER BY created_at DESC').fetchall()
@@ -409,6 +422,7 @@ def api_admin_orders():
     return jsonify(result)
 
 @app.route('/api/admin/orders/<int:oid>/status', methods=['PUT'])
+@login_required
 def api_update_order_status(oid):
     status = request.get_json().get('status')
     if status not in ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled']:
@@ -449,7 +463,10 @@ def search_products_db(query):
                     'بكم', 'كام', 'كم']
     q = query
     for w in remove_words:
-        q = q.replace(w, '')
+        # استبدل الكلمة بمسافة للحفاظ على حدود الكلمات
+        q = q.replace(w, ' ')
+    # إزالة المسافات الزائدة
+    q = ' '.join(q.split())
     q = q.strip()
     
     if len(q) < 2:

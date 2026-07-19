@@ -352,9 +352,12 @@
             fd.append('stock', parseInt(document.getElementById('pStock').value) || 0);
             fd.append('category', document.getElementById('pCat').value);
             const file = document.getElementById('pImage').files[0];
-            if (file) fd.append('image', file);
             const url = document.getElementById('pImageUrl').value.trim();
-            if (url) fd.append('image', url);
+            if (file) {
+                fd.append('image', file);
+            } else if (url) {
+                fd.append('image', url);
+            }
             
             try {
                 const res = await fetch('/api/admin/products', { method: 'POST', body: fd });
@@ -405,9 +408,12 @@
             fd.append('stock', parseInt(document.getElementById('editStock').value) || 0);
             fd.append('category', document.getElementById('editCat').value);
             const file = document.getElementById('editImage').files[0];
-            if (file) fd.append('image', file);
             const url = document.getElementById('editImageUrl').value.trim();
-            if (url) fd.append('image', url);
+            if (file) {
+                fd.append('image', file);
+            } else if (url) {
+                fd.append('image', url);
+            }
             
             try {
                 const res = await fetch(`/api/admin/products/${id}`, { method: 'PUT', body: fd });

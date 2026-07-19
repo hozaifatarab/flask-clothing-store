@@ -250,7 +250,7 @@ function updateTotal() {
 async function checkoutCart() {
     const name = document.getElementById('customerName')?.value.trim();
     const phone = document.getElementById('customerPhone')?.value.trim();
-    const email = document.getElementById('customerEmail')?.value.trim() || '';
+    const address = document.getElementById('customerEmail')?.value.trim() || '';
     
     if (!name || !phone) { showAlert('يرجى إدخال الاسم والهاتف', 'error'); return; }
     if (cart.length === 0) { showAlert('السلة فارغة', 'error'); return; }
@@ -263,7 +263,7 @@ async function checkoutCart() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 customer_name: name, customer_phone: phone,
-                customer_address: email, items: cart, total_price: total
+                customer_address: address, items: cart, total_price: total
             })
         });
         const data = await res.json();
