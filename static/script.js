@@ -297,14 +297,14 @@ async function loadChat() {
 
 async function sendAutoGreeting() {
     try {
-        const res = await fetch('/api/smart-response', {
+        const res = await fetch('/api/bot-reply', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: 'سلام' })
         });
         if (res.ok) {
             const data = await res.json();
-            const msg = data.reply + (data.html_cards || '');
+            const msg = data.reply;
             await fetch('/api/messages/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -326,10 +326,13 @@ function displayChat(msgs) {
     
     div.innerHTML = msgs.map(m => {
         const isAdmin = m.sender === 'كارم';
+        // تحويل النص إلى HTML مع دعم الأسطر الجديدة
+        const formattedMsg = (m.message || '').replace(/\n/g, '<br>');
         return `
         <div class="message ${isAdmin ? 'message-admin' : 'message-user'}">
             <div class="message-bubble">
-                ${m.message}
+                <div class="message-text">${formattedMsg}</div>
+                ${m.html_cards ? `<div class="chat-products-container">${m.html_cards}</div>` : ''}
                 <div class="message-time">${m.timestamp ? new Date(m.timestamp).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
             </div>
         </div>`;
@@ -377,20 +380,21 @@ async function sendMessage() {
         });
         if (res.ok) {
             if (input) input.value = '';
-            // رد ذكي
+            // رد ذكي مع عرض المنتجات
             try {
-                const aiRes = await fetch('/api/smart-response', {
+                const botRes = await fetch('/api/bot-reply', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
                 });
-                if (aiRes.ok) {
-                    const data = await aiRes.json();
-                    const reply = data.reply + (data.html_cards || '');
+                if (botRes.ok) {
+                    const data = await botRes.json();
+                    const reply = data.reply;
+                    const htmlCards = data.html_cards || '';
                     await fetch('/api/messages/admin', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: reply, session_id: 'default' })
+                        body: JSON.stringify({ message: reply, html_cards: htmlCards, session_id: 'default' })
                     });
                 }
             } catch (e) {}

@@ -10,6 +10,7 @@ from datetime import datetime
 import os
 from functools import wraps
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from products import products as products_seed
 from dotenv import load_dotenv
 
@@ -83,14 +84,23 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS admin_credentials (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         username TEXT NOT NULL DEFAULT 'admin',
-        password TEXT NOT NULL DEFAULT 'admin123'
+        password TEXT NOT NULL DEFAULT ''
     )''')
     
     # Admin default
     c.execute('SELECT COUNT(*) as cnt FROM admin_credentials')
     if c.fetchone()['cnt'] == 0:
+        hashed = generate_password_hash('admin123')
         c.execute('INSERT INTO admin_credentials (id, username, password) VALUES (1, ?, ?)',
-                  ('admin', 'admin123'))
+                  ('admin', hashed))
+    else:
+        # ترقية كلمة المرور الحالية إذا كانت غير مشفرة
+        c.execute('SELECT password, username FROM admin_credentials WHERE id = 1')
+        row = c.fetchone()
+        if row and not row['password'].startswith('scrypt:'):
+            new_hash = generate_password_hash(row['password'])
+            c.execute('UPDATE admin_credentials SET password = ? WHERE id = 1', (new_hash,))
+            print(f"[OK] Upgraded password for user '{row['username']}' to hashed format")
     
     # Seed products
     c.execute('SELECT COUNT(*) as cnt FROM products')
@@ -114,14 +124,14 @@ with app.app_context():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def get_admin_password():
+def get_admin_credentials():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute('SELECT password FROM admin_credentials WHERE id = 1')
+    c.execute('SELECT username, password FROM admin_credentials WHERE id = 1')
     row = c.fetchone()
     conn.close()
-    return row['password'] if row else None
+    return dict(row) if row else None
 
 def login_required(f):
     @wraps(f)
@@ -135,13 +145,24 @@ def login_required(f):
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
+        username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+        
         env_pass = os.environ.get('ADMIN_PASSWORD')
-        db_pass = get_admin_password()
-        if password == env_pass or password == db_pass:
+        credentials = get_admin_credentials()
+        
+        # التحقق من كلمة السر المشفرة
+        if credentials and username == credentials['username']:
+            if check_password_hash(credentials['password'], password):
+                session['logged_in'] = True
+                return redirect(url_for('admin'))
+        
+        # التحقق من متغير البيئة (للتوافق مع الإصدارات السابقة)
+        if env_pass and password == env_pass:
             session['logged_in'] = True
             return redirect(url_for('admin'))
-        flash('كلمة السر غير صحيحة')
+        
+        flash('اسم المستخدم أو كلمة السر غير صحيحة')
     return render_template('admin_login.html')
 
 @app.route('/admin/logout')
@@ -242,6 +263,7 @@ def api_admin_message():
     data = request.get_json()
     message = data.get('message', '').strip()
     session_id = data.get('session_id', 'default')
+    html_cards = data.get('html_cards', '')
     if not message:
         return jsonify({'error': 'فارغة'}), 400
     conn = get_db()
@@ -250,7 +272,10 @@ def api_admin_message():
               (session_id, 'كارم', message, datetime.now().isoformat()))
     conn.commit()
     c.execute('SELECT * FROM messages WHERE id = ?', (c.lastrowid,))
-    return jsonify(dict(c.fetchone()))
+    msg = dict(c.fetchone())
+    if html_cards:
+        msg['html_cards'] = html_cards
+    return jsonify(msg)
 
 # ==================== API الطلبات ====================
 @app.route('/api/orders', methods=['POST'])
@@ -320,10 +345,11 @@ def admin_settings():
             admin = c.fetchone()
             if not admin:
                 msg, msg_type = 'خطأ في النظام', 'error'
-            elif admin['password'] != old_pass:
+            elif not check_password_hash(admin['password'], old_pass):
                 msg, msg_type = 'كلمة السر الحالية غير صحيحة', 'error'
             else:
-                c.execute('UPDATE admin_credentials SET username = ?, password = ? WHERE id = 1', (username, new_pass))
+                new_hash = generate_password_hash(new_pass)
+                c.execute('UPDATE admin_credentials SET username = ?, password = ? WHERE id = 1', (username, new_hash))
                 conn.commit()
                 msg, msg_type = 'تم التحديث بنجاح', 'success'
     return render_template('admin_settings.html', message=msg, message_type=msg_type)
@@ -432,7 +458,258 @@ def api_update_order_status(oid):
     conn.commit()
     return jsonify({'success': True})
 
-# ==================== الشات الذكي ====================
+# ==================== دوال مساعدة للبوت ====================
+def product_card_html(p):
+    """توليد HTML لبطاقة منتج واحدة"""
+    return f'''
+    <div class="chat-product-card">
+        <img src="{p.get('image','')}" alt="{p.get('name','')}" class="chat-product-img" onerror="this.src='https://via.placeholder.com/80?text=?'">
+        <div class="chat-product-info">
+            <div class="chat-product-name">{p.get('name','')}</div>
+            <div class="chat-product-desc">{p.get('description','')[:60]}{'...' if len(p.get('description','')) > 60 else ''}</div>
+            <div class="chat-product-price">{p.get('price',0)} ريال</div>
+            <div class="chat-product-stock">{'✅ متوفر' if p.get('stock',0) > 0 else '❌ غير متوفر'}</div>
+        </div>
+    </div>'''
+
+def search_products_in_db(query):
+    """البحث عن منتجات في قاعدة البيانات"""
+    conn = get_db()
+    c = conn.cursor()
+    
+    # كلمات يجب إزالتها من الاستعلام
+    remove_words = ['عاوز', 'عايز', 'دلني', 'وريني', 'شوف', 'ارني', 'اقترح',
+                    'عندك', 'في', 'متوفر', 'ال', 'هو', 'دا', 'ده', 'دي',
+                    'بكم', 'كام', 'كم', 'شنو', 'ايش', 'ماذا', 'و', 'او', 'من']
+    q = query
+    for w in remove_words:
+        q = q.replace(w, ' ')
+    q = ' '.join(q.split())
+    q = q.strip()
+    
+    if len(q) < 2:
+        return None
+    
+    # كلمات مفتاحية للمنتجات
+    keywords = {
+        'قميص': 'قميص', 'كتان': 'كتان', 'رمادي': 'رمادي', 'بولو': 'بولو',
+        'اسود': 'اسود', 'جينز': 'جينز', 'ازرق': 'ازرق', 'رسمي': 'رسمي',
+        'ابيض': 'ابيض', 'حذاء': 'حذاء', 'بني': 'بني', 'رياضي': 'رياضي',
+        'فستان': 'فستان', 'احمر': 'احمر', 'زفاف': 'زفاف', 'سهرة': 'سهرة',
+        'صيفي': 'صيفي', 'مشجر': 'مشجر', 'عمل': 'عمل', 'اوفيس': 'عمل',
+        'بوت': 'بوت', 'صندل': 'صندل', 'كعب': 'كعب', 'عالي': 'عالي',
+        'رجالي': 'رجالي', 'نسائي': 'نسائي', 'شبابي': 'رجالي', 'بنات': 'نسائي',
+        'دريس': 'فستان', 'شوز': 'حذاء', 'هودي': 'هودي', 'تيشرت': 'تيشرت',
+        'جاكيت': 'جاكيت', 'بلوزة': 'بلوزة', 'عباية': 'عباية', 'بدلة': 'بدلة',
+        'تنورة': 'تنورة', 'بلايزر': 'بلايزر', 'حزام': 'حزام', 'جمبسوت': 'جمبسوت',
+        'اطفال': 'اطفال', 'بيبي': 'اطفال', 'ولادي': 'رجالي', 'حريمي': 'نسائي',
+    }
+    
+    terms = []
+    for word in q.split():
+        terms.append(keywords.get(word, word))
+    
+    search_text = ' '.join(terms)
+    
+    try:
+        c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? LIMIT 5',
+                  (f'%{search_text}%', f'%{search_text}%'))
+        products = c.fetchall()
+        
+        if not products:
+            for term in terms:
+                if len(term) > 1:
+                    c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? LIMIT 3',
+                              (f'%{term}%', f'%{term}%'))
+                    products = c.fetchall()
+                    if products:
+                        break
+        
+        if products:
+            return [dict(p) for p in products]
+    except:
+        return None
+    return None
+
+def get_products_by_category(cat):
+    """جلب المنتجات حسب الفئة"""
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND stock > 0', (cat,)).fetchall()
+    return [dict(p) for p in products] if products else None
+
+# ==================== النظام الجديد للبوت (getBotReply) مع عرض المنتجات ====================
+def getBotReply(msg):
+    msg = msg.lower().strip()
+    
+    # 1. تحية
+    if msg == 'السلام عليكم' or msg == 'سلام' or msg == 'عليكم السلام':
+        return {'reply': 'وعليكم السلام ورحمة الله وبركاته 🌙\nمرحبا بيك في FASHION HUB. كيف اقدر اخدمك؟', 'products': [], 'html_cards': ''}
+    if msg in ['مرحبا', 'هلا', 'hi', 'hello', 'اهلا', 'أهلا']:
+        return {'reply': 'وعليكم السلام 👋 نورت FASHION HUB. كيف اقدر اخدمك؟', 'products': [], 'html_cards': ''}
+    if any(w in msg for w in ['سلام', 'مرحبا', 'هلا', 'hi', 'hello']):
+        return {'reply': 'وعليكم السلام 👋 نورت FASHION HUB. كيف اقدر اخدمك؟', 'products': [], 'html_cards': ''}
+    
+    # 2. اسعار
+    if any(w in msg for w in ['سعر', 'بكم', 'سعرو', 'price', 'قروش']):
+        return {'reply': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟', 'products': [], 'html_cards': ''}
+    
+    # 3. توصيل
+    if any(w in msg for w in ['توصيل', 'شحن', 'يصل', 'امدرمان', 'الخرطوم', 'الولايات']):
+        return {'reply': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام', 'products': [], 'html_cards': ''}
+    
+    # 4. مقاسات
+    if any(w in msg for w in ['مقاس', 'size', 's', 'm', 'l', 'xl', 'xxl']):
+        return {'reply': 'متوفر كل المقاسات من S لحد XXL 👕 وريني المنتج بتأكد ليك المقاس', 'products': [], 'html_cards': ''}
+    
+    # 5. دفع
+    if any(w in msg for w in ['دفع', 'بنكك', 'كاش', 'تحويل', 'باي']):
+        return {'reply': 'متاح: كاش عند الاستلام او تحويل بنك او فوري', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - فساتين
+    if any(w in msg for w in ['فستان', 'فساتين', 'dress']):
+        products = get_products_by_category('نسائي')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الفساتين المتوفرة عندنا 🔥:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تشوف تفاصيل اكتر؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'عندنا فساتين سهرة، كاجوال، اطفال 🔥 بتبدأ من 25,000. ارسل ليك صور؟', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - تيشرتات
+    if any(w in msg for w in ['تيشرت', 'بلوزة', 'قميص', 'shirt']):
+        products = search_products_in_db(msg)
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "تيشرتات وبلوزات متوفرة 👕:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'تيشرتات قطن 100% ب 15,000 - 20,000. الوان كتيرة ومقاسات كلها', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - بناطيل
+    if any(w in msg for w in ['بنطلون', 'جينز', 'pants', 'jeans']):
+        products = search_products_in_db(msg)
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "البناطيل المتوفرة 👖:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'جينز وكلاسيك ورياضي. السعر من 18,000. رجالي ونسائي', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - عبايات وطرح
+    if any(w in msg for w in ['عباية', 'طرحة']):
+        products = search_products_in_db(msg)
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "العبايات والطرح المتوفرة:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'متوفر عبايات وطرح تركية. الاسعار من 20,000 جنيه', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - اطفال
+    if any(w in msg for w in ['اطفال', 'بيبي']):
+        products = get_products_by_category('اطفال')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "ملابس الاطفال المتوفرة 👶:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه', 'products': [], 'html_cards': ''}
+    
+    # 7. جودة وخامة
+    if any(w in msg for w in ['خامة', 'قماش', 'جودة', 'اصلي']):
+        return {'reply': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع', 'products': [], 'html_cards': ''}
+    
+    # 8. عروض
+    if any(w in msg for w in ['عرض', 'تخفيض', 'خصم', 'sale']):
+        return {'reply': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع', 'products': [], 'html_cards': ''}
+    
+    # 9. مرتجع واستبدال
+    if any(w in msg for w in ['مرتجع', 'ترجيع', 'استبدال', 'مشكلة']):
+        return {'reply': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب', 'products': [], 'html_cards': ''}
+    
+    # 10. متجر ومعلومات
+    if any(w in msg for w in ['وين', 'محل', 'متجر', 'location']):
+        return {'reply': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان', 'products': [], 'html_cards': ''}
+    
+    # 11. رقم/اتصال
+    if any(w in msg for w in ['رقم', 'اتصل', 'تواصل', 'واتس', 'call', 'phone', 'تلفون']):
+        return {'reply': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً', 'products': [], 'html_cards': ''}
+    
+    # 12. وقت العمل
+    if any(w in msg for w in ['دوام', 'مواعيد', 'مفتوح', 'ساعات']):
+        return {'reply': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة', 'products': [], 'html_cards': ''}
+    
+    # 13. بحث عن منتجات - رجالي
+    if any(w in msg for w in ['رجالي', 'رجال', 'شبابي']):
+        products = get_products_by_category('رجالي')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الملابس الرجالية المتوفرة 👔:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+    
+    # 13. بحث عن منتجات - نسائي
+    if any(w in msg for w in ['نسائي', 'نساء', 'بنات', 'حريم']):
+        products = get_products_by_category('نسائي')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الملابس النسائية المتوفرة 👗:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+    
+    # 13. بحث عن منتجات - احذية
+    if any(w in msg for w in ['احذية', 'حذاء', 'شوز', 'boots', 'sneakers']):
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT * FROM products WHERE name LIKE '%حذاء%' OR name LIKE '%بوت%' OR name LIKE '%صندل%' OR name LIKE '%كعب%'")
+        products = [dict(p) for p in c.fetchall()]
+        if not products:
+            products = get_products_by_category('رجالي') or []
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الاحذية المتوفرة عندنا 👟:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+    
+    # 14. بحث عام في قاعدة البيانات
+    result = search_products_in_db(msg)
+    if result:
+        cards = ''.join([product_card_html(p) for p in result])
+        reply = "لقيتلك المنتجات دي ✅:\n"
+        for p in result:
+            reply += f"\n• {p['name']}: {p['price']} ريال - {p.get('description','')[:40]}"
+        reply += "\n\nتحب تطلب حاجة؟"
+        return {'reply': reply, 'products': result, 'html_cards': cards}
+    
+    # 15. افتراضي
+    return {'reply': 'ما فهمت سؤالك 😅 قولي عاوز تشوف شنو؟ عندنا تيشرتات، فساتين، بناطيل، عبايات واكسسوارات. او اتصل بينا 249127599044', 'products': [], 'html_cards': ''}
+
+@app.route('/api/bot-reply', methods=['POST'])
+def api_bot_reply():
+    data = request.get_json()
+    msg = data.get('message', '')
+    if not msg:
+        return jsonify({'error': 'فارغة'}), 400
+    result = getBotReply(msg)
+    return jsonify(result)
+
+# ==================== الشات الذكي (النظام القديم) ====================
 def load_responses():
     path = os.path.join(os.path.dirname(__file__), 'responses.json')
     if os.path.exists(path):
@@ -463,9 +740,7 @@ def search_products_db(query):
                     'بكم', 'كام', 'كم']
     q = query
     for w in remove_words:
-        # استبدل الكلمة بمسافة للحفاظ على حدود الكلمات
         q = q.replace(w, ' ')
-    # إزالة المسافات الزائدة
     q = ' '.join(q.split())
     q = q.strip()
     
@@ -515,18 +790,6 @@ def get_products_by_cat(cat):
     conn = get_db()
     products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND stock > 0', (cat,)).fetchall()
     return [dict(p) for p in products] if products else None
-
-def product_card_html(p):
-    return f'''
-    <div style="display:flex;align-items:flex-start;background:white;border-radius:12px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);gap:12px;margin-top:8px;direction:rtl;">
-        <img src="{p.get('image','')}" alt="{p.get('name','')}" style="width:80px;height:80px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.src='https://via.placeholder.com/80?text=?'">
-        <div style="flex:1;">
-            <div style="font-weight:bold;font-size:14px;margin-bottom:4px;">{p.get('name','')}</div>
-            <div style="color:#D32F2F;font-weight:bold;font-size:15px;margin-bottom:4px;">{p.get('price',0)} ريال</div>
-            <div style="font-size:11px;color:#666;line-height:1.4;">{p.get('description','')}</div>
-            <div style="font-size:11px;margin-top:4px;">{"✅ متوفر" if p.get('stock',0) > 0 else "❌ غير متوفر"}</div>
-        </div>
-    </div>'''
 
 @app.route('/api/smart-response', methods=['POST'])
 def api_smart_response():
