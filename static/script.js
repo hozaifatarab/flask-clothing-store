@@ -304,7 +304,7 @@ async function sendAutoGreeting() {
         });
         if (res.ok) {
             const data = await res.json();
-            const msg = data.reply;
+            const msg = data.text || data.reply || '';
             await fetch('/api/messages/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -364,45 +364,12 @@ async function toggleChat() {
 }
 
 function handleChatKeypress(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
 }
 
+// الدالة القديمة - نحولها للجديدة عشان التوافق
 async function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const text = input?.value.trim();
-    if (!text) { showAlert('اكتب الرسالة', 'warning'); return; }
-    
-    try {
-        const res = await fetch('/api/messages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sender: 'زبون', message: text, session_id: 'default' })
-        });
-        if (res.ok) {
-            if (input) input.value = '';
-            // رد ذكي مع عرض المنتجات
-            try {
-                const botRes = await fetch('/api/bot-reply', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
-                });
-                if (botRes.ok) {
-                    const data = await botRes.json();
-                    const reply = data.reply;
-                    const htmlCards = data.html_cards || '';
-                    await fetch('/api/messages/admin', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: reply, html_cards: htmlCards, session_id: 'default' })
-                    });
-                }
-            } catch (e) {}
-            loadChat();
-        }
-    } catch (e) {
-        showAlert('خطأ في الإرسال', 'error');
-    }
+    sendMsg();
 }
 
 // ===== تحجيم الشات =====
@@ -546,6 +513,104 @@ function showAlert(msg, type = 'info') {
         a.style.transition = '0.3s';
         setTimeout(() => a.remove(), 300);
     }, 3000);
+}
+
+// ===== دوال الشات الجديدة (text + products) =====
+async function sendMsg() {
+    let input = document.getElementById('messageInput');
+    let msg = input.value.trim();
+    if(msg === '') return;
+    
+    // أضف رسالة المستخدم
+    addMessage({text: msg}, 'user');
+    input.value = '';
+    
+    // احفظ رسالة المستخدم في قاعدة البيانات (للتوافق مع النظام القديم)
+    try {
+        await fetch('/api/messages', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({sender: 'زبون', message: msg, session_id: 'default'})
+        });
+    } catch(e) {}
+    
+    // اتصل بالبوت
+    try {
+        let res = await fetch('/api/bot-reply', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({message: msg})
+        });
+        let data = await res.json();
+        
+        // اعرض رد البوت
+        addMessage(data, 'bot');
+        
+        // احفظ رد البوت في قاعدة البيانات
+        let botText = data.text || '';
+        try {
+            await fetch('/api/messages/admin', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: botText, html_cards: '', session_id: 'default'})
+            });
+        } catch(e) {}
+    } catch(e) {
+        addMessage({text: 'عذراً، حصل خطأ. حاول تاني', products: []}, 'bot');
+    }
+}
+
+function addMessage(data, sender) {
+    let chat = document.getElementById('chatMessages');
+    if (!chat) return;
+    
+    let div = document.createElement('div');
+    div.className = sender === 'user' ? 'message message-user' : 'message message-admin';
+    
+    let bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    
+    // النص
+    let textDiv = document.createElement('div');
+    textDiv.className = 'message-text';
+    textDiv.innerHTML = (data.text || '').replace(/\n/g, '<br>');
+    bubble.appendChild(textDiv);
+    
+    // المنتجات
+    if (data.products && data.products.length > 0) {
+        let productsContainer = document.createElement('div');
+        productsContainer.className = 'chat-products-container';
+        
+        data.products.forEach(p => {
+            let card = document.createElement('div');
+            card.className = 'chat-product-item-card';
+            card.innerHTML = `
+                <img src="${p.image || ''}" alt="${p.name || ''}" 
+                     onerror="this.src='https://via.placeholder.com/70?text=?'">
+                <div class="chat-product-item-info">
+                    <h5>${p.name || ''}</h5>
+                    <p class="chat-product-item-price">${p.price || 0} جنيه</p>
+                    <button onclick="orderProduct('${(p.name || '').replace(/'/g, "\\'")}')">اطلب هسي</button>
+                </div>`;
+            productsContainer.appendChild(card);
+        });
+        
+        bubble.appendChild(productsContainer);
+    }
+    
+    div.appendChild(bubble);
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+function orderProduct(name) {
+    // أضف رسالة الطلب
+    addMessage({text: 'عايز اطلب ' + name}, 'user');
+    
+    // أضف رد التأكيد
+    setTimeout(() => {
+        addMessage({text: 'تم استلام طلبك لـ ' + name + ' 💚 حنتواصل معاك واتساب', products: []}, 'bot');
+    }, 800);
 }
 
 // حفظ السلة عند الإغلاق

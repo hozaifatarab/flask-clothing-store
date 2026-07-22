@@ -108,8 +108,8 @@
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input-area">
-            <input type="text" class="chat-input" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="handleChatKeypress(event)">
-            <button class="chat-send" onclick="sendMessage()">📤 إرسال</button>
+            <input type="text" class="chat-input" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter'){event.preventDefault();sendMsg()}">
+            <button class="chat-send" onclick="sendMsg()">📤 إرسال</button>
         </div>
     </div>
 
