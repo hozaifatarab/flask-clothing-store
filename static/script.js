@@ -342,24 +342,23 @@ function displayChat(msgs) {
 }
 
 async function toggleChat() {
-    const panel = document.getElementById('chatPanel');
-    const btn = document.getElementById('chatButton');
-    const mini = document.getElementById('chatMini');
-    if (!panel) return;
+    let box = document.getElementById('chatPanel');
+    let btn = document.querySelector('.chat-btn');
     
-    if (mini?.style.display === 'flex') { restoreChat(); return; }
-    
-    panel.classList.toggle('active');
-    if (panel.classList.contains('active')) {
-        if (btn) btn.style.display = 'none';
-        if (mini) mini.style.display = 'none';
+    if (box.style.display === 'flex' || box?.classList.contains('active')) {
+        box.classList.remove('active');
+        box.style.display = 'none';
+    } else {
+        box.style.display = 'flex';
+        box.classList.add('active');
+        if (btn) btn.innerHTML = '💬';
         if (!chatInitialized) { chatInitialized = true; await sendAutoGreeting(); }
+        const mini = document.getElementById('chatMini');
+        if (mini) mini.style.display = 'none';
         setTimeout(() => {
             const msgs = document.getElementById('chatMessages');
             if (msgs) msgs.scrollTop = msgs.scrollHeight;
         }, 200);
-    } else {
-        if (btn) btn.style.display = 'flex';
     }
 }
 

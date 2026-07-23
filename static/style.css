@@ -1635,3 +1635,7 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     .product-price { font-size: 16px; }
     .product-actions { flex-direction: column; gap: 6px; }
 }
+
+/* ===== إخفاء الإشعارات بشكل نهائي ===== */
+.chat-btn{position:relative}
+.badge{display:none !important;}
