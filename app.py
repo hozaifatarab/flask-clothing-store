@@ -22,7 +22,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 DATABASE = 'products.db'
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'store-secret-key-2026')
+app.secret_key = os.environ.get('SECRET_KEY', 'fashionhub_secret_2026')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 CORS(app)
@@ -459,6 +459,84 @@ def api_update_order_status(oid):
     return jsonify({'success': True})
 
 # ==================== دوال مساعدة للبوت ====================
+PRODUCTS_STATIC = {
+    'فستان': [
+        {'name':'فستان سهرة احمر', 'price':'35,000', 'image':'/static/images/dress1.jpg'},
+        {'name':'فستان كاجوال ابيض', 'price':'28,000', 'image':'/static/images/dress2.jpg'}
+    ],
+    'تيشرت': [
+        {'name':'تيشرت قطن اسود', 'price':'15,000', 'image':'/static/images/tshirt1.jpg'},
+        {'name':'تيشرت مطبوع', 'price':'20,000', 'image':'/static/images/tshirt2.jpg'}
+    ],
+    'بنطلون': [
+        {'name':'بنطلون جينز', 'price':'22,000', 'image':'/static/images/jeans1.jpg'}
+    ]
+}
+
+def get_bot_response(msg):
+    """النظام الذكي الجديد - بفهم الجملة كاملة وبحفظ بيانات الزبون"""
+    msg = msg.lower()
+    name = session.get('name', '')
+    
+    # حفظ اسم الزبون
+    if 'اسمي' in msg:
+        session['name'] = msg.split('اسمي')[-1].strip()
+        return {'text': f'تشرفت بيك يا {session["name"]} 💚', 'products': []}
+    
+    # عايز حاجة رخيصة
+    if 'عايز' in msg and 'رخيص' in msg:
+        cheap = [PRODUCTS_STATIC['تيشرت'][0]]
+        return {'text': 'دي ارخص القطع عندنا حاليا 👇', 'products': cheap}
+    
+    # فستان سهرة - مناسبة
+    if 'سهرة' in msg or 'عيد' in msg or 'مناسبة' in msg:
+        return {'text': 'دي تشكيلة السهرات الفخمة عندنا', 'products': PRODUCTS_STATIC['فستان']}
+    
+    # بحث في المنتجات الثابتة
+    for key in PRODUCTS_STATIC:
+        if key in msg:
+            return {'text': f'لقيت ليك {key} ظابطة 👇', 'products': PRODUCTS_STATIC[key]}
+    
+    # توصيل - لازم يكون قبل السعر عشان جمل زي "التوصيل بكم"
+    if any(x in msg for x in ['توصيل', 'شحن']):
+        return {'text': 'توصيل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الدفع كاش او بنك', 'products': []}
+    
+    # اسعار
+    if any(x in msg for x in ['سعر', 'بكم']):
+        return {'text': 'اسعارنا: تيشرت 15,000 | فستان 28,000 | بنطلون 22,000 جنيه', 'products': []}
+    
+    # دفع
+    if any(x in msg for x in ['دفع', 'بنك', 'كاش']):
+        return {'text': 'الدفع كاش عند الاستلام او تحويل بنكي', 'products': []}
+    
+    # مقاسات
+    if any(x in msg for x in ['مقاس', 'size', 's', 'm', 'l', 'xl']):
+        return {'text': 'متوفر كل المقاسات من S لحد XXL 👕 قولي المنتج عشان أتأكد ليك', 'products': []}
+    
+    # تحية - مع الاسم لو موجود
+    if any(x in msg for x in ['مرحبا', 'هلا', 'السلام', 'سلام', 'hi', 'hello']):
+        greeting = f'وعليكم السلام {name} 👋' if name else 'وعليكم السلام 👋'
+        return {'text': f'{greeting} كيف اقدر اخدمك اليوم؟', 'products': []}
+    
+    # عرض/تخفيض
+    if any(x in msg for x in ['عرض', 'تخفيض', 'خصم']):
+        return {'text': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا!', 'products': []}
+    
+    # جودة
+    if any(x in msg for x in ['خامة', 'جودة', 'اصلي']):
+        return {'text': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ✅', 'products': []}
+    
+    # استبدال
+    if any(x in msg for x in ['استبدال', 'مرتجع', 'ترجيع']):
+        return {'text': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي 🔄', 'products': []}
+    
+    # اتصال
+    if any(x in msg for x in ['رقم', 'اتصل', 'واتس', 'تلفون']):
+        return {'text': '📞 تواصل معانا: 249127599044 واتساب', 'products': []}
+    
+    # ما فهمت
+    return {'text': 'ما فهمت قصدك 😅 ممكن تقول: وريني فساتين, عايز حاجة رخيصة, التوصيل بكم', 'products': []}
+
 def product_card_html(p):
     """توليد HTML لبطاقة منتج واحدة"""
     return f'''
@@ -890,8 +968,12 @@ def api_bot_reply():
     msg = data.get('message', '')
     if not msg:
         return jsonify({'error': 'فارغة'}), 400
-    # استخدم النظام الجديد الذي يقرأ المنتجات من قاعدة البيانات
-    return get_bot_reply_with_products(msg)
+    # استخدم النظام الذكي الجديد - بفهم الجملة وبحفظ بيانات الزبون
+    result = get_bot_response(msg)
+    return jsonify({
+        'text': result['text'],
+        'products': result['products']
+    })
 
 # ==================== الشات الذكي (النظام القديم) ====================
 def load_responses():
