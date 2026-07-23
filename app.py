@@ -459,6 +459,83 @@ def api_update_order_status(oid):
     return jsonify({'success': True})
 
 # ==================== دوال مساعدة للبوت ====================
+PRODUCTS_STATIC = {
+    'فستان': [
+        {'name':'فستان سهرة احمر', 'price':'35,000', 'image':'/static/images/dress1.jpg'},
+        {'name':'فستان كاجوال ابيض', 'price':'28,000', 'image':'/static/images/dress2.jpg'}
+    ],
+    'تيشرت': [
+        {'name':'تيشرت قطن اسود', 'price':'15,000', 'image':'/static/images/tshirt1.jpg'},
+        {'name':'تيشرت مطبوع', 'price':'20,000', 'image':'/static/images/tshirt2.jpg'}
+    ],
+    'بنطلون': [
+        {'name':'بنطلون جينز', 'price':'22,000', 'image':'/static/images/jeans1.jpg'}
+    ]
+}
+
+def get_bot_response(msg):
+    """النظام الذكي الجديد - بفهم الجملة كاملة وبحفظ بيانات الزبون"""
+    msg = msg.lower()
+    name = session.get('name', '')
+    
+    # حفظ اسم الزبون
+    if 'اسمي' in msg:
+        session['name'] = msg.split('اسمي')[-1].strip()
+        return {'text': f'تشرفت بيك يا {session["name"]} 💚', 'products': []}
+    
+    # عايز حاجة رخيصة
+    if 'عايز' in msg and 'رخيص' in msg:
+        cheap = [PRODUCTS_STATIC['تيشرت'][0]]
+        return {'text': 'دي ارخص القطع عندنا حاليا 👇', 'products': cheap}
+    
+    # فستان سهرة - مناسبة
+    if 'سهرة' in msg or 'عيد' in msg or 'مناسبة' in msg:
+        return {'text': 'دي تشكيلة السهرات الفخمة عندنا', 'products': PRODUCTS_STATIC['فستان']}
+    
+    # بحث في المنتجات الثابتة
+    for key in PRODUCTS_STATIC:
+        if key in msg:
+            return {'text': f'لقيت ليك {key} ظابطة 👇', 'products': PRODUCTS_STATIC[key]}
+    
+    # توصيل - لازم يكون قبل السعر عشان جمل زي "التوصيل بكم"
+    if any(x in msg for x in ['توصيل', 'شحن']):
+        return {'text': 'توصيل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الدفع كاش او بنك', 'products': []}
+    
+    # اسعار
+    if any(x in msg for x in ['سعر', 'بكم']):
+        return {'text': 'اسعارنا: تيشرت 15,000 | فستان 28,000 | بنطلون 22,000 جنيه', 'products': []}
+    
+    # دفع
+    if any(x in msg for x in ['دفع', 'بنك', 'كاش']):
+        return {'text': 'الدفع كاش عند الاستلام او تحويل بنكي', 'products': []}
+    
+    # مقاسات
+    if any(x in msg for x in ['مقاس', 'size', 's', 'm', 'l', 'xl']):
+        return {'text': 'متوفر كل المقاسات من S لحد XXL 👕 قولي المنتج عشان أتأكد ليك', 'products': []}
+    
+    # تحية - مع الاسم لو موجود
+    if any(x in msg for x in ['مرحبا', 'هلا', 'السلام', 'سلام', 'hi', 'hello']):
+        greeting = f'وعليكم السلام {name} 👋' if name else 'وعليكم السلام 👋'
+        return {'text': f'{greeting} كيف اقدر اخدمك اليوم؟', 'products': []}
+    
+    # عرض/تخفيض
+    if any(x in msg for x in ['عرض', 'تخفيض', 'خصم']):
+        return {'text': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا!', 'products': []}
+    
+    # جودة
+    if any(x in msg for x in ['خامة', 'جودة', 'اصلي']):
+        return {'text': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ✅', 'products': []}
+    
+    # استبدال
+    if any(x in msg for x in ['استبدال', 'مرتجع', 'ترجيع']):
+        return {'text': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي 🔄', 'products': []}
+    
+    # اتصال
+    if any(x in msg for x in ['رقم', 'اتصل', 'واتس', 'تلفون']):
+        return {'text': '📞 تواصل معانا: 249127599044 واتساب', 'products': []}
+    
+    # ما فهمت
+    return {'text': 'ما فهمت قصدك 😅 ممكن تقول: وريني فساتين, عايز حاجة رخيصة, التوصيل بكم', 'products': []}
 
 def product_card_html(p):
     """توليد HTML لبطاقة منتج واحدة"""
@@ -535,128 +612,173 @@ def search_products_in_db(query):
 def get_products_by_category(cat):
     """جلب المنتجات حسب الفئة"""
     conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', (cat,)).fetchall()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND stock > 0', (cat,)).fetchall()
     return [dict(p) for p in products] if products else None
 
-# ==================== النظام الجديد للبوت (الرئيسي) ====================
-@app.route('/api/chat', methods=['POST'])
-def api_chat():
-    """النظام الموحد للشات - يقرأ من قاعدة البيانات ويعرض المنتجات بالصور والبيانات"""
-    data = request.get_json()
-    msg = data.get('message', '')
-    if not msg:
-        return jsonify({'error': 'فارغة'}), 400
+# ==================== النظام الجديد للبوت يقرأ من قاعدة البيانات ====================
+def get_bot_reply_with_products(msg):
+    """نظام جديد: يقرأ المنتجات من قاعدة البيانات ويرجعها بالشكل text + products"""
+    msg = msg.lower().strip()
     
-    msg_lower = msg.lower().strip()
-    conn = get_db()
-    c = conn.cursor()
-    
-    # 1. تحية
-    if any(w in msg_lower for w in ['السلام عليكم', 'سلام', 'مرحبا', 'هلا', 'اهلا', 'أهلا', 'hi', 'hello']):
+    # تحية
+    if msg in ['السلام عليكم', 'سلام', 'عليكم السلام', 'مرحبا', 'هلا', 'hi', 'hello', 'اهلا', 'أهلا']:
         return jsonify({
-            'text': 'وعليكم السلام ورحمة الله وبركاته 🌙\nمرحبا بيك في FASHION HUB 🛍️\nمعاك كارم 😊\n\nعندنا تشكيلة حلوة:\n👔 رجالي: قمصان، بولو، جينز، بدل\n👗 نسائي: فساتين، عبايات، بلوزات\n👟 احذية: كعب عالي، رياضي، صنادل\n⌚ اكسسوارات\n\nقولي عاوز تشوف شنو بالضبط؟',
+            'text': 'وعليكم السلام ورحمة الله وبركاته 🌙\nمرحبا بيك في FASHION HUB. كيف اقدر اخدمك؟',
+            'products': []
+        })
+    if any(w in msg for w in ['سلام', 'مرحبا', 'هلا', 'hi', 'hello']):
+        return jsonify({
+            'text': 'وعليكم السلام 👋 نورت FASHION HUB. كيف اقدر اخدمك؟',
             'products': []
         })
     
-    # 2. ردود ثابتة (معلومات المتجر) - مرتبة حسب طول الكلمة المفتاحية (الأطول أولاً)
-    static_responses_raw = {
-        'توصيل': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
-        'شحن': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
-        'بكم التوصيل': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
-        'سعر': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
-        'بكم': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
-        'سعرو': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
-        'مقاس': 'متوفر كل المقاسات من S لحد XXL 👕 وريني المنتج بتأكد ليك المقاس',
-        'دفع': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
-        'بنكك': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
-        'تحويل': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
-        'خامة': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
-        'جودة': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
-        'اصلي': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
-        'عرض': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع',
-        'خصم': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع',
-        'مرتجع': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب 🔄',
-        'استبدال': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب 🔄',
-        'وين': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان 📍',
-        'محل': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان 📍',
-        'رقم': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
-        'واتس': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
-        'اتصل': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
-        'دوام': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة',
-        'مواعيد': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة',
-        'اطفال': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه',
-        'بيبي': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه',
+    # اسعار
+    if any(w in msg for w in ['سعر', 'بكم', 'سعرو', 'price', 'قروش']):
+        return jsonify({
+            'text': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
+            'products': []
+        })
+    
+    # توصيل
+    if any(w in msg for w in ['توصيل', 'شحن', 'يصل', 'امدرمان', 'الخرطوم', 'الولايات']):
+        return jsonify({
+            'text': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
+            'products': []
+        })
+    
+    # مقاسات
+    if any(w in msg for w in ['مقاس', 'size', 's', 'm', 'l', 'xl', 'xxl']):
+        return jsonify({
+            'text': 'متوفر كل المقاسات من S لحد XXL 👕 وريني المنتج بتأكد ليك المقاس',
+            'products': []
+        })
+    
+    # دفع
+    if any(w in msg for w in ['دفع', 'بنكك', 'كاش', 'تحويل', 'باي']):
+        return jsonify({
+            'text': 'متاح: كاش عند الاستلام او تحويل بنك او فوري',
+            'products': []
+        })
+    
+    # فساتين - تجيب من قاعدة البيانات
+    if any(w in msg for w in ['فستان', 'فساتين', 'dress', 'وريني فساتين']):
+        conn = get_db()
+        products = conn.cursor().execute("SELECT * FROM products WHERE category = ?", ('نسائي',)).fetchall()
+        if products:
+            products_list = [dict(p) for p in products]
+            return jsonify({
+                'text': 'دي احدث الفساتين عندنا 🔥:',
+                'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products_list]
+            })
+        return jsonify({
+            'text': 'عندنا فساتين سهرة، كاجوال، اطفال 🔥 بتبدأ من 25,000. ارسل ليك صور؟',
+            'products': []
+        })
+    
+    # رجالي
+    if any(w in msg for w in ['رجالي', 'رجال', 'شبابي']):
+        conn = get_db()
+        products = conn.cursor().execute("SELECT * FROM products WHERE category = ?", ('رجالي',)).fetchall()
+        if products:
+            products_list = [dict(p) for p in products]
+            return jsonify({
+                'text': 'الملابس الرجالية المتوفرة 👔:',
+                'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products_list]
+            })
+        return jsonify({'text': 'قسم الرجالي متوفر فيه قمصان، بناطيل، جواكيت واسعار من 15,000', 'products': []})
+    
+    # نسائي
+    if any(w in msg for w in ['نسائي', 'نساء', 'بنات', 'حريم']):
+        conn = get_db()
+        products = conn.cursor().execute("SELECT * FROM products WHERE category = ?", ('نسائي',)).fetchall()
+        if products:
+            products_list = [dict(p) for p in products]
+            return jsonify({
+                'text': 'الملابس النسائية المتوفرة 👗:',
+                'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products_list]
+            })
+        return jsonify({'text': 'قسم النسائي متوفر فيه فساتين، عبايات، بلوزات واسعار من 15,000', 'products': []})
+    
+    # احذية
+    if any(w in msg for w in ['احذية', 'حذاء', 'شوز', 'boots', 'sneakers']):
+        conn = get_db()
+        products = conn.cursor().execute("SELECT * FROM products WHERE category = ?", ('احذية',)).fetchall()
+        if products:
+            products_list = [dict(p) for p in products]
+            return jsonify({
+                'text': 'الاحذية المتوفرة عندنا 👟:',
+                'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products_list]
+            })
+        return jsonify({'text': 'قسم الاحذية متوفر فيه كعب عالي، رياضي، صنادل واسعار من 20,000', 'products': []})
+    
+    # عبايات وطرح
+    if any(w in msg for w in ['عباية', 'طرحة']):
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT * FROM products WHERE name LIKE '%عباية%' OR name LIKE '%طرحة%'")
+        products = [dict(p) for p in c.fetchall()]
+        if products:
+            return jsonify({
+                'text': 'العبايات والطرح المتوفرة:',
+                'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products]
+            })
+        return jsonify({'text': 'متوفر عبايات وطرح تركية. الاسعار من 20,000 جنيه', 'products': []})
+    
+    # بحث عام في قاعدة البيانات
+    conn = get_db()
+    c = conn.cursor()
+    # كلمات للبحث
+    keywords_map = {
+        'قميص': 'قميص', 'كتان': 'كتان', 'بولو': 'بولو',
+        'جينز': 'جينز', 'تيشرت': 'تيشرت', 'هودي': 'هودي',
+        'جاكيت': 'جاكيت', 'بلوزة': 'بلوزة', 'بدلة': 'بدلة',
+        'تنورة': 'تنورة', 'بلايزر': 'بلايزر', 'حزام': 'حزام',
+        'جمبسوت': 'جمبسوت', 'عباية': 'عباية', 'فستان': 'فستان',
     }
-    
-    # ترتيب حسب طول الكلمة (الأطول أولاً) لتجنب المشاكل مثل "بكم التوصيل" تطابق "بكم" قبل "توصيل"
-    static_responses = dict(sorted(static_responses_raw.items(), key=lambda x: len(x[0]), reverse=True))
-    
-    for keyword, response in static_responses.items():
-        if keyword in msg_lower:
-            return jsonify({'text': response, 'products': []})
-    
-    # 3. البحث عن منتجات حسب القسم
-    category_keywords = {
-        'رجالي': 'رجالي', 'رجال': 'رجالي', 'شبابي': 'رجالي', 'ولادي': 'رجالي',
-        'نسائي': 'نسائي', 'نساء': 'نسائي', 'بنات': 'نسائي', 'حريم': 'نسائي', 'حريمي': 'نسائي',
-        'احذية': 'احذية', 'حذاء': 'احذية', 'شوز': 'احذية',
-        'اكسسوارات': 'اكسسوارات', 'اكسسوار': 'اكسسوارات',
-    }
-    
-    for keyword, cat in category_keywords.items():
-        if keyword in msg_lower:
-            products = get_products_by_category(cat)
-            if products:
-                for p in products:
-                    if isinstance(p.get('price'), (int, float)):
-                        p['price_text'] = f"{int(p['price']):,}"
-                    else:
-                        p['price_text'] = str(p.get('price', 0))
-                if cat == 'رجالي':
-                    text = 'الملابس الرجالية المتوفرة 👔:'
-                elif cat == 'نسائي':
-                    text = 'الملابس النسائية المتوفرة 👗:'
-                elif cat == 'احذية':
-                    text = 'الاحذية المتوفرة عندنا 👟:'
-                else:
-                    text = 'الاكسسوارات المتوفرة ⌚:'
-                return jsonify({'text': text, 'products': products})
-            else:
-                return jsonify({'text': f'قسم {cat} متوفر فيه تشكيلة واسعة. اسعارنا من 15,000 جنيه', 'products': []})
-    
-    # 4. البحث بكلمة مفتاحية للمنتج
-    product_keywords = {
-        'فستان': 'فستان', 'فساتين': 'فستان', 'دريس': 'فستان',
-        'تيشرت': 'تيشرت', 'بلوزة': 'بلوزة', 'قميص': 'قميص',
-        'بنطلون': 'بنطلون', 'جينز': 'جينز', 'بناطيل': 'بنطلون',
-        'عباية': 'عباية', 'عبايات': 'عباية', 'طرحة': 'طرحة',
-        'جاكيت': 'جاكيت', 'هودي': 'هودي', 'بدلة': 'بدلة',
-        'تنورة': 'تنورة', 'بلايزر': 'بلايزر', 'جمبسوت': 'جمبسوت',
-        'حزام': 'حزام', 'بوت': 'بوت', 'صندل': 'صندل',
-        'كعب': 'كعب', 'بولو': 'بولو', 'كتان': 'كتان',
-    }
-    
-    for keyword, term in product_keywords.items():
-        if keyword in msg_lower:
-            c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ?) AND stock > 0 LIMIT 6",
+    for word, term in keywords_map.items():
+        if word in msg:
+            c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ?) AND stock > 0 LIMIT 5",
                       (f'%{term}%', f'%{term}%'))
             products = [dict(p) for p in c.fetchall()]
             if products:
-                for p in products:
-                    if isinstance(p.get('price'), (int, float)):
-                        p['price_text'] = f"{int(p['price']):,}"
-                    else:
-                        p['price_text'] = str(p.get('price', 0))
                 return jsonify({
                     'text': f'لقيتلك منتجات "{term}" ✅:',
-                    'products': products
+                    'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products]
                 })
     
-    # 5. بحث عام في قاعدة البيانات
+    # اكسسوارات
+    if any(w in msg for w in ['اكسسوارات', 'اكسسوار']):
+        conn = get_db()
+        products = conn.cursor().execute("SELECT * FROM products WHERE category = ?", ('اكسسوارات',)).fetchall()
+        if products:
+            products_list = [dict(p) for p in products]
+            return jsonify({
+                'text': 'الاكسسوارات المتوفرة ⌚:',
+                'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products_list]
+            })
+        return jsonify({'text': 'قسم الاكسسوارات متوفر فيه احزمة، ساعات، نظارات', 'products': []})
+    
+    # ردود ثابتة
+    if any(w in msg for w in ['خامة', 'قماش', 'جودة', 'اصلي']):
+        return jsonify({'text': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع', 'products': []})
+    if any(w in msg for w in ['عرض', 'تخفيض', 'خصم', 'sale']):
+        return jsonify({'text': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع', 'products': []})
+    if any(w in msg for w in ['مرتجع', 'ترجيع', 'استبدال', 'مشكلة']):
+        return jsonify({'text': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب', 'products': []})
+    if any(w in msg for w in ['وين', 'محل', 'متجر', 'location']):
+        return jsonify({'text': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان', 'products': []})
+    if any(w in msg for w in ['رقم', 'اتصل', 'تواصل', 'واتس', 'call', 'phone', 'تلفون']):
+        return jsonify({'text': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً', 'products': []})
+    if any(w in msg for w in ['دوام', 'مواعيد', 'مفتوح', 'ساعات']):
+        return jsonify({'text': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة', 'products': []})
+    if any(w in msg for w in ['اطفال', 'بيبي']):
+        return jsonify({'text': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه', 'products': []})
+    
+    # البحث بالاسم
     remove_words = ['عاوز', 'عايز', 'دلني', 'وريني', 'شوف', 'ارني', 'اقترح',
                     'عندك', 'في', 'متوفر', 'ال', 'هو', 'دا', 'ده', 'دي',
                     'بكم', 'كام', 'كم', 'شنو', 'ايش', 'ماذا', 'و', 'او', 'من']
-    q = msg_lower
+    q = msg
     for w in remove_words:
         q = q.replace(w, ' ')
     q = ' '.join(q.split()).strip()
@@ -666,21 +788,348 @@ def api_chat():
                   (f'%{q}%', f'%{q}%'))
         products = [dict(p) for p in c.fetchall()]
         if products:
-            for p in products:
-                if isinstance(p.get('price'), (int, float)):
-                    p['price_text'] = f"{int(p['price']):,}"
-                else:
-                    p['price_text'] = str(p.get('price', 0))
             return jsonify({
                 'text': 'لقيتلك المنتجات دي ✅:',
-                'products': products
+                'products': [{'name': p['name'], 'price': f"{int(p['price']):,}", 'image': p['image']} for p in products]
             })
     
-    # 6. افتراضي - ما فهمت
+    # افتراضي
     return jsonify({
-        'text': 'ما فهمت سؤالك 😅 قولي عاوز تشوف شنو؟\n\nعندنا:\n👔 رجالي (قمصان، تيشرتات، بناطيل، بدل)\n👗 نسائي (فساتين، عبايات، بلوزات)\n👟 احذية (كعب عالي، رياضي، صنادل)\n⌚ اكسسوارات\nاو اتصل بينا 249127599044',
+        'text': 'ما فهمت سؤالك 😅 قولي عاوز تشوف شنو؟ عندنا تيشرتات، فساتين، بناطيل، عبايات واكسسوارات. او اتصل بينا 249127599044',
         'products': []
     })
+
+# ==================== النظام القديم (getBotReply) مع عرض المنتجات ====================
+def getBotReply(msg):
+    msg = msg.lower().strip()
+    
+    # 1. تحية
+    if msg == 'السلام عليكم' or msg == 'سلام' or msg == 'عليكم السلام':
+        return {'reply': 'وعليكم السلام ورحمة الله وبركاته 🌙\nمرحبا بيك في FASHION HUB. كيف اقدر اخدمك؟', 'products': [], 'html_cards': ''}
+    if msg in ['مرحبا', 'هلا', 'hi', 'hello', 'اهلا', 'أهلا']:
+        return {'reply': 'وعليكم السلام 👋 نورت FASHION HUB. كيف اقدر اخدمك؟', 'products': [], 'html_cards': ''}
+    if any(w in msg for w in ['سلام', 'مرحبا', 'هلا', 'hi', 'hello']):
+        return {'reply': 'وعليكم السلام 👋 نورت FASHION HUB. كيف اقدر اخدمك؟', 'products': [], 'html_cards': ''}
+    
+    # 2. اسعار
+    if any(w in msg for w in ['سعر', 'بكم', 'سعرو', 'price', 'قروش']):
+        return {'reply': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟', 'products': [], 'html_cards': ''}
+    
+    # 3. توصيل
+    if any(w in msg for w in ['توصيل', 'شحن', 'يصل', 'امدرمان', 'الخرطوم', 'الولايات']):
+        return {'reply': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام', 'products': [], 'html_cards': ''}
+    
+    # 4. مقاسات
+    if any(w in msg for w in ['مقاس', 'size', 's', 'm', 'l', 'xl', 'xxl']):
+        return {'reply': 'متوفر كل المقاسات من S لحد XXL 👕 وريني المنتج بتأكد ليك المقاس', 'products': [], 'html_cards': ''}
+    
+    # 5. دفع
+    if any(w in msg for w in ['دفع', 'بنكك', 'كاش', 'تحويل', 'باي']):
+        return {'reply': 'متاح: كاش عند الاستلام او تحويل بنك او فوري', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - فساتين
+    if any(w in msg for w in ['فستان', 'فساتين', 'dress']):
+        products = get_products_by_category('نسائي')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الفساتين المتوفرة عندنا 🔥:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تشوف تفاصيل اكتر؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'عندنا فساتين سهرة، كاجوال، اطفال 🔥 بتبدأ من 25,000. ارسل ليك صور؟', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - تيشرتات
+    if any(w in msg for w in ['تيشرت', 'بلوزة', 'قميص', 'shirt']):
+        products = search_products_in_db(msg)
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "تيشرتات وبلوزات متوفرة 👕:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'تيشرتات قطن 100% ب 15,000 - 20,000. الوان كتيرة ومقاسات كلها', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - بناطيل
+    if any(w in msg for w in ['بنطلون', 'جينز', 'pants', 'jeans']):
+        products = search_products_in_db(msg)
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "البناطيل المتوفرة 👖:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'جينز وكلاسيك ورياضي. السعر من 18,000. رجالي ونسائي', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - عبايات وطرح
+    if any(w in msg for w in ['عباية', 'طرحة']):
+        products = search_products_in_db(msg)
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "العبايات والطرح المتوفرة:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'متوفر عبايات وطرح تركية. الاسعار من 20,000 جنيه', 'products': [], 'html_cards': ''}
+    
+    # 6. منتجات - اطفال
+    if any(w in msg for w in ['اطفال', 'بيبي']):
+        products = get_products_by_category('اطفال')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "ملابس الاطفال المتوفرة 👶:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+        return {'reply': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه', 'products': [], 'html_cards': ''}
+    
+    # 7. جودة وخامة
+    if any(w in msg for w in ['خامة', 'قماش', 'جودة', 'اصلي']):
+        return {'reply': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع', 'products': [], 'html_cards': ''}
+    
+    # 8. عروض
+    if any(w in msg for w in ['عرض', 'تخفيض', 'خصم', 'sale']):
+        return {'reply': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع', 'products': [], 'html_cards': ''}
+    
+    # 9. مرتجع واستبدال
+    if any(w in msg for w in ['مرتجع', 'ترجيع', 'استبدال', 'مشكلة']):
+        return {'reply': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب', 'products': [], 'html_cards': ''}
+    
+    # 10. متجر ومعلومات
+    if any(w in msg for w in ['وين', 'محل', 'متجر', 'location']):
+        return {'reply': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان', 'products': [], 'html_cards': ''}
+    
+    # 11. رقم/اتصال
+    if any(w in msg for w in ['رقم', 'اتصل', 'تواصل', 'واتس', 'call', 'phone', 'تلفون']):
+        return {'reply': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً', 'products': [], 'html_cards': ''}
+    
+    # 12. وقت العمل
+    if any(w in msg for w in ['دوام', 'مواعيد', 'مفتوح', 'ساعات']):
+        return {'reply': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة', 'products': [], 'html_cards': ''}
+    
+    # 13. بحث عن منتجات - رجالي
+    if any(w in msg for w in ['رجالي', 'رجال', 'شبابي']):
+        products = get_products_by_category('رجالي')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الملابس الرجالية المتوفرة 👔:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+    
+    # 13. بحث عن منتجات - نسائي
+    if any(w in msg for w in ['نسائي', 'نساء', 'بنات', 'حريم']):
+        products = get_products_by_category('نسائي')
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الملابس النسائية المتوفرة 👗:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+    
+    # 13. بحث عن منتجات - احذية
+    if any(w in msg for w in ['احذية', 'حذاء', 'شوز', 'boots', 'sneakers']):
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT * FROM products WHERE name LIKE '%حذاء%' OR name LIKE '%بوت%' OR name LIKE '%صندل%' OR name LIKE '%كعب%'")
+        products = [dict(p) for p in c.fetchall()]
+        if not products:
+            products = get_products_by_category('رجالي') or []
+        if products:
+            cards = ''.join([product_card_html(p) for p in products])
+            reply = "الاحذية المتوفرة عندنا 👟:\n"
+            for p in products:
+                reply += f"\n• {p['name']}: {p['price']} ريال"
+            reply += "\n\nتحب تطلب حاجة؟"
+            return {'reply': reply, 'products': products, 'html_cards': cards}
+    
+    # 14. بحث عام في قاعدة البيانات
+    result = search_products_in_db(msg)
+    if result:
+        cards = ''.join([product_card_html(p) for p in result])
+        reply = "لقيتلك المنتجات دي ✅:\n"
+        for p in result:
+            reply += f"\n• {p['name']}: {p['price']} ريال - {p.get('description','')[:40]}"
+        reply += "\n\nتحب تطلب حاجة؟"
+        return {'reply': reply, 'products': result, 'html_cards': cards}
+    
+    # 15. افتراضي
+    return {'reply': 'ما فهمت سؤالك 😅 قولي عاوز تشوف شنو؟ عندنا تيشرتات، فساتين، بناطيل، عبايات واكسسوارات. او اتصل بينا 249127599044', 'products': [], 'html_cards': ''}
+
+@app.route('/api/bot-reply', methods=['POST'])
+def api_bot_reply():
+    data = request.get_json()
+    msg = data.get('message', '')
+    if not msg:
+        return jsonify({'error': 'فارغة'}), 400
+    # استخدم النظام الذكي الجديد - بفهم الجملة وبحفظ بيانات الزبون
+    result = get_bot_response(msg)
+    return jsonify({
+        'text': result['text'],
+        'products': result['products']
+    })
+
+# ==================== الشات الذكي (النظام القديم) ====================
+def load_responses():
+    path = os.path.join(os.path.dirname(__file__), 'responses.json')
+    if os.path.exists(path):
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+RESPONSES = load_responses()
+
+def find_response(message):
+    if not RESPONSES:
+        return None
+    ml = message.lower()
+    for key, data in RESPONSES.items():
+        if key == 'default':
+            continue
+        for kw in data.get('keywords', []):
+            if kw in ml:
+                return data.get('response', '')
+    return None
+
+def search_products_db(query):
+    conn = get_db()
+    c = conn.cursor()
+    
+    remove_words = ['عاوز', 'عايز', 'دلني', 'وريني', 'شوف', 'ارني', 'اقترح',
+                    'عندك', 'في', 'متوفر', 'ال', 'هو', 'دا', 'ده', 'دي',
+                    'بكم', 'كام', 'كم']
+    q = query
+    for w in remove_words:
+        q = q.replace(w, ' ')
+    q = ' '.join(q.split())
+    q = q.strip()
+    
+    if len(q) < 2:
+        return None
+    
+    keywords = {
+        'قميص': 'قميص', 'كتان': 'كتان', 'رمادي': 'رمادي', 'بولو': 'بولو',
+        'اسود': 'اسود', 'جينز': 'جينز', 'ازرق': 'ازرق', 'رسمي': 'رسمي',
+        'ابيض': 'ابيض', 'حذاء': 'حذاء', 'بني': 'بني', 'رياضي': 'رياضي',
+        'فستان': 'فستان', 'احمر': 'احمر', 'زفاف': 'زفاف', 'سهرة': 'سهرة',
+        'صيفي': 'صيفي', 'مشجر': 'مشجر', 'عمل': 'عمل', 'اوفيس': 'عمل',
+        'بوت': 'بوت', 'صندل': 'صندل', 'كعب': 'كعب', 'عالي': 'عالي',
+        'رجالي': 'رجالي', 'نسائي': 'نسائي', 'شبابي': 'رجالي', 'بنات': 'نسائي',
+        'دريس': 'فستان', 'شوز': 'حذاء', 'هودي': 'هودي', 'تيشرت': 'تيشرت',
+        'جاكيت': 'جاكيت', 'بلوزة': 'بلوزة', 'عباية': 'عباية', 'بدلة': 'بدلة',
+        'تنورة': 'تنورة', 'بلايزر': 'بلايزر', 'حزام': 'حزام', 'جمبسوت': 'جمبسوت',
+    }
+    
+    terms = []
+    for word in q.split():
+        terms.append(keywords.get(word, word))
+    
+    search_text = ' '.join(terms)
+    
+    try:
+        c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? LIMIT 5',
+                  (f'%{search_text}%', f'%{search_text}%'))
+        products = c.fetchall()
+        
+        if not products:
+            for term in terms:
+                if len(term) > 1:
+                    c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? LIMIT 3',
+                              (f'%{term}%', f'%{term}%'))
+                    products = c.fetchall()
+                    if products:
+                        break
+        
+        if products:
+            return [dict(p) for p in products]
+    except:
+        return None
+    return None
+
+def get_products_by_cat(cat):
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND stock > 0', (cat,)).fetchall()
+    return [dict(p) for p in products] if products else None
+
+@app.route('/api/smart-response', methods=['POST'])
+def api_smart_response():
+    data = request.get_json()
+    msg = data.get('message', '')
+    if not msg:
+        return jsonify({'error': 'فارغة'}), 400
+    
+    ml = msg.lower()
+    
+    # 1. تحية
+    if any(w in ml for w in ['سلام', 'السلام عليكم', 'مرحبا', 'اهلا', 'hi', 'hello']):
+        reply = "وعليكم السلام ورحمة الله 👋\nمرحبا بيك في متجرنا 🛍️\nمعاك كارم 😊\n\nعندنا تشكيلة حلوة:\n👔 رجالي: قمصان، بولو، جينز، احذية\n👗 نسائي: فساتين، صنادل، بوت، كعب\n\nقولي عاوز تشوف شنو بالضبط؟\nتحب اطلبو ليك؟ او عندك سؤال تاني؟"
+        return jsonify({'reply': reply, 'products': [], 'html_cards': ''})
+    
+    # 2. ردود مسبقة
+    r = find_response(msg)
+    if r:
+        return jsonify({'reply': r, 'products': [], 'html_cards': ''})
+    
+    # 3. منتجات حسب الفئة
+    if any(w in ml for w in ['رجالي', 'رجال', 'شبابي']):
+        products = get_products_by_cat('رجالي')
+        if products:
+            reply = "الملابس الرجالية المتوفرة 👔:\n\n"
+            cards = ''
+            for p in products:
+                cards += product_card_html(p)
+                reply += f"- {p['name']}: {p['price']} ريال\n"
+            reply += "\nتحب اطلبو ليك؟ او عندك سؤال تاني؟"
+            return jsonify({'reply': reply, 'products': products, 'html_cards': cards})
+    
+    if any(w in ml for w in ['نسائي', 'نساء', 'بنات', 'حريم', 'فساتين', 'فستان', 'دريس']):
+        products = get_products_by_cat('نسائي')
+        if products:
+            reply = "الملابس النسائية المتوفرة 👗:\n\n"
+            cards = ''
+            for p in products:
+                cards += product_card_html(p)
+                reply += f"- {p['name']}: {p['price']} ريال\n"
+            reply += "\nتحب اطلبو ليك؟ او عندك سؤال تاني؟"
+            return jsonify({'reply': reply, 'products': products, 'html_cards': cards})
+    
+    if any(w in ml for w in ['احذية', 'حذاء', 'شوز', 'boots', 'sneakers']):
+        conn = get_db()
+        c = conn.cursor()
+        c.execute("SELECT * FROM products WHERE name LIKE '%حذاء%' OR name LIKE '%بوت%' OR name LIKE '%صندل%' OR name LIKE '%كعب%'")
+        products = [dict(p) for p in c.fetchall()]
+        if not products:
+            products = get_products_by_cat('رجالي') or []
+        if products:
+            reply = "الاحذية المتوفرة عندنا 👟:\n\n"
+            cards = ''
+            for p in products:
+                cards += product_card_html(p)
+                reply += f"- {p['name']}: {p['price']} ريال\n"
+            reply += "\nتحب اطلبو ليك؟ او عندك سؤال تاني؟"
+            return jsonify({'reply': reply, 'products': products, 'html_cards': cards})
+    
+    # 4. بحث
+    result = search_products_db(msg)
+    if result:
+        p = result[0]
+        if p.get('stock', 0) <= 0:
+            reply = "المنتج دا حاليا غير متوفر 😅\nاحجزو ليك اول ما يتوفر؟\n\nتحب اطلبو ليك؟ او عندك سؤال تاني؟"
+            return jsonify({'reply': reply, 'products': [p], 'html_cards': product_card_html(p)})
+        
+        reply = f"متوفر عندنا ✅\n\nالاسم: {p['name']}\nالسعر: {p['price']} ريال\nالوصف: {p.get('description','')}\nالكمية: {p['stock']} قطعة\n\nطرق الدفع:\n✅ كاش عند الاستلام\n✅ تحويل بنكي\n\nالتوصيل: 25 ريال (داخل المدينة)\n\nتحب اطلبو ليك؟ او عندك سؤال تاني؟"
+        return jsonify({'reply': reply, 'products': [p], 'html_cards': product_card_html(p)})
+    
+    # 5. افتراضي
+    default = RESPONSES.get('default', {}).get('response',
+        "والله ما فهمت سؤالك 😅\nعندنا ملابس رجالي ونسائي واحذية.\nقولي اسم المنتج اللي عاوزو وانا اخدمك.\n\nتحب اطلبو ليك؟ او عندك سؤال تاني؟")
+    return jsonify({'reply': default, 'products': [], 'html_cards': ''})
 
 # ==================== معالجة الأخطاء ====================
 @app.errorhandler(404)

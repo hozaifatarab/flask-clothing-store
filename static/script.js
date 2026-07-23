@@ -2,9 +2,6 @@
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let allProducts = [];
 let currentCategory = 'all';
-let chatHistory = [];
-let isChatMinimized = false;
-let isChatMaximized = false;
 
 // ===== التهيئة =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -313,300 +310,76 @@ function showAlert(msg, type = 'info') {
     }, 3000);
 }
 
-// ===== الشات الذكي (النظام الموحد) =====
+// ===== الشات الذكي (واجهة أمامية بالكامل) =====
 function initChat() {
-    const chatButton = document.getElementById('chatButton');
-    const chatPanel = document.getElementById('chatPanel');
-    const chatMessages = document.getElementById('chatMessages');
-    const messageInput = document.getElementById('messageInput');
-    const chatMini = document.getElementById('chatMini');
+    const chatButton = document.getElementById('chat-button');
+    const chatContainer = document.getElementById('chat-container');
+    const sendBtn = document.getElementById('send-btn');
+    const userInput = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box');
 
-    if (!chatPanel || !chatMessages) return;
+    if (!chatButton || !chatContainer) return;
 
-    // رسالة ترحيبية
-    addBotMessage('وعليكم السلام ورحمة الله وبركاته 🌙\nمرحبا بيك في FASHION HUB 🛍️\nمعاك كارم 😊\n\nعندنا تشكيلة حلوة:\n👔 رجالي (قمصان، بولو، جينز، بدل)\n👗 نسائي (فساتين، عبايات، بلوزات)\n👟 احذية (كعب عالي، رياضي، صنادل)\n⌚ اكسسوارات\n\nقولي عاوز تشوف شنو بالضبط؟');
-}
-
-function toggleChat() {
-    const panel = document.getElementById('chatPanel');
-    const btn = document.getElementById('chatButton');
-    const mini = document.getElementById('chatMini');
-    
-    if (panel.classList.contains('active')) {
-        panel.classList.remove('active');
-        btn.style.display = 'flex';
-        mini.style.display = 'none';
-    } else {
-        panel.classList.add('active');
-        panel.classList.remove('maximized');
-        btn.style.display = 'none';
-        mini.style.display = 'none';
-        isChatMinimized = false;
-        isChatMaximized = false;
-    }
-}
-
-function minimizeChat() {
-    const panel = document.getElementById('chatPanel');
-    const mini = document.getElementById('chatMini');
-    
-    panel.classList.remove('active');
-    mini.style.display = 'flex';
-    document.getElementById('chatButton').style.display = 'none';
-    isChatMinimized = true;
-}
-
-function maximizeChat() {
-    const panel = document.getElementById('chatPanel');
-    panel.classList.toggle('maximized');
-    isChatMaximized = !isChatMaximized;
-}
-
-function restoreChat() {
-    const panel = document.getElementById('chatPanel');
-    const mini = document.getElementById('chatMini');
-    
-    panel.classList.add('active');
-    mini.style.display = 'none';
-    document.getElementById('chatButton').style.display = 'none';
-    isChatMinimized = false;
-}
-
-function closeChatWithPrompt() {
-    openModal('exitChatModal');
-}
-
-function cancelExitChat() {
-    closeModal('exitChatModal');
-}
-
-async function downloadChatAsPDF() {
-    const messages = document.getElementById('chatMessages');
-    if (!messages || messages.children.length === 0) {
-        showAlert('💬 لا توجد رسائل للتحميل', 'warning');
-        closeModal('exitChatModal');
-        return;
-    }
-    
-    try {
-        const element = document.createElement('div');
-        element.style.padding = '20px';
-        element.style.background = '#fff';
-        element.style.color = '#000';
-        element.style.fontFamily = 'Tajawal, sans-serif';
-        element.style.direction = 'rtl';
-        element.innerHTML = '<h2 style="text-align:center;color:#6C5CE7;margin-bottom:20px;">💬 محادثة FASHION HUB</h2>';
-        
-        const chatMessages = document.getElementById('chatMessages');
-        const msgs = chatMessages.querySelectorAll('.message');
-        msgs.forEach(msg => {
-            const isAdmin = msg.classList.contains('message-admin');
-            const text = msg.querySelector('.message-text')?.innerText || '';
-            const products = msg.querySelector('.chat-products-container');
-            const time = msg.querySelector('.message-time')?.innerText || '';
-            
-            const div = document.createElement('div');
-            div.style.cssText = `margin:10px 0;padding:12px;border-radius:10px;background:${isAdmin ? '#6C5CE7' : '#f0f0f0'};color:${isAdmin ? '#fff' : '#000'};text-align:${isAdmin ? 'right' : 'left'};`;
-            div.innerHTML = `<div style="font-weight:700;margin-bottom:4px;">${isAdmin ? '🤖 كارم' : '🙋 أنت'}</div><div>${text}</div>${time ? `<div style="font-size:10px;opacity:0.6;margin-top:4px;">${time}</div>` : ''}`;
-            
-            if (products) {
-                const cards = products.querySelectorAll('.chat-product-card');
-                cards.forEach(card => {
-                    const img = card.querySelector('img')?.src || '';
-                    const name = card.querySelector('.chat-product-name')?.innerText || '';
-                    const price = card.querySelector('.chat-product-price')?.innerText || '';
-                    const stock = card.querySelector('.chat-product-stock')?.innerText || '';
-                    const pdiv = document.createElement('div');
-                    pdiv.style.cssText = 'margin:8px 0;padding:8px;border:1px solid #ddd;border-radius:8px;display:flex;gap:10px;';
-                    pdiv.innerHTML = `<div style="font-weight:700;">${name}</div><div style="color:#e94560;font-weight:700;">${price}</div><div>${stock}</div>`;
-                    div.appendChild(pdiv);
-                });
-            }
-            element.appendChild(div);
-        });
-        
-        element.innerHTML += '<div style="text-align:center;margin-top:20px;color:#888;font-size:12px;">© 2026 FASHION HUB - جميع الحقوق محفوظة</div>';
-        
-        const opt = {
-            margin: [10, 10, 10, 10],
-            filename: 'chat_fashion_hub.pdf',
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        
-        await html2pdf().set(opt).from(element).save();
-        showAlert('✅ تم تحميل المحادثة بنجاح', 'success');
-        clearChatAndExit();
-    } catch (e) {
-        console.error('PDF Error:', e);
-        showAlert('❌ خطأ في تحميل PDF', 'error');
-    }
-}
-
-function clearChatAndExit() {
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) chatMessages.innerHTML = '';
-    chatHistory = [];
-    closeModal('exitChatModal');
-    minimizeChat();
-    showAlert('🗑️ تم مسح المحادثة', 'info');
-}
-
-// ===== وظائف الشات الأساسية =====
-function addUserMessage(text) {
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
-    
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'message message-user';
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    bubble.innerHTML = `<div class="message-text">${escapeHtml(text)}</div>`;
-    
-    const time = document.createElement('div');
-    time.className = 'message-time';
-    time.textContent = getCurrentTime();
-    
-    bubble.appendChild(time);
-    msgDiv.appendChild(bubble);
-    chatMessages.appendChild(msgDiv);
-    scrollChatToBottom();
-}
-
-function addBotMessage(text, products = []) {
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
-    
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'message message-admin';
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    bubble.innerHTML = `<div class="message-text">${escapeHtml(text)}</div>`;
-    
-    // عرض المنتجات كبطاقات
-    if (products && products.length > 0) {
-        const container = document.createElement('div');
-        container.className = 'chat-products-container';
-        
-        products.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'chat-product-card';
-            
-            const priceDisplay = p.price_text || (typeof p.price === 'number' ? parseInt(p.price).toLocaleString() : p.price || '0');
-            const stockStatus = p.stock > 0 ? '✅ متوفر' : '❌ غير متوفر';
-            const desc = (p.description || '').substring(0, 60) + ((p.description || '').length > 60 ? '...' : '');
-            const imageUrl = p.image || '';
-            
-            card.innerHTML = `
-                <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name || '')}" class="chat-product-img" onerror="this.src='https://via.placeholder.com/80?text=?'">
-                <div class="chat-product-info">
-                    <div class="chat-product-name">${escapeHtml(p.name || '')}</div>
-                    <div class="chat-product-desc">${escapeHtml(desc)}</div>
-                    <div class="chat-product-price">${escapeHtml(priceDisplay)} ريال</div>
-                    <div class="chat-product-stock">${stockStatus}</div>
-                </div>
-            `;
-            
-            card.style.cursor = 'pointer';
-            card.onclick = () => {
-                if (p.id) viewDetails(p.id);
-            };
-            
-            container.appendChild(card);
-        });
-        
-        bubble.appendChild(container);
-    }
-    
-    const time = document.createElement('div');
-    time.className = 'message-time';
-    time.textContent = getCurrentTime();
-    
-    bubble.appendChild(time);
-    msgDiv.appendChild(bubble);
-    chatMessages.appendChild(msgDiv);
-    scrollChatToBottom();
-}
-
-function addTypingIndicator() {
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
-    
-    const indicator = document.createElement('div');
-    indicator.id = 'typingIndicator';
-    indicator.className = 'message message-admin';
-    indicator.innerHTML = `
-        <div class="message-bubble" style="background:#e8e8e8;color:#666;font-size:14px;">
-            <span style="display:flex;align-items:center;gap:8px;">
-                <span style="display:inline-block;animation:typingAnim 1.4s infinite;">.</span>
-                <span style="display:inline-block;animation:typingAnim 1.4s 0.2s infinite;">.</span>
-                <span style="display:inline-block;animation:typingAnim 1.4s 0.4s infinite;">.</span>
-                جاري الكتابة...
-            </span>
-        </div>`;
-    chatMessages.appendChild(indicator);
-    scrollChatToBottom();
-}
-
-function removeTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
-    if (indicator) indicator.remove();
-}
-
-async function sendMsg() {
-    const input = document.getElementById('messageInput');
-    const msg = input.value.trim();
-    if (!msg) return;
-    
-    input.value = '';
-    addUserMessage(msg);
-    
-    // مؤشر الكتابة
-    addTypingIndicator();
-    
-    try {
-        const res = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg })
-        });
-        
-        const data = await res.json();
-        removeTypingIndicator();
-        
-        if (data.text) {
-            addBotMessage(data.text, data.products || []);
-        } else if (data.reply) {
-            // دعم التوافق مع النظام القديم
-            addBotMessage(data.reply, data.products || []);
+    // فتح وقفل الشات
+    chatButton.onclick = () => {
+        chatContainer.style.display = chatContainer.style.display === 'flex' ? 'none' : 'flex';
+        if (chatContainer.style.display === 'flex') {
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
-    } catch (e) {
-        removeTypingIndicator();
-        addBotMessage('❌ عذرا، حدث خطأ في الاتصال. حاول مرة أخرى');
+    };
+
+    // اضافة رسالة للشات
+    function addMessage(text, sender) {
+        const msg = document.createElement('div');
+        msg.style.padding = '10px 14px';
+        msg.style.margin = '8px 5px';
+        msg.style.borderRadius = '12px';
+        msg.style.maxWidth = '80%';
+        msg.style.background = sender === 'user' ? '#007BFF' : '#2a2a3f';
+        msg.style.alignSelf = sender === 'user' ? 'flex-end' : 'flex-start';
+        msg.style.color = 'white';
+        msg.style.fontSize = '14px';
+        msg.innerText = text;
+        chatBox.appendChild(msg);
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
-}
 
-// ===== دوال مساعدة =====
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+    // الرد الذكي
+    function getBotResponse(message) {
+        message = message.toLowerCase();
 
-function getCurrentTime() {
-    const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-}
-
-function scrollChatToBottom() {
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (message.includes('سعر') || message.includes('بكم') || message.includes('السعر')) {
+            return '💰 اسعارنا بتبدا من 15 الف جنيه سوداني. تحب تشوف اي قسم؟ نسائي، رجالي، احذية؟';
+        } else if (message.includes('توصيل') || message.includes('بتوصلو')) {
+            return '🚚 ايوا عندنا توصيل داخل الخرطوم وامدرمان وبحري. التوصيل 5 الف جنيه. الاستلام خلال 24 ساعة';
+        } else if (message.includes('فستان') || message.includes('فساتين')) {
+            return '👗 عندنا تشكيلة فساتين سهرة وكاجوال جديدة. تحب ارسل ليك صور ولا مقاس معين؟';
+        } else if (message.includes('مقاس')) {
+            return '📏 المقاسات المتوفرة: S, M, L, XL, XXL. وريني المنتج والمقاس العايزو';
+        } else if (message.includes('حذاء') || message.includes('جزمة')) {
+            return '👟 متوفر احذية رجالية ونسائية واطفال. المقاسات من 36 لحد 45';
+        } else if (message.includes('شكرا') || message.includes('تسلم')) {
+            return 'العفو 😊 في خدمتك في اي وقت';
+        } else {
+            return 'ما فهمت قصدك 😅 ممكن تسألني عن: السعر، التوصيل، فساتين، مقاسات، احذية';
+        }
     }
+
+    // ارسال الرسالة
+    sendBtn.onclick = () => {
+        const message = userInput.value.trim();
+        if (message === '') return;
+        addMessage(message, 'user');
+        userInput.value = '';
+        setTimeout(() => {
+            addMessage(getBotResponse(message), 'bot');
+        }, 600);
+    };
+
+    // ارسال بزر Enter
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+    });
 }
 
 // حفظ السلة عند الإغلاق
