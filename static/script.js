@@ -618,3 +618,90 @@ function orderProduct(name) {
 
 // حفظ السلة عند الإغلاق
 window.addEventListener('beforeunload', saveCart);
+
+// ===== زر الشات العائم الجديد =====
+(function() {
+    const chatButton = document.getElementById('chat-button');
+    const chatContainer = document.getElementById('chat-container');
+    const sendBtn = document.getElementById('send-btn');
+    const userInput = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat-box');
+
+    if (!chatButton || !chatContainer) return;
+
+    // فتح وإغلاق نافذة الشات
+    chatButton.onclick = () => {
+        chatContainer.style.display = chatContainer.style.display === 'flex' ? 'none' : 'flex';
+        if (chatContainer.style.display === 'flex') {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    };
+
+    // إرسال الرسالة عبر زر الإرسال
+    if (sendBtn) {
+        sendBtn.onclick = sendNewChatMessage;
+    }
+
+    // إرسال الرسالة عبر زر Enter
+    if (userInput) {
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendNewChatMessage();
+            }
+        });
+    }
+
+    // دالة إرسال الرسالة في الشات الجديد
+    async function sendNewChatMessage() {
+        const msg = userInput.value.trim();
+        if (!msg) return;
+
+        // إظهار رسالة المستخدم
+        addChatMessage(msg, 'user');
+        userInput.value = '';
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // طلب رد من البوت
+        try {
+            const res = await fetch('/api/bot-reply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await res.json();
+            const reply = data.text || data.reply || 'عذراً، لم أفهم السؤال.';
+            addChatMessage(reply, 'bot');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (e) {
+            addChatMessage('عذراً، حصل خطأ في الاتصال.', 'bot');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    }
+
+    // إضافة رسالة إلى صندوق الشات الجديد
+    function addChatMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'chat-msg';
+        msgDiv.style.padding = '8px 12px';
+        msgDiv.style.marginBottom = '8px';
+        msgDiv.style.borderRadius = '10px';
+        msgDiv.style.fontSize = '13px';
+        msgDiv.style.lineHeight = '1.5';
+        msgDiv.style.maxWidth = '80%';
+        msgDiv.style.wordWrap = 'break-word';
+
+        if (sender === 'user') {
+            msgDiv.style.background = 'rgba(0, 123, 255, 0.15)';
+            msgDiv.style.marginLeft = 'auto';
+            msgDiv.style.textAlign = 'right';
+        } else {
+            msgDiv.style.background = 'rgba(255, 255, 255, 0.1)';
+            msgDiv.style.marginRight = 'auto';
+            msgDiv.style.textAlign = 'left';
+        }
+
+        msgDiv.textContent = text;
+        chatBox.appendChild(msgDiv);
+    }
+})();

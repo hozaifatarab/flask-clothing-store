@@ -1644,3 +1644,67 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 /* ===== إخفاء الإشعارات بشكل نهائي ===== */
 .chat-btn{position:relative}
 .badge{display:none !important;}
+
+/* ===== زر الشات العائم الجديد ===== */
+#chat-button {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 28px;
+  cursor: pointer;
+  z-index: 99999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+#chat-container {
+  position: fixed;
+  bottom: 90px;
+  left: 20px;
+  width: 320px;
+  height: 450px;
+  background: #1e1e2f;
+  border-radius: 15px;
+  display: none;
+  flex-direction: column;
+  z-index: 99999;
+  border: 2px solid #007BFF;
+}
+
+#chat-header {
+  background: #007BFF;
+  padding: 12px;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 15px 15px 0 0;
+}
+
+#chat-box {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  color: white;
+}
+
+#user-input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  background: #2a2a3f;
+  color: white;
+  outline: none;
+}
+
+#send-btn {
+  width: 80px;
+  border: none;
+  background: #007BFF;
+  color: white;
+  cursor: pointer;
+}
