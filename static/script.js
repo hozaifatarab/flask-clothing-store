@@ -2,18 +2,13 @@
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let allProducts = [];
 let currentCategory = 'all';
-let chatInitialized = false;
 
 // ===== التهيئة =====
 document.addEventListener('DOMContentLoaded', function() {
     initNavbar();
     loadProducts();
-    loadChat();
+    initChat();
     updateCartCount();
-    setInterval(loadChat, 3000);
-    
-    const minimized = localStorage.getItem('chatMinimized') === 'true';
-    if (minimized) minimizeChat();
 });
 
 // ===== النافبار =====
@@ -280,209 +275,6 @@ async function checkoutCart() {
     }
 }
 
-// ===== الشات =====
-async function loadChat() {
-    try {
-        const res = await fetch('/api/messages');
-        const msgs = await res.json();
-        displayChat(msgs);
-        
-        const panel = document.getElementById('chatPanel');
-        if (panel?.classList.contains('active') && !chatInitialized && msgs.length === 0) {
-            chatInitialized = true;
-            await sendAutoGreeting();
-        }
-    } catch (e) {}
-}
-
-async function sendAutoGreeting() {
-    try {
-        const res = await fetch('/api/bot-reply', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'سلام' })
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const msg = data.text || data.reply || '';
-            await fetch('/api/messages/admin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg, session_id: 'default' })
-            });
-            loadChat();
-        }
-    } catch (e) {}
-}
-
-function displayChat(msgs) {
-    const div = document.getElementById('chatMessages');
-    if (!div) return;
-    
-    if (!msgs || msgs.length === 0) {
-        div.innerHTML = `<div style="text-align:center;padding:30px;color:var(--text-muted);"><p>💬 لا توجد رسائل</p><p style="font-size:12px;margin-top:8px;">ابدأ المحادثة مع كارم</p></div>`;
-        return;
-    }
-    
-    div.innerHTML = msgs.map(m => {
-        const isAdmin = m.sender === 'كارم';
-        // تحويل النص إلى HTML مع دعم الأسطر الجديدة
-        const formattedMsg = (m.message || '').replace(/\n/g, '<br>');
-        return `
-        <div class="message ${isAdmin ? 'message-admin' : 'message-user'}">
-            <div class="message-bubble">
-                <div class="message-text">${formattedMsg}</div>
-                ${m.html_cards ? `<div class="chat-products-container">${m.html_cards}</div>` : ''}
-                <div class="message-time">${m.timestamp ? new Date(m.timestamp).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : ''}</div>
-            </div>
-        </div>`;
-    }).join('');
-    
-    div.scrollTop = div.scrollHeight;
-}
-
-async function toggleChat() {
-    let box = document.getElementById('chatPanel');
-    let btn = document.querySelector('.chat-btn');
-    
-    if (box.style.display === 'flex' || box?.classList.contains('active')) {
-        box.classList.remove('active');
-        box.style.display = 'none';
-        if (btn) btn.style.display = 'flex';
-        const mini = document.getElementById('chatMini');
-        if (mini) mini.style.display = 'none';
-        localStorage.setItem('chatMinimized', 'false');
-    } else {
-        box.style.display = 'flex';
-        box.classList.add('active');
-        if (btn) btn.innerHTML = '💬';
-        if (!chatInitialized) { chatInitialized = true; await sendAutoGreeting(); }
-        const mini = document.getElementById('chatMini');
-        if (mini) mini.style.display = 'none';
-        setTimeout(() => {
-            const msgs = document.getElementById('chatMessages');
-            if (msgs) msgs.scrollTop = msgs.scrollHeight;
-        }, 200);
-    }
-}
-
-function handleChatKeypress(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
-}
-
-// الدالة القديمة - نحولها للجديدة عشان التوافق
-async function sendMessage() {
-    sendMsg();
-}
-
-// ===== تحجيم الشات =====
-function minimizeChat() {
-    const panel = document.getElementById('chatPanel');
-    const btn = document.getElementById('chatButton');
-    const mini = document.getElementById('chatMini');
-    if (panel) { panel.classList.remove('active', 'maximized'); }
-    if (btn) btn.style.display = 'none';
-    if (mini) mini.style.display = 'flex';
-    localStorage.setItem('chatMinimized', 'true');
-}
-
-function maximizeChat() {
-    const panel = document.getElementById('chatPanel');
-    const btn = document.getElementById('chatButton');
-    const mini = document.getElementById('chatMini');
-    if (panel) { panel.classList.add('active', 'maximized'); }
-    if (btn) btn.style.display = 'none';
-    if (mini) mini.style.display = 'none';
-    localStorage.setItem('chatMinimized', 'false');
-    setTimeout(() => {
-        const msgs = document.getElementById('chatMessages');
-        if (msgs) msgs.scrollTop = msgs.scrollHeight;
-    }, 200);
-}
-
-function restoreChat() {
-    const panel = document.getElementById('chatPanel');
-    const btn = document.getElementById('chatButton');
-    const mini = document.getElementById('chatMini');
-    if (panel) { panel.classList.add('active'); panel.classList.remove('maximized'); }
-    if (btn) btn.style.display = 'none';
-    if (mini) mini.style.display = 'none';
-    localStorage.setItem('chatMinimized', 'false');
-    setTimeout(() => {
-        const msgs = document.getElementById('chatMessages');
-        if (msgs) msgs.scrollTop = msgs.scrollHeight;
-    }, 200);
-}
-
-function closeChatWithPrompt() { openModal('exitChatModal'); }
-function cancelExitChat() { closeModal('exitChatModal'); }
-
-async function downloadChatAsPDF() {
-    try {
-        const res = await fetch('/api/messages');
-        const msgs = await res.json();
-        if (!msgs.length) { showAlert('لا توجد رسائل', 'warning'); return; }
-        
-        const now = new Date();
-        let html = `
-        <div style="direction:rtl;font-family:Tajawal,Arial,sans-serif;padding:20px;max-width:600px;margin:0 auto;">
-            <div style="text-align:center;margin-bottom:20px;padding-bottom:15px;border-bottom:2px solid #6C5CE7;">
-                <h1 style="color:#6C5CE7;font-size:22px;margin:0;">💬 محادثة المتجر</h1>
-                <p style="color:#888;font-size:13px;margin:5px 0 0;">${now.toLocaleDateString('ar-SA')}</p>
-            </div>`;
-        
-        msgs.forEach(m => {
-            const isAdmin = m.sender === 'كارم';
-            const t = m.timestamp ? new Date(m.timestamp).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) : '';
-            html += `
-            <div style="margin-bottom:10px;text-align:${isAdmin ? 'right' : 'left'};">
-                <div style="display:inline-block;max-width:80%;padding:10px 14px;border-radius:12px;
-                    ${isAdmin ? 'background:linear-gradient(135deg,#6C5CE7,#5A4BD1);color:white;border-bottom-left-radius:4px;' : 'background:#f0f0f0;color:#333;border-bottom-right-radius:4px;'}">
-                    <div style="font-size:13px;">${m.message}</div>
-                    <div style="font-size:10px;margin-top:4px;opacity:0.7;">${t}</div>
-                </div>
-            </div>`;
-        });
-        
-        html += `<div style="text-align:center;margin-top:20px;padding-top:15px;border-top:1px solid #ddd;color:#888;font-size:11px;"><p>متجر الملابس © 2026</p></div></div>`;
-        
-        closeModal('exitChatModal');
-        
-        const el = document.createElement('div');
-        el.innerHTML = html;
-        el.style.cssText = 'position:absolute;left:-9999px;top:0;';
-        document.body.appendChild(el);
-        
-        await html2pdf().set({ margin: 10, filename: `chat_${now.getTime()}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(el).save();
-        document.body.removeChild(el);
-        showAlert('✅ تم تحميل المحادثة', 'success');
-        await clearMessages();
-    } catch (e) {
-        showAlert('خطأ في التحميل', 'error');
-    }
-}
-
-async function clearChatAndExit() {
-    closeModal('exitChatModal');
-    await clearMessages();
-    showAlert('🗑️ تم مسح المحادثة', 'info');
-}
-
-async function clearMessages() {
-    try {
-        await fetch('/api/messages', { method: 'DELETE' });
-        chatInitialized = false;
-        const panel = document.getElementById('chatPanel');
-        if (panel) { panel.classList.remove('active', 'maximized'); }
-        const btn = document.getElementById('chatButton');
-        if (btn) btn.style.display = 'flex';
-        const mini = document.getElementById('chatMini');
-        if (mini) mini.style.display = 'none';
-        localStorage.setItem('chatMinimized', 'false');
-        loadChat();
-    } catch (e) {}
-}
-
 // ===== النوافذ المنبثقة =====
 function openModal(id) {
     const m = document.getElementById(id);
@@ -496,7 +288,7 @@ function closeModal(id) {
 
 // إغلاق المودال بالضغط خارجها
 document.addEventListener('click', function(e) {
-    ['cartModal', 'productModal', 'exitChatModal'].forEach(id => {
+    ['cartModal', 'productModal'].forEach(id => {
         if (e.target.id === id) closeModal(id);
     });
 });
@@ -518,109 +310,8 @@ function showAlert(msg, type = 'info') {
     }, 3000);
 }
 
-// ===== دوال الشات الجديدة (text + products) =====
-async function sendMsg() {
-    let input = document.getElementById('messageInput');
-    let msg = input.value.trim();
-    if(msg === '') return;
-    
-    // أضف رسالة المستخدم
-    addMessage({text: msg}, 'user');
-    input.value = '';
-    
-    // احفظ رسالة المستخدم في قاعدة البيانات (للتوافق مع النظام القديم)
-    try {
-        await fetch('/api/messages', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({sender: 'زبون', message: msg, session_id: 'default'})
-        });
-    } catch(e) {}
-    
-    // اتصل بالبوت
-    try {
-        let res = await fetch('/api/bot-reply', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message: msg})
-        });
-        let data = await res.json();
-        
-        // اعرض رد البوت
-        addMessage(data, 'bot');
-        
-        // احفظ رد البوت في قاعدة البيانات
-        let botText = data.text || '';
-        try {
-            await fetch('/api/messages/admin', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({message: botText, html_cards: '', session_id: 'default'})
-            });
-        } catch(e) {}
-    } catch(e) {
-        addMessage({text: 'عذراً، حصل خطأ. حاول تاني', products: []}, 'bot');
-    }
-}
-
-function addMessage(data, sender) {
-    let chat = document.getElementById('chatMessages');
-    if (!chat) return;
-    
-    let div = document.createElement('div');
-    div.className = sender === 'user' ? 'message message-user' : 'message message-admin';
-    
-    let bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    
-    // النص
-    let textDiv = document.createElement('div');
-    textDiv.className = 'message-text';
-    textDiv.innerHTML = (data.text || '').replace(/\n/g, '<br>');
-    bubble.appendChild(textDiv);
-    
-    // المنتجات
-    if (data.products && data.products.length > 0) {
-        let productsContainer = document.createElement('div');
-        productsContainer.className = 'chat-products-container';
-        
-        data.products.forEach(p => {
-            let card = document.createElement('div');
-            card.className = 'chat-product-item-card';
-            card.innerHTML = `
-                <img src="${p.image || ''}" alt="${p.name || ''}" 
-                     onerror="this.src='https://via.placeholder.com/70?text=?'">
-                <div class="chat-product-item-info">
-                    <h5>${p.name || ''}</h5>
-                    <p class="chat-product-item-price">${p.price || 0} جنيه</p>
-                    <button onclick="orderProduct('${(p.name || '').replace(/'/g, "\\'")}')">اطلب هسي</button>
-                </div>`;
-            productsContainer.appendChild(card);
-        });
-        
-        bubble.appendChild(productsContainer);
-    }
-    
-    div.appendChild(bubble);
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-}
-
-function orderProduct(name) {
-    // أضف رسالة الطلب
-    addMessage({text: 'عايز اطلب ' + name}, 'user');
-    
-    // أضف رد التأكيد
-    setTimeout(() => {
-        addMessage({text: 'تم استلام طلبك لـ ' + name + ' 💚 حنتواصل معاك واتساب', products: []}, 'bot');
-    }, 800);
-}
-
-// حفظ السلة عند الإغلاق
-window.addEventListener('beforeunload', saveCart);
-
-// ===== زر الشات العائم الجديد =====
-(function() {
+// ===== الشات الذكي (واجهة أمامية بالكامل) =====
+function initChat() {
     const chatButton = document.getElementById('chat-button');
     const chatContainer = document.getElementById('chat-container');
     const sendBtn = document.getElementById('send-btn');
@@ -629,7 +320,7 @@ window.addEventListener('beforeunload', saveCart);
 
     if (!chatButton || !chatContainer) return;
 
-    // فتح وإغلاق نافذة الشات
+    // فتح وقفل الشات
     chatButton.onclick = () => {
         chatContainer.style.display = chatContainer.style.display === 'flex' ? 'none' : 'flex';
         if (chatContainer.style.display === 'flex') {
@@ -637,71 +328,59 @@ window.addEventListener('beforeunload', saveCart);
         }
     };
 
-    // إرسال الرسالة عبر زر الإرسال
-    if (sendBtn) {
-        sendBtn.onclick = sendNewChatMessage;
-    }
-
-    // إرسال الرسالة عبر زر Enter
-    if (userInput) {
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendNewChatMessage();
-            }
-        });
-    }
-
-    // دالة إرسال الرسالة في الشات الجديد
-    async function sendNewChatMessage() {
-        const msg = userInput.value.trim();
-        if (!msg) return;
-
-        // إظهار رسالة المستخدم
-        addChatMessage(msg, 'user');
-        userInput.value = '';
+    // اضافة رسالة للشات
+    function addMessage(text, sender) {
+        const msg = document.createElement('div');
+        msg.style.padding = '10px 14px';
+        msg.style.margin = '8px 5px';
+        msg.style.borderRadius = '12px';
+        msg.style.maxWidth = '80%';
+        msg.style.background = sender === 'user' ? '#007BFF' : '#2a2a3f';
+        msg.style.alignSelf = sender === 'user' ? 'flex-end' : 'flex-start';
+        msg.style.color = 'white';
+        msg.style.fontSize = '14px';
+        msg.innerText = text;
+        chatBox.appendChild(msg);
         chatBox.scrollTop = chatBox.scrollHeight;
-
-        // طلب رد من البوت
-        try {
-            const res = await fetch('/api/bot-reply', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: msg })
-            });
-            const data = await res.json();
-            const reply = data.text || data.reply || 'عذراً، لم أفهم السؤال.';
-            addChatMessage(reply, 'bot');
-            chatBox.scrollTop = chatBox.scrollHeight;
-        } catch (e) {
-            addChatMessage('عذراً، حصل خطأ في الاتصال.', 'bot');
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
     }
 
-    // إضافة رسالة إلى صندوق الشات الجديد
-    function addChatMessage(text, sender) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'chat-msg';
-        msgDiv.style.padding = '8px 12px';
-        msgDiv.style.marginBottom = '8px';
-        msgDiv.style.borderRadius = '10px';
-        msgDiv.style.fontSize = '13px';
-        msgDiv.style.lineHeight = '1.5';
-        msgDiv.style.maxWidth = '80%';
-        msgDiv.style.wordWrap = 'break-word';
+    // الرد الذكي
+    function getBotResponse(message) {
+        message = message.toLowerCase();
 
-        if (sender === 'user') {
-            msgDiv.style.background = 'rgba(0, 123, 255, 0.15)';
-            msgDiv.style.marginLeft = 'auto';
-            msgDiv.style.textAlign = 'right';
+        if (message.includes('سعر') || message.includes('بكم') || message.includes('السعر')) {
+            return '💰 اسعارنا بتبدا من 15 الف جنيه سوداني. تحب تشوف اي قسم؟ نسائي، رجالي، احذية؟';
+        } else if (message.includes('توصيل') || message.includes('بتوصلو')) {
+            return '🚚 ايوا عندنا توصيل داخل الخرطوم وامدرمان وبحري. التوصيل 5 الف جنيه. الاستلام خلال 24 ساعة';
+        } else if (message.includes('فستان') || message.includes('فساتين')) {
+            return '👗 عندنا تشكيلة فساتين سهرة وكاجوال جديدة. تحب ارسل ليك صور ولا مقاس معين؟';
+        } else if (message.includes('مقاس')) {
+            return '📏 المقاسات المتوفرة: S, M, L, XL, XXL. وريني المنتج والمقاس العايزو';
+        } else if (message.includes('حذاء') || message.includes('جزمة')) {
+            return '👟 متوفر احذية رجالية ونسائية واطفال. المقاسات من 36 لحد 45';
+        } else if (message.includes('شكرا') || message.includes('تسلم')) {
+            return 'العفو 😊 في خدمتك في اي وقت';
         } else {
-            msgDiv.style.background = 'rgba(255, 255, 255, 0.1)';
-            msgDiv.style.marginRight = 'auto';
-            msgDiv.style.textAlign = 'left';
+            return 'ما فهمت قصدك 😅 ممكن تسألني عن: السعر، التوصيل، فساتين، مقاسات، احذية';
         }
-
-        msgDiv.textContent = text;
-        chatBox.appendChild(msgDiv);
     }
-})();
+
+    // ارسال الرسالة
+    sendBtn.onclick = () => {
+        const message = userInput.value.trim();
+        if (message === '') return;
+        addMessage(message, 'user');
+        userInput.value = '';
+        setTimeout(() => {
+            addMessage(getBotResponse(message), 'bot');
+        }, 600);
+    };
+
+    // ارسال بزر Enter
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+    });
+}
+
+// حفظ السلة عند الإغلاق
+window.addEventListener('beforeunload', saveCart);
