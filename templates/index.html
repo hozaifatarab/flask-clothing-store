@@ -96,7 +96,7 @@
         </div>
     </footer>
 
-    <!-- ===== الشات ===== -->
+    <!-- ===== الشات الموحد ===== -->
     <div id="chatPanel" class="chat-panel">
         <div class="chat-header">
             <h3>💬 كارم - مساعد المتجر</h3>
@@ -164,19 +164,6 @@
             </div>
             <button class="exit-cancel" onclick="cancelExitChat()">إلغاء</button>
         </div>
-    </div>
-
-    <!-- زر الشات العائم -->
-    <button id="chat-button">💬</button>
-
-    <!-- نافذة الشات -->
-    <div id="chat-container">
-      <div id="chat-header">FASHION HUB مساعد</div>
-      <div id="chat-box"></div>
-      <div style="display:flex">
-        <input type="text" id="user-input" placeholder="اسألني عن اي منتج...">
-        <button id="send-btn">ارسال</button>
-      </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
