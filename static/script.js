@@ -348,6 +348,10 @@ async function toggleChat() {
     if (box.style.display === 'flex' || box?.classList.contains('active')) {
         box.classList.remove('active');
         box.style.display = 'none';
+        if (btn) btn.style.display = 'flex';
+        const mini = document.getElementById('chatMini');
+        if (mini) mini.style.display = 'none';
+        localStorage.setItem('chatMinimized', 'false');
     } else {
         box.style.display = 'flex';
         box.classList.add('active');
