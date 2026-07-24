@@ -113,11 +113,12 @@
         </div>
     </div>
 
-    <!-- ===== زر الشات ===== -->
-    <button id="chatButton" class="chat-btn" onclick="toggleChat()">💬</button>
-
     <!-- ===== أيقونة الشات المصغر ===== -->
-    <div id="chatMini" class="chat-mini" onclick="restoreChat()">💬</div>
+    <div id="chatMini" class="chat-mini" onclick="restoreChat()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+    </div>
 
     <!-- ===== مودال السلة ===== -->
     <div id="cartModal" class="modal">
@@ -167,5 +168,12 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- ===== زر الشات الدائري ===== -->
+    <button id="chat-button" class="chat-btn" onclick="toggleChat()" title="فتح المحادثة">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+    </button>
 </body>
 </html>
