@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (path === '/men') initialCategory = 'رجالي';
     else if (path === '/women') initialCategory = 'نسائي';
     else if (path === '/shoes') initialCategory = 'احذية';
+    else if (path === '/accessories') initialCategory = 'اكسسوارات';
     
     // تفعيل زر القسم المناسب
     document.querySelectorAll('.cat-pill').forEach(p => {

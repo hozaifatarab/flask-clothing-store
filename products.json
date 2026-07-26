@@ -218,5 +218,115 @@
     "stock": 18,
     "color": "ابيض",
     "size": "42"
+  },
+  {
+    "id": 21,
+    "name": "ساعة رجالية كلاسيك",
+    "description": "ساعة جلد فاخرة بتصميم كلاسيكي",
+    "price": 350,
+    "image_url": "https://i.ibb.co/1YsFdcrg/women-black-heels.jpg",
+    "category": "اكسسوارات",
+    "stock": 10,
+    "color": "بني",
+    "size": "قياسي"
+  },
+  {
+    "id": 22,
+    "name": "نظارة شمسية رجالية",
+    "description": "نظارة شمسية عصرية ضد الكسر",
+    "price": 120,
+    "image_url": "https://i.ibb.co/5h7xTL0r/white-sneakers.jpg",
+    "category": "اكسسوارات",
+    "stock": 15,
+    "color": "اسود",
+    "size": "قياسي"
+  },
+  {
+    "id": 23,
+    "name": "سلسال فضة نسائي",
+    "description": "سلسال فضة ناعم مع قلادة",
+    "price": 200,
+    "image_url": "https://i.ibb.co/ccpZSVyK/women-white-sandals.jpg",
+    "category": "اكسسوارات",
+    "stock": 8,
+    "color": "فضي",
+    "size": "واحد"
+  },
+  {
+    "id": 24,
+    "name": "محفظة جلد رجالي",
+    "description": "محفظة جلد طبيعي بخمسة جيوب",
+    "price": 150,
+    "image_url": "https://i.ibb.co/MDP7yqtF/women-black-office.jpg",
+    "category": "اكسسوارات",
+    "stock": 12,
+    "color": "بني",
+    "size": "واحد"
+  },
+  {
+    "id": 25,
+    "name": "ساعة نسائية ذهبية",
+    "description": "ساعة نسائية انيقة باللون الذهبي",
+    "price": 280,
+    "image_url": "https://i.ibb.co/39ZSj7MT/women-red-boots.jpg",
+    "category": "اكسسوارات",
+    "stock": 7,
+    "color": "ذهبي",
+    "size": "قياسي"
+  },
+  {
+    "id": 26,
+    "name": "نظارة طبية نسائية",
+    "description": "نظارة طبية بتصميم عصري",
+    "price": 180,
+    "image_url": "https://i.ibb.co/JDxgzdx/blue-casual-dress.jpg",
+    "category": "اكسسوارات",
+    "stock": 9,
+    "color": "اسود",
+    "size": "قياسي"
+  },
+  {
+    "id": 27,
+    "name": "خاتم رجالي ستانلس",
+    "description": "خاتم رجالي من الستانلس ستيل",
+    "price": 90,
+    "image_url": "https://i.ibb.co/PGKwWY15/gray-hoodie.jpg",
+    "category": "اكسسوارات",
+    "stock": 20,
+    "color": "فضي",
+    "size": "M"
+  },
+  {
+    "id": 28,
+    "name": "طقم اكسسوارات نسائي",
+    "description": "طقم اكسسوارات كامل (سلسال + اسورة + اقراط)",
+    "price": 320,
+    "image_url": "https://i.ibb.co/p6b2d9ss/red-velvet-dress.jpg",
+    "category": "اكسسوارات",
+    "stock": 5,
+    "color": "ذهبي",
+    "size": "واحد"
+  },
+  {
+    "id": 29,
+    "name": "حزام جلد نسائي",
+    "description": "حزام جلد ناعم بمشبك ذهبي",
+    "price": 110,
+    "image_url": "https://i.ibb.co/84DcDhPT/checkered-shirt.jpg",
+    "category": "اكسسوارات",
+    "stock": 14,
+    "color": "اسود",
+    "size": "M"
+  },
+  {
+    "id": 30,
+    "name": "اسورة فضة رجالية",
+    "description": "اسورة فضة عريضة بتصميم رياضي",
+    "price": 160,
+    "image_url": "https://i.ibb.co/7tbfzvyW/white-blazer.jpg",
+    "category": "اكسسوارات",
+    "stock": 11,
+    "color": "فضي",
+    "size": "واحد"
   }
 ]
