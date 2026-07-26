@@ -197,6 +197,18 @@ def product_detail(pid):
 def cart():
     return render_template('index.html')
 
+@app.route('/men')
+def men():
+    return render_template('men.html', title='قسم الرجالي')
+
+@app.route('/women')
+def women():
+    return render_template('women.html', title='قسم النسائي')
+
+@app.route('/shoes')
+def shoes():
+    return render_template('shoes.html', title='قسم الاحذية')
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
