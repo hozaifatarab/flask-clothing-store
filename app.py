@@ -215,6 +215,12 @@ def shoes():
     products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('احذية',)).fetchall()
     return render_template('shoes.html', products=products, title='قسم الاحذية', current_category='احذية')
 
+@app.route('/accessories')
+def accessories():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('اكسسوارات',)).fetchall()
+    return render_template('accessories.html', products=products, title='قسم الاكسسوارات', current_category='اكسسوارات')
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
