@@ -9,7 +9,20 @@ let isChatMaximized = false;
 // ===== التهيئة =====
 document.addEventListener('DOMContentLoaded', function() {
     initNavbar();
-    loadProducts();
+    // تحديد القسم الحالي من مسار الصفحة
+    const path = window.location.pathname;
+    let initialCategory = 'all';
+    if (path === '/men') initialCategory = 'رجالي';
+    else if (path === '/women') initialCategory = 'نسائي';
+    else if (path === '/shoes') initialCategory = 'احذية';
+    
+    // تفعيل زر القسم المناسب
+    document.querySelectorAll('.cat-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.cat === initialCategory || (initialCategory === 'all' && p.dataset.cat === 'all'));
+    });
+    
+    loadProducts(initialCategory);
+    currentCategory = initialCategory;
     initChat();
     updateCartCount();
 });

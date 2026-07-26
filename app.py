@@ -199,15 +199,21 @@ def cart():
 
 @app.route('/men')
 def men():
-    return render_template('men.html', title='قسم الرجالي')
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('رجالي',)).fetchall()
+    return render_template('men.html', products=products, title='قسم الرجالي', current_category='رجالي')
 
 @app.route('/women')
 def women():
-    return render_template('women.html', title='قسم النسائي')
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('نسائي',)).fetchall()
+    return render_template('women.html', products=products, title='قسم النسائي', current_category='نسائي')
 
 @app.route('/shoes')
 def shoes():
-    return render_template('shoes.html', title='قسم الاحذية')
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('احذية',)).fetchall()
+    return render_template('shoes.html', products=products, title='قسم الاحذية', current_category='احذية')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
