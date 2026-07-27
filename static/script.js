@@ -514,11 +514,14 @@ function addBotMessage(text, products = []) {
             const desc = (p.description || '').substring(0, 60) + ((p.description || '').length > 60 ? '...' : '');
             const imageUrl = p.image || '';
             
+            const sizeText = p.size || 'قياسي';
+            const colorText = p.color || 'متنوع';
             card.innerHTML = `
                 <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(p.name || '')}" class="chat-product-img" onerror="this.src='https://via.placeholder.com/80?text=?'">
                 <div class="chat-product-info">
                     <div class="chat-product-name">${escapeHtml(p.name || '')}</div>
                     <div class="chat-product-desc">${escapeHtml(desc)}</div>
+                    <div class="chat-product-meta">📐 ${escapeHtml(sizeText)} | 🎨 ${escapeHtml(colorText)}</div>
                     <div class="chat-product-price">${escapeHtml(priceDisplay)} ريال</div>
                     <div class="chat-product-stock">${stockStatus}</div>
                 </div>
@@ -582,6 +585,58 @@ async function sendMsg() {
     addTypingIndicator();
     
     try {
+        const lower = msg.trim().toLowerCase();
+        
+        // التحقق من نية الشراء / الدفع
+        const buyIntent = /^(عاوز|عايز|ابي|اريد|بدي|شراء|اشتري|طلب|اطلب|دفع)\s/i.test(lower) || 
+                          /(شراء|اشتري|طلب|اطلب|دفع|كاش|تحويل)/i.test(lower);
+        
+        // التحقق من وجود بيانات دفع معلقة (بعد اختيار طريقة الدفع)
+        if (window._chatPaymentData && window._chatPaymentData.step === 'awaiting_info') {
+            removeTypingIndicator();
+            // توقع إدخال: الاسم، الهاتف، العنوان
+            const parts = msg.split(/[,،\n]+/).map(s => s.trim()).filter(s => s);
+            let name = '', phone = '', address = '';
+            
+            if (parts.length >= 2) {
+                name = parts[0];
+                phone = parts[1];
+                address = parts.length >= 3 ? parts[2] : '';
+            } else {
+                // محاولة استخراج رقم الهاتف
+                const phoneMatch = msg.match(/(\d{7,15})/);
+                if (phoneMatch) {
+                    phone = phoneMatch[1];
+                    // الباقي يعتبر اسم
+                    name = msg.replace(phoneMatch[0], '').replace(/[,،\n]+/g, ' ').trim();
+                } else {
+                    addBotMessage('❌ يرجى إدخال الاسم ورقم الهاتف.\nمثال: أحمد محمد، 0912345678', []);
+                    return;
+                }
+            }
+            
+            if (!name || !phone) {
+                addBotMessage('❌ يرجى إدخال الاسم ورقم الهاتف.\nمثال: أحمد محمد، 0912345678', []);
+                return;
+            }
+            
+            const pd = window._chatPaymentData;
+            await submitChatOrder(name, phone, address, pd.paymentMethod, pd.items);
+            return;
+        }
+        
+        if (buyIntent && cart.length === 0) {
+            // إذا كان ينوي الشراء لكن السلة فارغة، اسأله عاوز يشوف شنو
+            removeTypingIndicator();
+            addBotMessage('✅ تقدر تطلب من هنا!\n\n📦 أولاً اختار المنتجات اللي عاوزها:\n'
+                + '1. اكتب اسم المنتج اللي عاوزه (مثلاً: قميص، فستان)\n'
+                + '2. أو اكتب اسم القسم (رجالي، نسائي، احذية)\n'
+                + '3. أو تصفح المنتجات من فوق 👆\n\n'
+                + 'وبعد ما تختار، هتظهر المنتجات وتقدر تضيفها للسلة 🛒\n'
+                + 'وبعدين أقدر أساعدك في الدفع 💳', []);
+            return;
+        }
+        
         const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -592,14 +647,133 @@ async function sendMsg() {
         removeTypingIndicator();
         
         if (data.text) {
+            // إذا ذكر الدفع، أظهر خيارات الدفع
+            if (/(دفع|طريقة الدفع|كيف ادفع|شلون ادفع|ايش طرق)/i.test(msg)) {
+                showPaymentOptions();
+                return;
+            }
             addBotMessage(data.text, data.products || []);
         } else if (data.reply) {
             // دعم التوافق مع النظام القديم
+            if (/(دفع|طريقة الدفع|كيف ادفع|شلون ادفع|ايش طرق)/i.test(msg)) {
+                showPaymentOptions();
+                return;
+            }
             addBotMessage(data.reply, data.products || []);
         }
     } catch (e) {
         removeTypingIndicator();
         addBotMessage('❌ عذرا، حدث خطأ في الاتصال. حاول مرة أخرى');
+    }
+}
+
+// ===== الدفع داخل الشات =====
+let chatCheckoutItems = [];
+
+function showPaymentOptions() {
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    if (cartItems.length === 0) {
+        addBotMessage('⚠️ السلة فاضية!\nأضف منتجات للسلة أولاً 🛒\nاكتب اسم المنتج اللي عاوزه.', []);
+        return;
+    }
+    
+    chatCheckoutItems = cartItems;
+    const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
+    const itemsList = cartItems.map(i => `• ${i.name} x${i.quantity} = ${(i.price * i.quantity).toFixed(0)} ريال`).join('\n');
+    
+    addBotMessage(
+        `🛍️ طلبك:\n${itemsList}\n\n💰 الإجمالي: ${total.toFixed(0)} ريال\n\nاختر طريقة الدفع المناسبة 👇`,
+        []
+    );
+    
+    // إظهار أزرار الدفع
+    setTimeout(() => {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        const paymentDiv = document.createElement('div');
+        paymentDiv.className = 'message message-admin';
+        paymentDiv.innerHTML = `
+            <div class="message-bubble" style="background:transparent;padding:0;max-width:100%;">
+                <div class="chat-payment-options">
+                    <button class="chat-pay-btn pay-cash" onclick="startChatCheckout('كاش')">
+                        <span class="pay-icon">💰</span>
+                        <span class="pay-label">كاش عند الاستلام</span>
+                        <span class="pay-desc">ادفع عندما تستلم الطلب</span>
+                    </button>
+                    <button class="chat-pay-btn pay-bank" onclick="startChatCheckout('تحويل بنكي')">
+                        <span class="pay-icon">🏦</span>
+                        <span class="pay-label">تحويل بنكي</span>
+                        <span class="pay-desc">حوّل على حساب المتجر</span>
+                    </button>
+                    <button class="chat-pay-btn pay-fawry" onclick="startChatCheckout('فوري')">
+                        <span class="pay-icon">💳</span>
+                        <span class="pay-label">فوري</span>
+                        <span class="pay-desc">ادفع عبر فوري</span>
+                    </button>
+                </div>
+            </div>
+        `;
+        chatMessages.appendChild(paymentDiv);
+        scrollChatToBottom();
+    }, 500);
+}
+
+function startChatCheckout(paymentMethod) {
+    if (chatCheckoutItems.length === 0) {
+        addBotMessage('⚠️ لا توجد منتجات في السلة للشراء.', []);
+        return;
+    }
+    
+    const total = chatCheckoutItems.reduce((s, i) => s + i.price * i.quantity, 0);
+    
+    addBotMessage(
+        `✅ اخترت: ${paymentMethod}\n\n📋 أدخل بياناتك:\n(الاسم ورقم الهاتف)\n\nمثال:\n"أحمد محمد، 0912345678، الخرطوم"`,
+        []
+    );
+    
+    // تخزين البيانات مؤقتاً لانتظار إدخال المستخدم
+    window._chatPaymentData = { paymentMethod, items: chatCheckoutItems, total, step: 'awaiting_info' };
+}
+
+async function submitChatOrder(name, phone, address, paymentMethod, items) {
+    const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+    
+    try {
+        const res = await fetch('/api/chat/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customer_name: name,
+                customer_phone: phone,
+                customer_address: address,
+                items: items,
+                total_price: total,
+                payment_method: paymentMethod
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            // إفراغ السلة
+            cart = [];
+            saveCart();
+            updateCartCount();
+            window._chatPaymentData = null;
+            
+            addBotMessage(data.message, []);
+            
+            if (paymentMethod === 'تحويل بنكي') {
+                setTimeout(() => {
+                    addBotMessage('📸 بعد ما تعمل التحويل، أرسل صورة الإيصال على الواتساب: 249127599044', []);
+                }, 1000);
+            }
+        } else {
+            addBotMessage(`❌ ${data.error}`, []);
+        }
+    } catch (e) {
+        addBotMessage('❌ عذراً، حدث خطأ في الاتصال. حاول مرة أخرى', []);
     }
 }
 

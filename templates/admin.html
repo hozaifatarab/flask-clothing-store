@@ -207,6 +207,14 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>المقاس</label>
+                        <input type="text" id="pSize" placeholder="مثال: M, L, XL, قياسي" value="قياسي">
+                    </div>
+                    <div class="form-group">
+                        <label>اللون</label>
+                        <input type="text" id="pColor" placeholder="مثال: اسود, ابيض, احمر" value="متنوع">
+                    </div>
+                    <div class="form-group">
                         <label>صورة</label>
                         <input type="file" id="pImage" accept="image/*">
                         <img id="addPreview" class="img-preview">
@@ -275,6 +283,14 @@
                         <option value="احذية">👟 أحذية</option>
                         <option value="اكسسوارات">⌚ اكسسوارات</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>المقاس</label>
+                    <input type="text" id="editSize" placeholder="مثال: M, L, XL, قياسي">
+                </div>
+                <div class="form-group">
+                    <label>اللون</label>
+                    <input type="text" id="editColor" placeholder="مثال: اسود, ابيض, احمر">
                 </div>
                 <div class="form-group">
                     <label>صورة</label>
@@ -351,6 +367,8 @@
             fd.append('price', price);
             fd.append('stock', parseInt(document.getElementById('pStock').value) || 0);
             fd.append('category', document.getElementById('pCat').value);
+            fd.append('size', document.getElementById('pSize').value.trim());
+            fd.append('color', document.getElementById('pColor').value.trim());
             const file = document.getElementById('pImage').files[0];
             const url = document.getElementById('pImageUrl').value.trim();
             if (file) {
@@ -384,6 +402,8 @@
                 document.getElementById('editDesc').value = p.description || '';
                 document.getElementById('editStock').value = p.stock || 0;
                 document.getElementById('editCat').value = p.category || 'رجالي';
+                document.getElementById('editSize').value = p.size || 'قياسي';
+                document.getElementById('editColor').value = p.color || 'متنوع';
                 document.getElementById('editImageUrl').value = p.image || '';
                 const preview = document.getElementById('editPreview');
                 if (p.image) { preview.src = p.image; preview.classList.add('show'); }
@@ -407,6 +427,8 @@
             fd.append('price', price);
             fd.append('stock', parseInt(document.getElementById('editStock').value) || 0);
             fd.append('category', document.getElementById('editCat').value);
+            fd.append('size', document.getElementById('editSize').value.trim());
+            fd.append('color', document.getElementById('editColor').value.trim());
             const file = document.getElementById('editImage').files[0];
             const url = document.getElementById('editImageUrl').value.trim();
             if (file) {

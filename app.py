@@ -69,6 +69,8 @@ def init_db():
         customer_address TEXT DEFAULT '',
         total_price REAL DEFAULT 0,
         status TEXT DEFAULT 'pending',
+        payment_method TEXT DEFAULT 'كاش',
+        payment_status TEXT DEFAULT 'pending',
         items TEXT DEFAULT '[]',
         created_at TEXT DEFAULT ''
     )''')
@@ -106,10 +108,10 @@ def init_db():
     c.execute('SELECT COUNT(*) as cnt FROM products')
     if c.fetchone()['cnt'] == 0:
         for p in products_seed:
-            c.execute('''INSERT INTO products (name, description, price, category, image, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)''',
+            c.execute('''INSERT INTO products (name, description, price, category, image, size, color, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
                 (p['name'], p.get('description', ''), p['price'], p['category'],
-                 p['image'], datetime.now().isoformat()))
+                 p['image'], p.get('size', 'قياسي'), p.get('color', 'متنوع'), datetime.now().isoformat()))
         conn.commit()
         print(f"[OK] Seeded {len(products_seed)} products")
     else:
@@ -326,8 +328,11 @@ def api_create_order():
         if product['stock'] < qty:
             return jsonify({'error': f'الكمية المطلوبة من "{item.get("name", "")}" غير متوفرة (المتوفر: {product["stock"]})'}), 400
     
-    c.execute('INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, status, items, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-              (name, phone, address, total, 'pending', json.dumps(items), datetime.now().isoformat()))
+    payment_method = data.get('payment_method', 'كاش')
+    payment_status = data.get('payment_status', 'pending')
+    
+    c.execute('INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, status, payment_method, payment_status, items, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              (name, phone, address, total, 'pending', payment_method, payment_status, json.dumps(items), datetime.now().isoformat()))
     order_id = c.lastrowid
     
     for item in items:
@@ -409,11 +414,14 @@ def api_admin_products():
     if not name or not price:
         return jsonify({'error': 'الاسم والسعر مطلوبان'}), 400
     
+    size = data.get('size', 'قياسي').strip()
+    color = data.get('color', 'متنوع').strip()
+    
     conn = get_db()
     c = conn.cursor()
-    c.execute('''INSERT INTO products (name, description, price, category, stock, available, image, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-        (name, description, price, category, stock, available, image, datetime.now().isoformat()))
+    c.execute('''INSERT INTO products (name, description, price, category, stock, available, image, size, color, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (name, description, price, category, stock, available, image, size, color, datetime.now().isoformat()))
     conn.commit()
     c.execute('SELECT * FROM products WHERE id = ?', (c.lastrowid,))
     return jsonify(dict(c.fetchone()))
@@ -448,13 +456,15 @@ def api_admin_product(pid):
     available = 1 if stock > 0 else 0
     if not image:
         image = data.get('image', '')
+    size = data.get('size', 'قياسي').strip()
+    color = data.get('color', 'متنوع').strip()
     
     if image:
-        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=?, image=? WHERE id=?''',
-                  (name, description, price, category, stock, available, image, pid))
+        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=?, image=?, size=?, color=? WHERE id=?''',
+                  (name, description, price, category, stock, available, image, size, color, pid))
     else:
-        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=? WHERE id=?''',
-                  (name, description, price, category, stock, available, pid))
+        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=?, size=?, color=? WHERE id=?''',
+                  (name, description, price, category, stock, available, size, color, pid))
     conn.commit()
     c.execute('SELECT * FROM products WHERE id = ?', (pid,))
     return jsonify(dict(c.fetchone()))
@@ -481,6 +491,69 @@ def api_update_order_status(oid):
     conn.cursor().execute('UPDATE orders SET status = ? WHERE id = ?', (status, oid))
     conn.commit()
     return jsonify({'success': True})
+
+# ==================== API الدفع عبر الشات ====================
+@app.route('/api/chat/checkout', methods=['POST'])
+def api_chat_checkout():
+    """إنشاء طلب مباشرة من الشات مع طريقة الدفع"""
+    data = request.get_json()
+    name = data.get('customer_name', '').strip()
+    phone = data.get('customer_phone', '').strip()
+    address = data.get('customer_address', '').strip()
+    items = data.get('items', [])
+    total = data.get('total_price', 0)
+    payment_method = data.get('payment_method', 'كاش')
+    
+    if not name or not phone or not items:
+        return jsonify({'error': 'البيانات ناقصة'}), 400
+    
+    conn = get_db()
+    c = conn.cursor()
+    
+    # التحقق من المخزون
+    for item in items:
+        product = c.execute('SELECT stock, name FROM products WHERE id = ?', (item['id'],)).fetchone()
+        if not product:
+            return jsonify({'error': f'المنتج رقم {item["id"]} غير موجود'}), 400
+        qty = item.get('quantity', 1)
+        if product['stock'] < qty:
+            return jsonify({'error': f'الكمية المطلوبة من "{item.get("name", product["name"])}" غير متوفرة (المتوفر: {product["stock"]})'}), 400
+    
+    payment_status = 'pending'
+    if payment_method == 'تحويل بنكي':
+        payment_status = 'awaiting_transfer'
+    
+    c.execute('INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, status, payment_method, payment_status, items, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              (name, phone, address, total, 'pending', payment_method, payment_status, json.dumps(items), datetime.now().isoformat()))
+    order_id = c.lastrowid
+    
+    for item in items:
+        c.execute('UPDATE products SET stock = stock - ? WHERE id = ?', (item.get('quantity', 1), item['id']))
+    conn.commit()
+    
+    # رسالة تأكيد حسب طريقة الدفع
+    if payment_method == 'كاش':
+        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n💰 طريقة الدفع: كاش عند الاستلام\n📦 سيتم التواصل معاك خلال 24 ساعة'
+    elif payment_method == 'تحويل بنكي':
+        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n🏦 طريقة الدفع: تحويل بنكي\n📱 بنكك: 123456789 (حساب FASHION HUB)\n📸 يرجى إرسال صورة الإيداع عبر الواتساب 249127599044'
+    else:
+        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n💰 طريقة الدفع: {payment_method}\n📦 سيتم التواصل معاك قريباً'
+    
+    return jsonify({
+        'success': True,
+        'order_id': order_id,
+        'message': msg,
+        'order': {
+            'id': order_id,
+            'customer_name': name,
+            'customer_phone': phone,
+            'customer_address': address,
+            'total_price': total,
+            'payment_method': payment_method,
+            'payment_status': payment_status,
+            'items': json.dumps(items)
+        }
+    })
 
 # ==================== دوال مساعدة للبوت ====================
 
@@ -662,8 +735,8 @@ def api_chat():
     
     for keyword, term in product_keywords.items():
         if keyword in msg_lower:
-            c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ?) AND stock > 0 LIMIT 6",
-                      (f'%{term}%', f'%{term}%'))
+            c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ?) AND stock > 0 LIMIT 6",
+                      (f'%{term}%', f'%{term}%', f'%{term}%', f'%{term}%'))
             products = [dict(p) for p in c.fetchall()]
             if products:
                 for p in products:
@@ -686,8 +759,8 @@ def api_chat():
     q = ' '.join(q.split()).strip()
     
     if len(q) >= 2:
-        c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ?) AND stock > 0 LIMIT 5",
-                  (f'%{q}%', f'%{q}%'))
+        c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ?) AND stock > 0 LIMIT 5",
+                  (f'%{q}%', f'%{q}%', f'%{q}%', f'%{q}%'))
         products = [dict(p) for p in c.fetchall()]
         if products:
             for p in products:
