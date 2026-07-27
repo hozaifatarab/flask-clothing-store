@@ -81,6 +81,7 @@
                         <div class="product-actions">
                             <button class="btn-details" onclick="viewDetails({{ p.id }})">📋 تفاصيل</button>
                             <button class="btn-cart" onclick="addToCart({{ p.id }})" {% if p.stock <= 0 %}disabled{% endif %}>🛒 أضف</button>
+                            <button class="btn-buy" onclick="buyNow({{ p.id }})" {% if p.stock <= 0 %}disabled{% endif %}>💳 شراء الآن</button>
                         </div>
                     </div>
                 </div>
@@ -145,6 +146,14 @@
         <div class="modal-content" style="max-width:800px;">
             <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
             <div id="productDetail"></div>
+        </div>
+    </div>
+
+    <!-- ===== مودال الشراء المباشر ===== -->
+    <div id="buyModal" class="modal">
+        <div class="modal-content" style="max-width:500px;">
+            <button class="modal-close" onclick="closeModal('buyModal')">&times;</button>
+            <div id="buyModalContent"></div>
         </div>
     </div>
 

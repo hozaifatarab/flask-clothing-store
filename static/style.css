@@ -575,7 +575,7 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     gap: 8px;
 }
 
-.btn-details, .btn-cart {
+.btn-details, .btn-cart, .btn-buy {
     flex: 1;
     padding: 10px;
     border-radius: var(--radius-sm);
@@ -606,11 +606,22 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
 }
 
-.btn-cart:disabled {
+.btn-cart:disabled,
+.btn-buy:disabled {
     opacity: 0.4;
     cursor: not-allowed;
     transform: none !important;
     box-shadow: none !important;
+}
+
+.btn-buy {
+    background: linear-gradient(135deg, #00B894, #00A381);
+    color: white;
+}
+
+.btn-buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
 }
 
 /* ===== Chat ===== */
@@ -1680,6 +1691,84 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     .product-name { font-size: 13px; }
     .product-price { font-size: 16px; }
     .product-actions { flex-direction: column; gap: 6px; }
+}
+
+/* ===== Buy Now Modal ===== */
+.buy-direct-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.buy-product-summary {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 16px;
+    background: rgba(108, 92, 231, 0.08);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(108, 92, 231, 0.15);
+}
+
+.buy-product-img {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #111;
+}
+
+.buy-product-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.buy-product-price {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+.buy-product-stock {
+    font-size: 13px;
+}
+
+.buy-form {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.buy-form-row {
+    margin-bottom: 6px;
+}
+
+.buy-form-row label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.buy-qty-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.buy-total-row {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    padding: 10px;
+    background: rgba(0, 184, 148, 0.08);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(0, 184, 148, 0.15);
 }
 
 /* ===== إخفاء الإشعارات بشكل نهائي ===== */

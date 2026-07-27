@@ -102,6 +102,7 @@ function displayProducts(products) {
                 <div class="product-actions">
                     <button class="btn-details" onclick="viewDetails(${p.id})">📋 تفاصيل</button>
                     <button class="btn-cart" onclick="addToCart(${p.id})" ${!inStock ? 'disabled' : ''}>🛒 أضف</button>
+                    <button class="btn-buy" onclick="buyNow(${p.id})" ${!inStock ? 'disabled' : ''}>💳 شراء الآن</button>
                 </div>
             </div>
         </div>`;
@@ -599,6 +600,115 @@ async function sendMsg() {
     } catch (e) {
         removeTypingIndicator();
         addBotMessage('❌ عذرا، حدث خطأ في الاتصال. حاول مرة أخرى');
+    }
+}
+
+// ===== الشراء المباشر (Buy Now) =====
+let buyCurrentQty = 1;
+
+function buyNow(pid) {
+    const p = allProducts.find(x => x.id === pid);
+    if (!p) { showAlert('المنتج غير موجود', 'error'); return; }
+    if (p.stock <= 0) { showAlert('غير متوفر', 'error'); return; }
+    
+    const content = document.getElementById('buyModalContent');
+    if (!content) return;
+    
+    const inStock = p.stock > 0;
+    content.innerHTML = `
+        <div class="buy-direct-wrap">
+            <div class="buy-product-summary">
+                <img src="${p.image || ''}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/80?text=?'" class="buy-product-img">
+                <div>
+                    <div class="buy-product-name">${p.name}</div>
+                    <div class="buy-product-price">${p.price} ريال</div>
+                    <div class="buy-product-stock ${inStock ? 'stock-ok' : 'stock-out'}">${inStock ? '✅ متوفر' : '❌ غير متوفر'}</div>
+                </div>
+            </div>
+            <div class="buy-form">
+                <div class="buy-form-row">
+                    <label>الاسم الكامل <span style="color:red;">*</span></label>
+                    <input type="text" id="buyName" class="input-field" placeholder="اسمك الكامل" required>
+                </div>
+                <div class="buy-form-row">
+                    <label>رقم الهاتف <span style="color:red;">*</span></label>
+                    <input type="text" id="buyPhone" class="input-field" placeholder="رقم الواتساب أو الاتصال" required>
+                </div>
+                <div class="buy-form-row">
+                    <label>العنوان</label>
+                    <input type="text" id="buyAddress" class="input-field" placeholder="المدينة والمنطقة">
+                </div>
+                <div class="buy-form-row">
+                    <label>الكمية</label>
+                    <div class="buy-qty-selector">
+                        <button class="qty-btn" onclick="changeBuyQty(-1)">−</button>
+                        <span id="buyQtyDisplay" style="min-width:28px;text-align:center;font-weight:700;">1</span>
+                        <button class="qty-btn" onclick="changeBuyQty(1)">+</button>
+                    </div>
+                </div>
+                <div class="buy-total-row">
+                    الإجمالي: <span id="buyTotalPrice">${p.price}</span> ريال
+                </div>
+                <button class="checkout-btn" onclick="submitBuyOrder(${pid})" style="width:100%;margin-top:10px;">
+                    ✅ تأكيد الطلب
+                </button>
+            </div>
+        </div>`;
+    
+    content.dataset.productPrice = p.price;
+    content.dataset.productName = p.name;
+    buyCurrentQty = 1;
+    
+    openModal('buyModal');
+}
+
+function changeBuyQty(change) {
+    const qtyEl = document.getElementById('buyQtyDisplay');
+    const totalEl = document.getElementById('buyTotalPrice');
+    const content = document.getElementById('buyModalContent');
+    if (!qtyEl || !totalEl || !content) return;
+    
+    const newQty = buyCurrentQty + change;
+    if (newQty < 1) return;
+    
+    buyCurrentQty = newQty;
+    qtyEl.textContent = newQty;
+    
+    const price = parseFloat(content.dataset.productPrice) || 0;
+    totalEl.textContent = (price * newQty).toFixed(0);
+}
+
+async function submitBuyOrder(pid) {
+    const name = document.getElementById('buyName')?.value.trim();
+    const phone = document.getElementById('buyPhone')?.value.trim();
+    const address = document.getElementById('buyAddress')?.value.trim() || '';
+    const qty = buyCurrentQty || 1;
+    
+    if (!name || !phone) { showAlert('يرجى إدخال الاسم والهاتف', 'error'); return; }
+    
+    const p = allProducts.find(x => x.id === pid);
+    if (!p) { showAlert('المنتج غير موجود', 'error'); return; }
+    
+    const items = [{ id: p.id, name: p.name, price: p.price, quantity: qty, size: p.size || 'قياسي', color: p.color || 'متنوع' }];
+    const total = p.price * qty;
+    
+    try {
+        const res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                customer_name: name, customer_phone: phone,
+                customer_address: address, items: items, total_price: total
+            })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showAlert(`✅ تم تأكيد طلبك بنجاح! رقم الطلب: ${data.order_id}`, 'success');
+            closeModal('buyModal');
+            buyCurrentQty = 1;
+        } else showAlert(data.error, 'error');
+    } catch (e) {
+        showAlert('خطأ في الاتصال بالخادم', 'error');
     }
 }
 
