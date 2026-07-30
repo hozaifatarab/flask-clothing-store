@@ -261,6 +261,42 @@ def accessories():
     products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('اكسسوارات',)).fetchall()
     return render_template('accessories.html', products=products, title='قسم الاكسسوارات', current_category='اكسسوارات')
 
+@app.route('/shoes/رياضي')
+def shoes_riyadi():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('احذية', 'رياضي')).fetchall()
+    return render_template('shoes_riyadi.html', products=products, title='احذية رياضية', current_category='احذية', current_subcategory='رياضي')
+
+@app.route('/shoes/كوتشي')
+def shoes_kotchi():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('احذية', 'كوتشي')).fetchall()
+    return render_template('shoes_kotchi.html', products=products, title='كوتشي', current_category='احذية', current_subcategory='كوتشي')
+
+@app.route('/shoes/صندل')
+def shoes_sandal():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('احذية', 'صندل')).fetchall()
+    return render_template('shoes_sandal.html', products=products, title='صنادل', current_category='احذية', current_subcategory='صندل')
+
+@app.route('/accessories/ساعات')
+def acc_watches():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('اكسسوارات', 'ساعات')).fetchall()
+    return render_template('accessories_watches.html', products=products, title='ساعات', current_category='اكسسوارات', current_subcategory='ساعات')
+
+@app.route('/accessories/نظارات')
+def acc_glasses():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('اكسسوارات', 'نظارات')).fetchall()
+    return render_template('accessories_glasses.html', products=products, title='نظارات', current_category='اكسسوارات', current_subcategory='نظارات')
+
+@app.route('/accessories/حقائب')
+def acc_bags():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('اكسسوارات', 'حقائب')).fetchall()
+    return render_template('accessories_bags.html', products=products, title='حقائب', current_category='اكسسوارات', current_subcategory='حقائب')
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)

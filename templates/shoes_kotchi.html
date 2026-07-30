@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قسم الاكسسوارات - FASHION HUB</title>
+    <title>كوتشي - FASHION HUB</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <!-- ===== زر القائمة الجانبية ===== -->
     <button class="menu-toggle" onclick="toggleMenu()">☰ القائمة</button>
-
-    <!-- ===== القائمة الجانبية ===== -->
     <div id="sidebar" class="sidebar">
         <a href="/">🏠 الرئيسية</a>
         <a href="/men">👔 رجالي</a>
@@ -39,26 +36,19 @@
             <a href="/accessories/حقائب">👜 حقائب</a>
         </div>
     </div>
-
-    <!-- ===== خلفية القائمة ===== -->
     <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
-
     <script>
     function toggleMenu() {
         document.getElementById("sidebar").classList.toggle("active");
         document.getElementById("sidebarOverlay").classList.toggle("active");
     }
     </script>
-
-    <!-- ===== الهيرو ===== -->
     <section class="hero">
         <div class="container">
             <h1>FASHION HUB</h1>
-            <p>وجهتك للأناقة 🌟</p>
+            <p>كوتشي 👟</p>
         </div>
     </section>
-
-    <!-- ===== التصنيفات ===== -->
     <div class="categories">
         <button class="cat-pill active" data-cat="all" onclick="filterCategory('all')">🔥 الكل</button>
         <button class="cat-pill" data-cat="رجالي" onclick="filterCategory('رجالي')">👔 رجالي</button>
@@ -66,8 +56,6 @@
         <button class="cat-pill" data-cat="احذية" onclick="filterCategory('احذية')">👟 أحذية</button>
         <button class="cat-pill" data-cat="اكسسوارات" onclick="filterCategory('اكسسوارات')">⌚ اكسسوارات</button>
     </div>
-
-    <!-- ===== البحث ===== -->
     <section class="search-section">
         <div class="container">
             <div class="search-box">
@@ -76,8 +64,6 @@
             </div>
         </div>
     </section>
-
-    <!-- ===== المنتجات ===== -->
     <section class="products-section">
         <div class="container">
             <div class="products-grid" id="productsGrid">
@@ -109,16 +95,12 @@
             </div>
         </div>
     </section>
-
-    <!-- ===== الفوتر ===== -->
     <footer class="footer">
         <div class="container">
             <p>© 2026 FASHION HUB. جميع الحقوق محفوظة.</p>
             <p>📞 +966-XX-XXXXX | 📧 store@fashionhub.com</p>
         </div>
     </footer>
-
-    <!-- ===== الشات الموحد ===== -->
     <div id="chatPanel" class="chat-panel">
         <div class="chat-header">
             <h3>💬 كارم - مساعد المتجر</h3>
@@ -134,15 +116,11 @@
             <button class="chat-send" onclick="sendMsg()">📤 إرسال</button>
         </div>
     </div>
-
-    <!-- ===== أيقونة الشات المصغر ===== -->
     <div id="chatMini" class="chat-mini" onclick="restoreChat()">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
     </div>
-
-    <!-- ===== مودال السلة ===== -->
     <div id="cartModal" class="modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeCart()">&times;</button>
@@ -160,24 +138,18 @@
             </div>
         </div>
     </div>
-
-    <!-- ===== مودال تفاصيل المنتج ===== -->
     <div id="productModal" class="modal">
         <div class="modal-content" style="max-width:800px;">
             <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
             <div id="productDetail"></div>
         </div>
     </div>
-
-    <!-- ===== مودال الشراء المباشر ===== -->
     <div id="buyModal" class="modal">
         <div class="modal-content" style="max-width:500px;">
             <button class="modal-close" onclick="closeModal('buyModal')">&times;</button>
             <div id="buyModalContent"></div>
         </div>
     </div>
-
-    <!-- ===== مودال الخروج من الشات ===== -->
     <div id="exitChatModal" class="modal">
         <div class="modal-content exit-modal">
             <div class="exit-icon">💬</div>
@@ -196,10 +168,7 @@
             <button class="exit-cancel" onclick="cancelExitChat()">إلغاء</button>
         </div>
     </div>
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-
-    <!-- ===== زر الشات الدائري ===== -->
     <button id="chat-button" class="chat-btn" onclick="toggleChat()" title="فتح المحادثة">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>

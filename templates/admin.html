@@ -325,6 +325,39 @@
     </div>
     
     <script>
+        // خيارات التصنيف الفرعي حسب التصنيف الرئيسي
+        const subcatOptions = {
+            'رجالي': ['احذية', 'ملابس', 'عطور'],
+            'نسائي': ['احذية', 'ملابس', 'عطور'],
+            'احذية': ['رياضي', 'كوتشي', 'صندل'],
+            'اكسسوارات': ['ساعات', 'نظارات', 'حقائب']
+        };
+        
+        const subcatLabels = {
+            'رجالي': { 'احذية': '👟 احذية', 'ملابس': '👕 ملابس', 'عطور': '🌸 عطور' },
+            'نسائي': { 'احذية': '👟 احذية', 'ملابس': '👕 ملابس', 'عطور': '🌸 عطور' },
+            'احذية': { 'رياضي': '🏃 رياضي', 'كوتشي': '👟 كوتشي', 'صندل': '🩴 صندل' },
+            'اكسسوارات': { 'ساعات': '⌚ ساعات', 'نظارات': '👓 نظارات', 'حقائب': '👜 حقائب' }
+        };
+        
+        function updateSubcatOptions(selectId, category) {
+            const select = document.getElementById(selectId);
+            const options = subcatOptions[category] || [];
+            const labels = subcatLabels[category] || {};
+            select.innerHTML = '<option value="">-- اختر --</option>';
+            options.forEach(opt => {
+                const label = labels[opt] || opt;
+                select.innerHTML += `<option value="${opt}">${label}</option>`;
+            });
+        }
+        
+        document.getElementById('pCat').addEventListener('change', function() {
+            updateSubcatOptions('pSubcat', this.value);
+        });
+        document.getElementById('editCat').addEventListener('change', function() {
+            updateSubcatOptions('editSubcat', this.value);
+        });
+        
         // معاينة الصور
         document.getElementById('pImage').addEventListener('change', function(e) {
             const p = document.getElementById('addPreview');
