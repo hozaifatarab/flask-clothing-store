@@ -532,6 +532,16 @@ function addBotMessage(text, products = []) {
                 if (p.id) viewDetails(p.id);
             };
             
+            // Add buy button for each product card
+            const buyBtn = document.createElement('button');
+            buyBtn.className = 'chat-buy-btn';
+            buyBtn.innerHTML = '💳 شراء الآن';
+            buyBtn.onclick = (e) => {
+                e.stopPropagation();
+                buyFromChat(p.id);
+            };
+            container.appendChild(buyBtn);
+            
             container.appendChild(card);
         });
         

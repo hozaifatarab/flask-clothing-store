@@ -54,6 +54,7 @@ def init_db():
         description TEXT DEFAULT '',
         price REAL NOT NULL,
         category TEXT NOT NULL DEFAULT 'رجالي',
+        subcategory TEXT DEFAULT '',
         stock INTEGER DEFAULT 0,
         available INTEGER DEFAULT 1,
         image TEXT DEFAULT '',
@@ -205,11 +206,47 @@ def men():
     products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('رجالي',)).fetchall()
     return render_template('men.html', products=products, title='قسم الرجالي', current_category='رجالي')
 
+@app.route('/men/shoes')
+def men_shoes():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('رجالي', 'احذية')).fetchall()
+    return render_template('men_shoes.html', products=products, title='احذية رجالية', current_category='رجالي', current_subcategory='احذية')
+
+@app.route('/men/clothes')
+def men_clothes():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('رجالي', 'ملابس')).fetchall()
+    return render_template('men_clothes.html', products=products, title='ملابس رجالية', current_category='رجالي', current_subcategory='ملابس')
+
+@app.route('/men/perfume')
+def men_perfume():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('رجالي', 'عطور')).fetchall()
+    return render_template('men_perfume.html', products=products, title='عطور رجالية', current_category='رجالي', current_subcategory='عطور')
+
 @app.route('/women')
 def women():
     conn = get_db()
     products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('نسائي',)).fetchall()
     return render_template('women.html', products=products, title='قسم النسائي', current_category='نسائي')
+
+@app.route('/women/clothes')
+def women_clothes():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('نسائي', 'ملابس')).fetchall()
+    return render_template('women_clothes.html', products=products, title='ملابس نسائية', current_category='نسائي', current_subcategory='ملابس')
+
+@app.route('/women/shoes')
+def women_shoes():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('نسائي', 'احذية')).fetchall()
+    return render_template('women_shoes.html', products=products, title='احذية نسائية', current_category='نسائي', current_subcategory='احذية')
+
+@app.route('/women/perfume')
+def women_perfume():
+    conn = get_db()
+    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('نسائي', 'عطور')).fetchall()
+    return render_template('women_perfume.html', products=products, title='عطور نسائية', current_category='نسائي', current_subcategory='عطور')
 
 @app.route('/shoes')
 def shoes():
@@ -407,6 +444,7 @@ def api_admin_products():
     description = data.get('description', '').strip()
     price = float(data.get('price', 0))
     category = data.get('category', 'رجالي')
+    subcategory = data.get('subcategory', '').strip()
     stock = int(data.get('stock', 0))
     available = 1 if stock > 0 else 0
     if not image:
@@ -419,9 +457,9 @@ def api_admin_products():
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('''INSERT INTO products (name, description, price, category, stock, available, image, size, color, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-        (name, description, price, category, stock, available, image, size, color, datetime.now().isoformat()))
+    c.execute('''INSERT INTO products (name, description, price, category, subcategory, stock, available, image, size, color, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (name, description, price, category, subcategory, stock, available, image, size, color, datetime.now().isoformat()))
     conn.commit()
     c.execute('SELECT * FROM products WHERE id = ?', (c.lastrowid,))
     return jsonify(dict(c.fetchone()))
@@ -452,6 +490,7 @@ def api_admin_product(pid):
     description = data.get('description', '').strip()
     price = float(data.get('price', 0))
     category = data.get('category', 'رجالي')
+    subcategory = data.get('subcategory', '').strip()
     stock = int(data.get('stock', 0))
     available = 1 if stock > 0 else 0
     if not image:
@@ -460,11 +499,11 @@ def api_admin_product(pid):
     color = data.get('color', 'متنوع').strip()
     
     if image:
-        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=?, image=?, size=?, color=? WHERE id=?''',
-                  (name, description, price, category, stock, available, image, size, color, pid))
+        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, subcategory=?, stock=?, available=?, image=?, size=?, color=? WHERE id=?''',
+                  (name, description, price, category, subcategory, stock, available, image, size, color, pid))
     else:
-        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, stock=?, available=?, size=?, color=? WHERE id=?''',
-                  (name, description, price, category, stock, available, size, color, pid))
+        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, subcategory=?, stock=?, available=?, size=?, color=? WHERE id=?''',
+                  (name, description, price, category, subcategory, stock, available, size, color, pid))
     conn.commit()
     c.execute('SELECT * FROM products WHERE id = ?', (pid,))
     return jsonify(dict(c.fetchone()))

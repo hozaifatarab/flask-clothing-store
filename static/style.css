@@ -1707,6 +1707,45 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     padding-right: 32px;
 }
 
+/* ===== Submenu Dropdown ===== */
+.submenu {
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+}
+
+.submenu a {
+    padding: 12px 24px 12px 48px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #B0B0B0;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.05);
+}
+
+.submenu a:last-child {
+    border-bottom: none;
+}
+
+.submenu a::before {
+    content: '○';
+    position: absolute;
+    right: 24px;
+    font-size: 10px;
+    color: #D4AF37;
+    opacity: 0.6;
+}
+
+.submenu a:hover {
+    background: rgba(212, 175, 55, 0.08);
+    color: #D4AF37;
+    padding-right: 48px;
+}
+
+.submenu a:hover::before {
+    opacity: 1;
+}
+
 /* Overlay when sidebar is open */
 .sidebar-overlay {
     position: fixed;
