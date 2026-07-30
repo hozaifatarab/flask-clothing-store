@@ -939,8 +939,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 .chat-badge,
 .notification-badge, 
 .chat-widget .badge,
-[class*="badge"],
-[class*="notification"],
 .chat-button span,
 .whatsapp-float .count {
     display: none !important;
@@ -1895,4 +1893,3 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 
 /* ===== إخفاء الإشعارات بشكل نهائي ===== */
 .chat-btn{position:relative}
-.badge{display:none !important;}

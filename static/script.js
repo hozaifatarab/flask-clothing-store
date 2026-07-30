@@ -330,7 +330,7 @@ function showAlert(msg, type = 'info') {
 
 // ===== الشات الذكي (النظام الموحد) =====
 function initChat() {
-    const chatButton = document.getElementById('chatButton');
+    const chatButton = document.getElementById('chat-button');
     const chatPanel = document.getElementById('chatPanel');
     const chatMessages = document.getElementById('chatMessages');
     const messageInput = document.getElementById('messageInput');
@@ -344,7 +344,7 @@ function initChat() {
 
 function toggleChat() {
     const panel = document.getElementById('chatPanel');
-    const btn = document.getElementById('chatButton');
+    const btn = document.getElementById('chat-button');
     const mini = document.getElementById('chatMini');
     
     if (panel.classList.contains('active')) {
@@ -367,7 +367,8 @@ function minimizeChat() {
     
     panel.classList.remove('active');
     mini.style.display = 'flex';
-    document.getElementById('chatButton').style.display = 'none';
+    const btn = document.getElementById('chat-button');
+    if (btn) btn.style.display = 'none';
     isChatMinimized = true;
 }
 
@@ -383,7 +384,8 @@ function restoreChat() {
     
     panel.classList.add('active');
     mini.style.display = 'none';
-    document.getElementById('chatButton').style.display = 'none';
+    const btn = document.getElementById('chat-button');
+    if (btn) btn.style.display = 'none';
     isChatMinimized = false;
 }
 
@@ -894,6 +896,29 @@ async function submitBuyOrder(pid) {
     } catch (e) {
         showAlert('خطأ في الاتصال بالخادم', 'error');
     }
+}
+
+// ===== الشراء من الشات =====
+function buyFromChat(pid) {
+    const p = allProducts.find(x => x.id === pid);
+    if (!p) { showAlert('المنتج غير موجود', 'error'); return; }
+    if (p.stock <= 0) { showAlert('غير متوفر', 'error'); return; }
+    
+    // إضافة إلى السلة مباشرة
+    const item = cart.find(x => x.id === pid);
+    if (item) {
+        if (item.quantity < p.stock) item.quantity++;
+        else { showAlert('الكمية القصوى', 'warning'); return; }
+    } else {
+        cart.push({ id: p.id, name: p.name, price: p.price, quantity: 1, size: p.size || 'قياسي', color: p.color || 'متنوع' });
+    }
+    
+    saveCart();
+    updateCartCount();
+    showAlert(`✅ تمت إضافة ${p.name} إلى السلة`, 'success');
+    
+    // عرض خيارات الدفع
+    setTimeout(() => showPaymentOptions(), 500);
 }
 
 // ===== دوال مساعدة =====

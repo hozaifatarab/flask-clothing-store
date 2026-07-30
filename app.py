@@ -109,9 +109,10 @@ def init_db():
     c.execute('SELECT COUNT(*) as cnt FROM products')
     if c.fetchone()['cnt'] == 0:
         for p in products_seed:
-            c.execute('''INSERT INTO products (name, description, price, category, image, size, color, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+            c.execute('''INSERT INTO products (name, description, price, category, subcategory, stock, available, image, size, color, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                 (p['name'], p.get('description', ''), p['price'], p['category'],
+                 p.get('subcategory', ''), p.get('stock', 0), 1 if p.get('stock', 0) > 0 else 0,
                  p['image'], p.get('size', 'قياسي'), p.get('color', 'متنوع'), datetime.now().isoformat()))
         conn.commit()
         print(f"[OK] Seeded {len(products_seed)} products")
