@@ -1,6 +1,77 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!-- ===== بطاقات التصنيفات الرئيسية ===== -->
+<section class="categories-hero">
+    <div class="container">
+        <h2 class="categories-title">🛍️ تسوق حسب القسم</h2>
+        <div class="categories-cards-grid">
+            
+            <!-- قسم رجالي -->
+            <a href="/men" class="category-card card-men">
+                <div class="card-icon">👔</div>
+                <h3 class="card-title">رجالي</h3>
+                <div class="card-subcategories">
+                    <span class="subcat-tag">ملابس</span>
+                    <span class="subcat-tag">أحذية</span>
+                    <span class="subcat-tag">عطور</span>
+                </div>
+                <div class="card-arrow">←</div>
+            </a>
+
+            <!-- قسم نسائي -->
+            <a href="/women" class="category-card card-women">
+                <div class="card-icon">👗</div>
+                <h3 class="card-title">نسائي</h3>
+                <div class="card-subcategories">
+                    <span class="subcat-tag">ملابس</span>
+                    <span class="subcat-tag">أحذية</span>
+                    <span class="subcat-tag">شنط</span>
+                    <span class="subcat-tag">عطور ومكياج</span>
+                </div>
+                <div class="card-arrow">←</div>
+            </a>
+
+            <!-- قسم أطفال -->
+            <a href="/kids" class="category-card card-kids">
+                <div class="card-icon">👶</div>
+                <h3 class="card-title">أطفال</h3>
+                <div class="card-subcategories">
+                    <span class="subcat-tag">ملابس</span>
+                    <span class="subcat-tag">أحذية</span>
+                </div>
+                <div class="card-arrow">←</div>
+            </a>
+
+            <!-- قسم أحذية -->
+            <a href="/shoes" class="category-card card-shoes">
+                <div class="card-icon">👟</div>
+                <h3 class="card-title">أحذية</h3>
+                <div class="card-subcategories">
+                    <span class="subcat-tag">رياضي</span>
+                    <span class="subcat-tag">كوتشي</span>
+                    <span class="subcat-tag">صندل</span>
+                </div>
+                <div class="card-arrow">←</div>
+            </a>
+
+            <!-- قسم إكسسوارات -->
+            <a href="/accessories" class="category-card card-accessories">
+                <div class="card-icon">⌚</div>
+                <h3 class="card-title">إكسسوارات</h3>
+                <div class="card-subcategories">
+                    <span class="subcat-tag">ساعات</span>
+                    <span class="subcat-tag">نظارات</span>
+                    <span class="subcat-tag">حقائب</span>
+                    <span class="subcat-tag">مجوهرات</span>
+                </div>
+                <div class="card-arrow">←</div>
+            </a>
+
+        </div>
+    </div>
+</section>
+
 <!-- ===== المنتجات ===== -->
 <section class="products-section">
     <div class="container">

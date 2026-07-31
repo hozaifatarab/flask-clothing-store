@@ -322,6 +322,177 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     opacity: 0;
 }
 
+/* ===== Category Cards Hero Section ===== */
+.categories-hero {
+    padding: 40px 0 20px;
+}
+
+.categories-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #fff 30%, var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.categories-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.category-card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px 20px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text);
+    transition: var(--transition);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--radius);
+    padding: 2px;
+    background: linear-gradient(135deg, var(--primary), transparent 40%, transparent 60%, var(--secondary));
+    opacity: 0;
+    transition: var(--transition);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    z-index: -1;
+}
+
+.category-card:hover::before {
+    opacity: 1;
+}
+
+.category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(108, 92, 231, 0.2);
+    border-color: var(--primary);
+}
+
+.card-icon {
+    font-size: 56px;
+    margin-bottom: 8px;
+    transition: transform 0.3s ease;
+}
+
+.category-card:hover .card-icon {
+    transform: scale(1.15) rotate(5deg);
+}
+
+.card-title {
+    font-size: 22px;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, #fff, var(--text));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.card-subcategories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 4px;
+}
+
+.subcat-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(108, 92, 231, 0.1);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.category-card:hover .subcat-tag {
+    background: rgba(108, 92, 231, 0.15);
+    border-color: rgba(108, 92, 231, 0.4);
+    color: var(--text);
+}
+
+.card-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    color: var(--primary);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: var(--transition);
+}
+
+.category-card:hover .card-arrow {
+    opacity: 0.8;
+    transform: translateX(0);
+}
+
+/* Card-specific accent colors */
+.card-men {
+    border-top: 3px solid #6C5CE7;
+}
+
+.card-men:hover {
+    box-shadow: 0 12px 40px rgba(108, 92, 231, 0.25);
+}
+
+.card-women {
+    border-top: 3px solid #FD79A8;
+}
+
+.card-women:hover {
+    box-shadow: 0 12px 40px rgba(253, 121, 168, 0.25);
+}
+
+.card-kids {
+    border-top: 3px solid #00CEC9;
+}
+
+.card-kids:hover {
+    box-shadow: 0 12px 40px rgba(0, 206, 201, 0.25);
+}
+
+.card-shoes {
+    border-top: 3px solid #00B894;
+}
+
+.card-shoes:hover {
+    box-shadow: 0 12px 40px rgba(0, 184, 148, 0.25);
+}
+
+.card-accessories {
+    border-top: 3px solid #FDCB6E;
+}
+
+.card-accessories:hover {
+    box-shadow: 0 12px 40px rgba(253, 203, 110, 0.25);
+}
+
 /* ===== Subcategories (فئات) ===== */
 .subcategories {
     display: flex;
