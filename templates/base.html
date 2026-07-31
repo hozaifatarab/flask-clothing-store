@@ -71,9 +71,26 @@
         <!-- اطفال -->
         <a href="/kids" class="{% if current_category == 'اطفال' %}active{% endif %}">👶 اطفال</a>
         
-        <!-- أقسام أخرى -->
-        <a href="/shoes">👟 أحذية</a>
-        <a href="/accessories">⌚ اكسسوارات</a>
+        <!-- أحذية رئيسية -->
+        <div class="sidebar-section">
+            <a href="/shoes" class="cat-link {% if current_category == 'احذية' and not current_subcategory %}active{% endif %}" onclick="event.preventDefault(); toggleSidebarSubmenu('shoesMenu')">👟 أحذية <span class="arrow">▼</span></a>
+            <div id="shoesMenu" class="submenu-level1 {% if current_category == 'احذية' %}show{% endif %}">
+                <a href="/shoes/رياضي" class="{% if current_category == 'احذية' and current_subcategory == 'رياضي' %}active{% endif %}">🏃 رياضي</a>
+                <a href="/shoes/كوتشي" class="{% if current_category == 'احذية' and current_subcategory == 'كوتشي' %}active{% endif %}">👟 كوتشي</a>
+                <a href="/shoes/صندل" class="{% if current_category == 'احذية' and current_subcategory == 'صندل' %}active{% endif %}">🩴 صندل</a>
+            </div>
+        </div>
+        
+        <!-- اكسسوارات -->
+        <div class="sidebar-section">
+            <a href="/accessories" class="cat-link {% if current_category == 'اكسسوارات' %}active{% endif %}" onclick="event.preventDefault(); toggleSidebarSubmenu('accMenu')">⌚ اكسسوارات <span class="arrow">▼</span></a>
+            <div id="accMenu" class="submenu-level1 {% if current_category == 'اكسسوارات' %}show{% endif %}">
+                <a href="/accessories/ساعات" class="{% if current_category == 'اكسسوارات' and current_subcategory == 'ساعات' %}active{% endif %}">⌚ ساعات</a>
+                <a href="/accessories/نظارات" class="{% if current_category == 'اكسسوارات' and current_subcategory == 'نظارات' %}active{% endif %}">👓 نظارات</a>
+                <a href="/accessories/حقائب" class="{% if current_category == 'اكسسوارات' and current_subcategory == 'حقائب' %}active{% endif %}">👜 حقائب</a>
+                <a href="/accessories/مجوهرات" class="{% if current_category == 'اكسسوارات' and current_subcategory == 'مجوهرات' %}active{% endif %}">💍 مجوهرات</a>
+            </div>
+        </div>
     </div>
 
     <!-- ===== خلفية القائمة ===== -->

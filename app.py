@@ -55,7 +55,8 @@ CATEGORY_STRUCTURE = {
     'اكسسوارات': {
         'ساعات': [],
         'نظارات': [],
-        'حقائب': []
+        'حقائب': [],
+        'مجوهرات': []
     }
 }
 
@@ -390,6 +391,10 @@ def acc_glasses():
 @app.route('/accessories/حقائب')
 def acc_bags():
     return render_category_page('اكسسوارات', 'حقائب', title='حقائب')
+
+@app.route('/accessories/مجوهرات')
+def acc_jewelry():
+    return render_category_page('اكسسوارات', 'مجوهرات', title='مجوهرات')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
