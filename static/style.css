@@ -369,6 +369,76 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
 }
 
+/* ===== Type Filters (المستوى الثالث) ===== */
+.type-filters {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 20px;
+    flex-wrap: wrap;
+}
+
+.type-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+.type-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 50px;
+    background: rgba(0, 206, 201, 0.08);
+    border: 1px solid rgba(0, 206, 201, 0.2);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.type-pill:hover {
+    background: rgba(0, 206, 201, 0.15);
+    border-color: rgba(0, 206, 201, 0.4);
+    color: var(--text);
+}
+
+.type-pill.active {
+    background: var(--secondary);
+    border-color: var(--secondary);
+    color: white;
+    box-shadow: 0 4px 16px rgba(0, 206, 201, 0.3);
+}
+
+/* ===== Product Categories Badges on Product Cards ===== */
+.product-categories {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.cat-tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.cat-tag.cat-رجالي { background: rgba(108, 92, 231, 0.15); color: #6C5CE7; }
+.cat-tag.cat-نسائي { background: rgba(253, 121, 168, 0.15); color: #FD79A8; }
+.cat-tag.cat-اطفال { background: rgba(0, 206, 201, 0.15); color: #00CEC9; }
+.cat-tag.cat-احذية { background: rgba(0, 206, 201, 0.15); color: #00CEC9; }
+.cat-tag.cat-اكسسوارات { background: rgba(253, 203, 110, 0.15); color: #FDCB6E; }
+.cat-tag.cat-sub { background: rgba(108, 92, 231, 0.1); color: #A29BFE; }
+.cat-tag.cat-type { background: rgba(0, 184, 148, 0.1); color: #00B894; }
+
 /* ===== Search ===== */
 .search-section {
     padding: 0 0 30px;

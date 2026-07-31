@@ -81,6 +81,10 @@ function displayProducts(products) {
     
     grid.innerHTML = products.map(p => {
         const inStock = p.stock > 0;
+        const catBadge = p.category ? `<span class="cat-tag cat-${p.category}">${p.category}</span>` : '';
+        const subcatBadge = p.subcategory ? `<span class="cat-tag cat-sub">${p.subcategory}</span>` : '';
+        const typeBadge = p.type ? `<span class="cat-tag cat-type">${p.type}</span>` : '';
+        const categoriesHtml = (catBadge || subcatBadge || typeBadge) ? `<div class="product-categories">${catBadge}${subcatBadge}${typeBadge}</div>` : '';
         return `
         <div class="product-card">
             <div class="product-img-wrap">
@@ -90,6 +94,7 @@ function displayProducts(products) {
             <div class="product-body">
                 <div class="product-name">${p.name}</div>
                 <div class="product-desc">${p.description || ''}</div>
+                ${categoriesHtml}
                 <div class="product-meta">
                     <span class="meta-tag">📐 ${p.size || 'قياسي'}</span>
                     <span class="meta-tag">🎨 ${p.color || 'متنوع'}</span>
@@ -124,6 +129,42 @@ function filterCategory(cat) {
     loadProducts(cat === 'all' ? 'all' : cat, '');
 }
 
+// ===== تصفية حسب القسم الفرعي والنوع =====
+function filterSubcategory(category, subcategory) {
+    currentCategory = category;
+    // تحديث حالة أزرار الأقسام
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.toggle('active', p.dataset.cat === category));
+    // تفعيل/إلغاء تفعيل أزرار الفئات الفرعية
+    document.querySelectorAll('.subcat-pill').forEach(p => {
+        p.classList.toggle('active', p.textContent.trim() === (subcategory || 'الكل') || (!subcategory && p.textContent.includes('الكل')));
+    });
+    document.getElementById('searchInput').value = '';
+    // إعادة تحميل المنتجات مع القسم والقسم الفرعي
+    if (subcategory) {
+        loadProducts(category, '');
+        // تصفية محلية بعد التحميل
+        setTimeout(() => {
+            const filtered = allProducts.filter(p => p.category === category && p.subcategory === subcategory);
+            displayProducts(filtered);
+        }, 200);
+    } else {
+        loadProducts(category, '');
+    }
+}
+
+function filterType(category, subcategory, ptype) {
+    document.getElementById('searchInput').value = '';
+    if (ptype) {
+        loadProducts(category, '');
+        setTimeout(() => {
+            const filtered = allProducts.filter(p => p.category === category && p.subcategory === subcategory && p.type === ptype);
+            displayProducts(filtered);
+        }, 200);
+    } else if (subcategory) {
+        filterSubcategory(category, subcategory);
+    }
+}
+
 // ===== تفاصيل المنتج =====
 async function viewDetails(pid) {
     try {
@@ -145,7 +186,9 @@ async function viewDetails(pid) {
                 <div class="detail-price">${p.price} ريال</div>
                 <div class="detail-desc">${p.description || ''}</div>
                 <div class="detail-specs">
-                    <div class="spec-row"><span class="spec-label">الفئة</span><span class="spec-value">${p.category}</span></div>
+                    <div class="spec-row"><span class="spec-label">القسم</span><span class="spec-value">${p.category}</span></div>
+                    ${p.subcategory ? `<div class="spec-row"><span class="spec-label">القسم الفرعي</span><span class="spec-value">${p.subcategory}</span></div>` : ''}
+                    ${p.type ? `<div class="spec-row"><span class="spec-label">النوع</span><span class="spec-value">${p.type}</span></div>` : ''}
                     <div class="spec-row"><span class="spec-label">الحجم</span><span class="spec-value">${p.size || 'قياسي'}</span></div>
                     <div class="spec-row"><span class="spec-label">اللون</span><span class="spec-value">${p.color || 'متنوع'}</span></div>
                     <div class="spec-row"><span class="spec-label">المخزون</span><span class="spec-value">${p.stock} قطعة</span></div>

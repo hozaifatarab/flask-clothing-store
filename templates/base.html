@@ -121,6 +121,19 @@
     </div>
     {% endif %}
 
+    {% if current_category and current_category != 'all' and current_subcategory and current_subcategory in category_structure[current_category] %}
+    {% set types = category_structure[current_category][current_subcategory] %}
+    {% if types %}
+    <div class="type-filters">
+        <span class="type-label">🏷️ أنواع:</span>
+        <button class="type-pill {% if not current_type %}active{% endif %}" onclick="filterType('{{ current_category }}', '{{ current_subcategory }}', '')">🔥 الكل</button>
+        {% for type in types %}
+        <button class="type-pill {% if current_type == type %}active{% endif %}" onclick="filterType('{{ current_category }}', '{{ current_subcategory }}', '{{ type }}')">{{ type }}</button>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endif %}
+
     <!-- ===== البحث ===== -->
     <section class="search-section">
         <div class="container">

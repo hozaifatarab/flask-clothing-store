@@ -14,6 +14,11 @@
                 <div class="product-body">
                     <div class="product-name">{{ p.name }}</div>
                     <div class="product-desc">{{ p.description or '' }}</div>
+                    <div class="product-categories">
+                        {% if p.category %}<span class="cat-tag cat-{{ p.category }}">{{ p.category }}</span>{% endif %}
+                        {% if p.subcategory %}<span class="cat-tag cat-sub">{{ p.subcategory }}</span>{% endif %}
+                        {% if p.type %}<span class="cat-tag cat-type">{{ p.type }}</span>{% endif %}
+                    </div>
                     <div class="product-meta">
                         <span class="meta-tag">📐 {{ p.size or 'قياسي' }}</span>
                         <span class="meta-tag">🎨 {{ p.color or 'متنوع' }}</span>
