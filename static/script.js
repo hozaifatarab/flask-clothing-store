@@ -89,7 +89,7 @@ function displayProducts(products) {
         <div class="product-card">
             <div class="product-img-wrap">
                 <img src="${p.image || ''}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300?text=?'">
-                ${p.stock > 5 ? '<span class="product-badge badge-new">جديد</span>' : ''}
+                ${p.stock > 0 && p.stock <= 5 ? '<span class="product-badge badge-sale">محدود</span>' : ''}
             </div>
             <div class="product-body">
                 <div class="product-name">${p.name}</div>
@@ -598,7 +598,6 @@ async function downloadChatAsPDF() {
 function clearChatAndExit() {
     const chatMessages = document.getElementById('chatMessages');
     if (chatMessages) chatMessages.innerHTML = '';
-    chatHistory = [];
     closeModal('exitChatModal');
     minimizeChat();
     showAlert('🗑️ تم مسح المحادثة', 'info');

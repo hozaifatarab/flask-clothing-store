@@ -9,13 +9,13 @@
             <div class="product-card">
                 <div class="product-img-wrap">
                     <img src="{{ p.image }}" alt="{{ p.name }}" onerror="this.src='https://via.placeholder.com/300?text=?'">
-                    {% if p.stock > 5 %}<span class="product-badge badge-new">جديد</span>{% endif %}
+                    {% if p.stock > 0 and p.stock <= 5 %}<span class="product-badge badge-sale">محدود</span>{% endif %}
                 </div>
                 <div class="product-body">
                     <div class="product-name">{{ p.name }}</div>
                     <div class="product-desc">{{ p.description or '' }}</div>
                     <div class="product-meta">
-                        <span class="meta-tag"> {{ p.size or 'قياسي' }}</span>
+                        <span class="meta-tag">📐 {{ p.size or 'قياسي' }}</span>
                         <span class="meta-tag">🎨 {{ p.color or 'متنوع' }}</span>
                     </div>
                     <div class="product-price">{{ p.price }} ريال</div>

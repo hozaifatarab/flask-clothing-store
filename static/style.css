@@ -2091,13 +2091,20 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 
 /* ===== Chat Product Item Cards (النظام الجديد text + products) ===== */
 .chat-product-item-card {
-    background: #0f3460;
-    border-radius: 10px;
-    padding: 10px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 12px;
     margin: 10px 0;
     display: flex;
-    gap: 10px;
-    border: 1px solid #e94560;
+    gap: 12px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.chat-product-item-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(108, 92, 231, 0.15);
 }
 
 .chat-product-item-card img {
@@ -2106,6 +2113,7 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     border-radius: 8px;
     object-fit: cover;
     flex-shrink: 0;
+    background: #111;
 }
 
 .chat-product-item-info {
@@ -2114,35 +2122,36 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 }
 
 .chat-product-item-info h5 {
-    margin: 0;
-    color: #fff;
+    margin: 0 0 4px 0;
+    color: var(--text);
     font-size: 14px;
     font-weight: 700;
     line-height: 1.3;
 }
 
 .chat-product-item-price {
-    margin: 5px 0;
-    color: #e94560;
-    font-weight: bold;
+    margin: 4px 0;
+    color: var(--accent);
+    font-weight: 800;
     font-size: 14px;
 }
 
 .chat-product-item-info button {
-    background: #e94560;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 12px;
     font-weight: 700;
-    transition: all 0.2s ease;
+    transition: var(--transition);
+    margin-top: 6px;
 }
 
 .chat-product-item-info button:hover {
-    background: #d63851;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
 }
 
 .message-text {
@@ -2588,6 +2597,28 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     background: rgba(0, 184, 148, 0.08);
     border-radius: var(--radius-sm);
     border: 1px solid rgba(0, 184, 148, 0.15);
+}
+
+/* ===== Chat Buy Button ===== */
+.chat-buy-btn {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    margin-top: 8px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    transition: var(--transition);
+    font-family: 'Tajawal', sans-serif;
+}
+
+.chat-buy-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
 }
 
 /* ===== إخفاء الإشعارات بشكل نهائي ===== */
