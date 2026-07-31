@@ -322,6 +322,53 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     opacity: 0;
 }
 
+/* ===== Subcategories (فئات) ===== */
+.subcategories {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 20px;
+    flex-wrap: wrap;
+}
+
+.subcat-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+.subcat-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 18px;
+    border-radius: 50px;
+    background: rgba(108, 92, 231, 0.08);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.subcat-pill:hover {
+    background: rgba(108, 92, 231, 0.15);
+    border-color: rgba(108, 92, 231, 0.4);
+    color: var(--text);
+}
+
+.subcat-pill.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    box-shadow: 0 4px 16px rgba(108, 92, 231, 0.3);
+}
+
 /* ===== Search ===== */
 .search-section {
     padding: 0 0 30px;
@@ -933,16 +980,6 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     justify-content: center;
     border: 2px solid var(--bg-dark);
     visibility: visible !important;
-}
-
-/* ===== إخفاء الإشعارات من زر الشات ===== */
-.chat-badge,
-.notification-badge, 
-.chat-widget .badge,
-.chat-button span,
-.whatsapp-float .count {
-    display: none !important;
-    visibility: hidden !important;
 }
 
 /* ===== Chat Minimized ===== */
@@ -1705,43 +1742,159 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
     padding-right: 32px;
 }
 
-/* ===== Submenu Dropdown ===== */
-.submenu {
+/* ===== 3-Level Sidebar Dropdown ===== */
+.sidebar-section {
     display: flex;
     flex-direction: column;
-    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Main category link (رجالي, نسائي) */
+.sidebar .cat-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    color: #E0E0E0;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
     border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+    transition: all 0.3s ease;
+    font-family: 'Tajawal', sans-serif;
+    position: relative;
+    cursor: pointer;
 }
 
-.submenu a {
-    padding: 12px 24px 12px 48px;
-    font-size: 14px;
-    font-weight: 500;
-    color: #B0B0B0;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.05);
-}
-
-.submenu a:last-child {
-    border-bottom: none;
-}
-
-.submenu a::before {
-    content: '○';
-    position: absolute;
-    right: 24px;
+.sidebar .cat-link .arrow {
+    margin-right: auto;
     font-size: 10px;
+    transition: transform 0.3s ease;
     color: #D4AF37;
     opacity: 0.6;
 }
 
-.submenu a:hover {
-    background: rgba(212, 175, 55, 0.08);
+.sidebar .cat-link:hover {
+    background: rgba(212, 175, 55, 0.1);
     color: #D4AF37;
-    padding-right: 48px;
+    padding-right: 32px;
 }
 
-.submenu a:hover::before {
+.sidebar .cat-link.active {
+    color: #D4AF37;
+    background: rgba(212, 175, 55, 0.08);
+    border-right: 3px solid #D4AF37;
+}
+
+/* Level 1 submenu (subcategories like ملابس, احذية) */
+.submenu-level1 {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.submenu-level1.show {
+    max-height: 600px;
     opacity: 1;
+}
+
+.submenu-level1 .subcat-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px 12px 36px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #C0C0C0;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.05);
+    transition: all 0.3s ease;
+    font-family: 'Tajawal', sans-serif;
+    position: relative;
+    cursor: pointer;
+}
+
+.submenu-level1 .subcat-link .arrow {
+    margin-right: auto;
+    font-size: 9px;
+    transition: transform 0.3s ease;
+    color: #D4AF37;
+    opacity: 0.4;
+}
+
+.submenu-level1 .subcat-link:hover {
+    background: rgba(212, 175, 55, 0.08);
+    color: #D4AF37;
+    padding-right: 36px;
+}
+
+.submenu-level1 .subcat-link.active {
+    color: #D4AF37;
+    background: rgba(212, 175, 55, 0.06);
+    border-right: 2px solid #D4AF37;
+}
+
+/* Level 2 submenu (types like تيشرتات, بناطلين) */
+.submenu-level2 {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.submenu-level2.show {
+    max-height: 400px;
+    opacity: 1;
+}
+
+.submenu-level2 a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px 10px 52px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #A0A0A0;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.03);
+    transition: all 0.3s ease;
+    font-family: 'Tajawal', sans-serif;
+    position: relative;
+}
+
+.submenu-level2 a::before {
+    content: '◦';
+    position: absolute;
+    right: 36px;
+    font-size: 12px;
+    color: #D4AF37;
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+}
+
+.submenu-level2 a:hover {
+    background: rgba(212, 175, 55, 0.06);
+    color: #D4AF37;
+    padding-right: 52px;
+}
+
+.submenu-level2 a:hover::before {
+    opacity: 1;
+}
+
+.submenu-level2 a.active {
+    color: #D4AF37;
+    font-weight: 700;
+    background: rgba(212, 175, 55, 0.05);
+    border-right: 2px solid #D4AF37;
+}
+
+.submenu-level2 a.active::before {
+    content: '◆';
+    opacity: 1;
+    color: #D4AF37;
 }
 
 /* Overlay when sidebar is open */

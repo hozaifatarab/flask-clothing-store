@@ -46,6 +46,16 @@ CATEGORY_STRUCTURE = {
     'اطفال': {
         'ملابس': [],
         'احذية': []
+    },
+    'احذية': {
+        'رياضي': [],
+        'كوتشي': [],
+        'صندل': []
+    },
+    'اكسسوارات': {
+        'ساعات': [],
+        'نظارات': [],
+        'حقائب': []
     }
 }
 
@@ -235,7 +245,10 @@ def admin_logout():
 
 @app.context_processor
 def inject_user():
-    return dict(is_admin=session.get('logged_in', False))
+    return dict(
+        is_admin=session.get('logged_in', False),
+        category_structure=CATEGORY_STRUCTURE
+    )
 
 # ==================== الصفحات ====================
 @app.route('/')
@@ -260,134 +273,123 @@ def product_detail(pid):
 def cart():
     return render_template('index.html')
 
+# ===== Generic Category Route Handler =====
+def render_category_page(category, subcategory=None, ptype=None, title=None):
+    """Generic handler for all category pages"""
+    products = get_products(category=category, subcategory=subcategory, ptype=ptype)
+    if not title:
+        if subcategory and ptype:
+            title = f'{ptype} - {subcategory} {category}'
+        elif subcategory:
+            title = f'{subcategory} {category}'
+        else:
+            title = f'قسم {category}'
+    return render_template('index.html', products=products, title=title,
+                         current_category=category, current_subcategory=subcategory or '', current_type=ptype or '')
+
 # ===== صفحات الرجالي =====
 @app.route('/men')
 def men():
-    products = get_products(category='رجالي')
-    return render_template('index.html', products=products, title='قسم الرجالي', current_category='رجالي', current_subcategory='', current_type='')
+    return render_category_page('رجالي')
 
 @app.route('/men/clothes')
 def men_clothes():
-    products = get_products(category='رجالي', subcategory='ملابس')
-    return render_template('index.html', products=products, title='ملابس رجالية', current_category='رجالي', current_subcategory='ملابس', current_type='')
+    return render_category_page('رجالي', 'ملابس', title='ملابس رجالية')
 
 @app.route('/men/clothes/<ptype>')
 def men_clothes_type(ptype):
-    products = get_products(category='رجالي', subcategory='ملابس', ptype=ptype)
-    return render_template('index.html', products=products, title=f'{ptype} رجالي', current_category='رجالي', current_subcategory='ملابس', current_type=ptype)
+    return render_category_page('رجالي', 'ملابس', ptype)
 
 @app.route('/men/shoes')
 def men_shoes():
-    products = get_products(category='رجالي', subcategory='احذية')
-    return render_template('index.html', products=products, title='احذية رجالية', current_category='رجالي', current_subcategory='احذية', current_type='')
+    return render_category_page('رجالي', 'احذية', title='احذية رجالية')
 
 @app.route('/men/shoes/<ptype>')
 def men_shoes_type(ptype):
-    products = get_products(category='رجالي', subcategory='احذية', ptype=ptype)
-    return render_template('index.html', products=products, title=f'{ptype} رجالي', current_category='رجالي', current_subcategory='احذية', current_type=ptype)
+    return render_category_page('رجالي', 'احذية', ptype)
 
 @app.route('/men/perfume')
 def men_perfume():
-    products = get_products(category='رجالي', subcategory='عطور')
-    return render_template('index.html', products=products, title='عطور رجالية', current_category='رجالي', current_subcategory='عطور', current_type='')
+    return render_category_page('رجالي', 'عطور', title='عطور رجالية')
 
 # ===== صفحات النسائي =====
 @app.route('/women')
 def women():
-    products = get_products(category='نسائي')
-    return render_template('index.html', products=products, title='قسم النسائي', current_category='نسائي', current_subcategory='', current_type='')
+    return render_category_page('نسائي')
 
 @app.route('/women/clothes')
 def women_clothes():
-    products = get_products(category='نسائي', subcategory='ملابس')
-    return render_template('index.html', products=products, title='ملابس نسائية', current_category='نسائي', current_subcategory='ملابس', current_type='')
+    return render_category_page('نسائي', 'ملابس', title='ملابس نسائية')
 
 @app.route('/women/clothes/<ptype>')
 def women_clothes_type(ptype):
-    products = get_products(category='نسائي', subcategory='ملابس', ptype=ptype)
-    return render_template('index.html', products=products, title=f'{ptype} نسائي', current_category='نسائي', current_subcategory='ملابس', current_type=ptype)
+    return render_category_page('نسائي', 'ملابس', ptype)
 
 @app.route('/women/shoes')
 def women_shoes():
-    products = get_products(category='نسائي', subcategory='احذية')
-    return render_template('index.html', products=products, title='احذية نسائية', current_category='نسائي', current_subcategory='احذية', current_type='')
+    return render_category_page('نسائي', 'احذية', title='احذية نسائية')
 
 @app.route('/women/shoes/<ptype>')
 def women_shoes_type(ptype):
-    products = get_products(category='نسائي', subcategory='احذية', ptype=ptype)
-    return render_template('index.html', products=products, title=f'{ptype} نسائي', current_category='نسائي', current_subcategory='احذية', current_type=ptype)
+    return render_category_page('نسائي', 'احذية', ptype)
 
 @app.route('/women/bags')
 def women_bags():
-    products = get_products(category='نسائي', subcategory='شنط')
-    return render_template('index.html', products=products, title='شنط نسائية', current_category='نسائي', current_subcategory='شنط', current_type='')
+    return render_category_page('نسائي', 'شنط', title='شنط نسائية')
 
 @app.route('/women/bags/<ptype>')
 def women_bags_type(ptype):
-    products = get_products(category='نسائي', subcategory='شنط', ptype=ptype)
-    return render_template('index.html', products=products, title=f'{ptype} نسائي', current_category='نسائي', current_subcategory='شنط', current_type=ptype)
+    return render_category_page('نسائي', 'شنط', ptype)
 
 @app.route('/women/perfume')
 def women_perfume():
-    products = get_products(category='نسائي', subcategory='عطور ومكياج')
-    return render_template('index.html', products=products, title='عطور ومكياج نسائي', current_category='نسائي', current_subcategory='عطور ومكياج', current_type='')
+    return render_category_page('نسائي', 'عطور ومكياج', title='عطور ومكياج نسائي')
 
 # ===== صفحات اطفال =====
 @app.route('/kids')
 def kids():
-    products = get_products(category='اطفال')
-    return render_template('index.html', products=products, title='قسم الاطفال', current_category='اطفال', current_subcategory='', current_type='')
+    return render_category_page('اطفال')
 
 @app.route('/kids/clothes')
 def kids_clothes():
-    products = get_products(category='اطفال', subcategory='ملابس')
-    return render_template('index.html', products=products, title='ملابس اطفال', current_category='اطفال', current_subcategory='ملابس', current_type='')
+    return render_category_page('اطفال', 'ملابس', title='ملابس اطفال')
 
 @app.route('/kids/shoes')
 def kids_shoes():
-    products = get_products(category='اطفال', subcategory='احذية')
-    return render_template('index.html', products=products, title='احذية اطفال', current_category='اطفال', current_subcategory='احذية', current_type='')
+    return render_category_page('اطفال', 'احذية', title='احذية اطفال')
 
 # ===== الإكسسوارات (تبقى كما هي للتوافق) =====
 @app.route('/shoes')
 def shoes():
-    products = get_products(category='احذية')
-    return render_template('index.html', products=products, title='قسم الاحذية', current_category='احذية', current_subcategory='', current_type='')
+    return render_category_page('احذية')
 
 @app.route('/accessories')
 def accessories():
-    products = get_products(category='اكسسوارات')
-    return render_template('index.html', products=products, title='قسم الاكسسوارات', current_category='اكسسوارات', current_subcategory='', current_type='')
+    return render_category_page('اكسسوارات')
 
 @app.route('/shoes/رياضي')
 def shoes_riyadi():
-    products = get_products(category='احذية', subcategory='رياضي')
-    return render_template('index.html', products=products, title='احذية رياضية', current_category='احذية', current_subcategory='رياضي', current_type='')
+    return render_category_page('احذية', 'رياضي', title='احذية رياضية')
 
 @app.route('/shoes/كوتشي')
 def shoes_kotchi():
-    products = get_products(category='احذية', subcategory='كوتشي')
-    return render_template('index.html', products=products, title='كوتشي', current_category='احذية', current_subcategory='كوتشي', current_type='')
+    return render_category_page('احذية', 'كوتشي', title='كوتشي')
 
 @app.route('/shoes/صندل')
 def shoes_sandal():
-    products = get_products(category='احذية', subcategory='صندل')
-    return render_template('index.html', products=products, title='صنادل', current_category='احذية', current_subcategory='صندل', current_type='')
+    return render_category_page('احذية', 'صندل', title='صنادل')
 
 @app.route('/accessories/ساعات')
 def acc_watches():
-    products = get_products(category='اكسسوارات', subcategory='ساعات')
-    return render_template('index.html', products=products, title='ساعات', current_category='اكسسوارات', current_subcategory='ساعات', current_type='')
+    return render_category_page('اكسسوارات', 'ساعات', title='ساعات')
 
 @app.route('/accessories/نظارات')
 def acc_glasses():
-    products = get_products(category='اكسسوارات', subcategory='نظارات')
-    return render_template('index.html', products=products, title='نظارات', current_category='اكسسوارات', current_subcategory='نظارات', current_type='')
+    return render_category_page('اكسسوارات', 'نظارات', title='نظارات')
 
 @app.route('/accessories/حقائب')
 def acc_bags():
-    products = get_products(category='اكسسوارات', subcategory='حقائب')
-    return render_template('index.html', products=products, title='حقائب', current_category='اكسسوارات', current_subcategory='حقائب', current_type='')
+    return render_category_page('اكسسوارات', 'حقائب', title='حقائب')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):

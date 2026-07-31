@@ -2,7 +2,6 @@
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let allProducts = [];
 let currentCategory = 'all';
-let chatHistory = [];
 let isChatMinimized = false;
 let isChatMaximized = false;
 

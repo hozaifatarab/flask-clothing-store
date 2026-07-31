@@ -1,194 +1,36 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قسم الرجالي - FASHION HUB</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-</head>
-<body>
-    <!-- ===== زر القائمة الجانبية ===== -->
-    <button class="menu-toggle" onclick="toggleMenu()">☰ القائمة</button>
+{% extends "base.html" %}
 
-    <!-- ===== القائمة الجانبية ===== -->
-    <div id="sidebar" class="sidebar">
-        <a href="/">🏠 الرئيسية</a>
-        <a href="/men">👔 رجالي</a>
-        <div class="submenu">
-            <a href="/men/shoes">👟 احذية</a>
-            <a href="/men/clothes">👕 ملابس</a>
-            <a href="/men/perfume">🌸 عطور</a>
-        </div>
-        <a href="/women">👗 نسائي</a>
-        <a href="/shoes">👟 احذية</a>
-        <a href="/accessories">⌚ اكسسوارات</a>
-    </div>
-
-    <!-- ===== خلفية القائمة ===== -->
-    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleMenu()"></div>
-
-    <script>
-    function toggleMenu() {
-        document.getElementById("sidebar").classList.toggle("active");
-        document.getElementById("sidebarOverlay").classList.toggle("active");
-    }
-    </script>
-
-    <!-- ===== الهيرو ===== -->
-    <section class="hero">
-        <div class="container">
-            <h1>FASHION HUB</h1>
-            <p>وجهتك للأناقة 🌟</p>
-        </div>
-    </section>
-
-    <!-- ===== التصنيفات ===== -->
-    <div class="categories">
-        <button class="cat-pill active" data-cat="all" onclick="filterCategory('all')">🔥 الكل</button>
-        <button class="cat-pill" data-cat="رجالي" onclick="filterCategory('رجالي')">👔 رجالي</button>
-        <button class="cat-pill" data-cat="نسائي" onclick="filterCategory('نسائي')">👗 نسائي</button>
-        <button class="cat-pill" data-cat="احذية" onclick="filterCategory('احذية')">👟 أحذية</button>
-        <button class="cat-pill" data-cat="اكسسوارات" onclick="filterCategory('اكسسوارات')">⌚ اكسسوارات</button>
-    </div>
-
-    <!-- ===== البحث ===== -->
-    <section class="search-section">
-        <div class="container">
-            <div class="search-box">
-                <input type="text" class="search-input" id="searchInput" placeholder="🔍 ابحث عن منتج..." oninput="searchProducts()">
-                <button class="search-btn" onclick="searchProducts()">بحث</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== المنتجات ===== -->
-    <section class="products-section">
-        <div class="container">
-            <div class="products-grid" id="productsGrid">
-                {% for p in products %}
-                <div class="product-card">
-                    <div class="product-img-wrap">
-                        <img src="{{ p.image }}" alt="{{ p.name }}" onerror="this.src='https://via.placeholder.com/300?text=?'">
-                        {% if p.stock > 5 %}<span class="product-badge badge-new">جديد</span>{% endif %}
+{% block content %}
+<!-- ===== المنتجات ===== -->
+<section class="products-section">
+    <div class="container">
+        <div class="products-grid" id="productsGrid">
+            {% for p in products %}
+            <div class="product-card">
+                <div class="product-img-wrap">
+                    <img src="{{ p.image }}" alt="{{ p.name }}" onerror="this.src='https://via.placeholder.com/300?text=?'">
+                    {% if p.stock > 5 %}<span class="product-badge badge-new">جديد</span>{% endif %}
+                </div>
+                <div class="product-body">
+                    <div class="product-name">{{ p.name }}</div>
+                    <div class="product-desc">{{ p.description or '' }}</div>
+                    <div class="product-meta">
+                        <span class="meta-tag">📐 {{ p.size or 'قياسي' }}</span>
+                        <span class="meta-tag">🎨 {{ p.color or 'متنوع' }}</span>
                     </div>
-                    <div class="product-body">
-                        <div class="product-name">{{ p.name }}</div>
-                        <div class="product-desc">{{ p.description or '' }}</div>
-                        <div class="product-meta">
-                            <span class="meta-tag">📐 {{ p.size or 'قياسي' }}</span>
-                            <span class="meta-tag">🎨 {{ p.color or 'متنوع' }}</span>
-                        </div>
-                        <div class="product-price">{{ p.price }} ريال</div>
-                        <div class="product-stock {{ 'stock-ok' if p.stock > 0 else 'stock-out' }}">
-                            {% if p.stock > 0 %}✅ متوفر ({{ p.stock }}){% else %}❌ غير متوفر{% endif %}
-                        </div>
-                        <div class="product-actions">
-                            <button class="btn-details" onclick="viewDetails({{ p.id }})">📋 تفاصيل</button>
-                            <button class="btn-cart" onclick="addToCart({{ p.id }})" {% if p.stock <= 0 %}disabled{% endif %}>🛒 أضف</button>
-                            <button class="btn-buy" onclick="buyNow({{ p.id }})" {% if p.stock <= 0 %}disabled{% endif %}>💳 شراء الآن</button>
-                        </div>
+                    <div class="product-price">{{ p.price }} ريال</div>
+                    <div class="product-stock {{ 'stock-ok' if p.stock > 0 else 'stock-out' }}">
+                        {% if p.stock > 0 %}✅ متوفر ({{ p.stock }}){% else %}❌ غير متوفر{% endif %}
+                    </div>
+                    <div class="product-actions">
+                        <button class="btn-details" onclick="viewDetails({{ p.id }})">📋 تفاصيل</button>
+                        <button class="btn-cart" onclick="addToCart({{ p.id }})" {% if p.stock <= 0 %}disabled{% endif %}>🛒 أضف</button>
+                        <button class="btn-buy" onclick="buyNow({{ p.id }})" {% if p.stock <= 0 %}disabled{% endif %}>💳 شراء الآن</button>
                     </div>
                 </div>
-                {% endfor %}
             </div>
-        </div>
-    </section>
-
-    <!-- ===== الفوتر ===== -->
-    <footer class="footer">
-        <div class="container">
-            <p>© 2026 FASHION HUB. جميع الحقوق محفوظة.</p>
-            <p>📞 +966-XX-XXXXX | 📧 store@fashionhub.com</p>
-        </div>
-    </footer>
-
-    <!-- ===== الشات الموحد ===== -->
-    <div id="chatPanel" class="chat-panel">
-        <div class="chat-header">
-            <h3>💬 كارم - مساعد المتجر</h3>
-            <div class="chat-header-btns">
-                <button class="chat-header-btn" onclick="minimizeChat()" title="تصغير">⏬</button>
-                <button class="chat-header-btn" onclick="maximizeChat()" title="تكبير">⏫</button>
-                <button class="chat-header-btn" onclick="closeChatWithPrompt()" title="إغلاق">✕</button>
-            </div>
-        </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input-area">
-            <input type="text" class="chat-input" id="messageInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key==='Enter'){event.preventDefault();sendMsg()}">
-            <button class="chat-send" onclick="sendMsg()">📤 إرسال</button>
+            {% endfor %}
         </div>
     </div>
-
-    <!-- ===== أيقونة الشات المصغر ===== -->
-    <div id="chatMini" class="chat-mini" onclick="restoreChat()">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-    </div>
-
-    <!-- ===== مودال السلة ===== -->
-    <div id="cartModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeCart()">&times;</button>
-            <h2>🛒 سلة التسوق</h2>
-            <div id="cartItems" class="cart-items"></div>
-            <div class="cart-summary">
-                <h3>الإجمالي: <span id="cartTotal">0</span> ريال</h3>
-            </div>
-            <div id="checkoutSection" style="margin-top:16px;">
-                <h3 style="font-size:16px;margin-bottom:12px;color:var(--text);">📋 بيانات الشراء:</h3>
-                <input type="text" id="customerName" class="input-field" placeholder="الاسم الكامل">
-                <input type="text" id="customerPhone" class="input-field" placeholder="رقم الهاتف">
-                <input type="text" id="customerEmail" class="input-field" placeholder="العنوان">
-                <button class="checkout-btn" onclick="checkoutCart()">✅ إتمام الشراء</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== مودال تفاصيل المنتج ===== -->
-    <div id="productModal" class="modal">
-        <div class="modal-content" style="max-width:800px;">
-            <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
-            <div id="productDetail"></div>
-        </div>
-    </div>
-
-    <!-- ===== مودال الشراء المباشر ===== -->
-    <div id="buyModal" class="modal">
-        <div class="modal-content" style="max-width:500px;">
-            <button class="modal-close" onclick="closeModal('buyModal')">&times;</button>
-            <div id="buyModalContent"></div>
-        </div>
-    </div>
-
-    <!-- ===== مودال الخروج من الشات ===== -->
-    <div id="exitChatModal" class="modal">
-        <div class="modal-content exit-modal">
-            <div class="exit-icon">💬</div>
-            <h3>هل ترغب في تحميل المحادثة؟</h3>
-            <p class="exit-desc">سيتم مسح المحادثة بعد التحميل للحفاظ على خصوصيتك</p>
-            <div class="exit-btns">
-                <button class="exit-btn exit-btn-pdf" onclick="downloadChatAsPDF()">
-                    <span style="font-size:22px;">📥</span>
-                    تحميل PDF
-                </button>
-                <button class="exit-btn exit-btn-del" onclick="clearChatAndExit()">
-                    <span style="font-size:22px;">🗑️</span>
-                    مسح وخروج
-                </button>
-            </div>
-            <button class="exit-cancel" onclick="cancelExitChat()">إلغاء</button>
-        </div>
-    </div>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-
-    <!-- ===== زر الشات الدائري ===== -->
-    <button id="chat-button" class="chat-btn" onclick="toggleChat()" title="فتح المحادثة">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-    </button>
-</body>
-</html>
+</section>
+{% endblock %}

@@ -198,21 +198,25 @@
                         <input type="number" id="pStock" value="1" min="0">
                     </div>
                     <div class="form-group">
-                        <label>التصنيف</label>
+                        <label>القسم</label>
                         <select id="pCat">
                             <option value="رجالي">👔 رجالي</option>
                             <option value="نسائي">👗 نسائي</option>
+                            <option value="اطفال">👶 اطفال</option>
                             <option value="احذية">👟 أحذية</option>
                             <option value="اكسسوارات">⌚ اكسسوارات</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>التصنيف الفرعي</label>
+                        <label>القسم الفرعي</label>
                         <select id="pSubcat">
                             <option value="">-- اختر --</option>
-                            <option value="احذية">👟 احذية</option>
-                            <option value="ملابس">👕 ملابس</option>
-                            <option value="عطور">🌸 عطور</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>النوع</label>
+                        <select id="pType">
+                            <option value="">-- اختر --</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -285,21 +289,25 @@
                     <input type="number" id="editStock" min="0">
                 </div>
                 <div class="form-group">
-                    <label>التصنيف</label>
+                    <label>القسم</label>
                     <select id="editCat">
                         <option value="رجالي">👔 رجالي</option>
                         <option value="نسائي">👗 نسائي</option>
+                        <option value="اطفال">👶 اطفال</option>
                         <option value="احذية">👟 أحذية</option>
                         <option value="اكسسوارات">⌚ اكسسوارات</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>التصنيف الفرعي</label>
+                    <label>القسم الفرعي</label>
                     <select id="editSubcat">
                         <option value="">-- اختر --</option>
-                        <option value="احذية">👟 احذية</option>
-                        <option value="ملابس">👕 ملابس</option>
-                        <option value="عطور">🌸 عطور</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>النوع</label>
+                    <select id="editType">
+                        <option value="">-- اختر --</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -325,40 +333,99 @@
     </div>
     
     <script>
-        // خيارات التصنيف الفرعي حسب التصنيف الرئيسي
-        const subcatOptions = {
-            'رجالي': ['احذية', 'ملابس', 'عطور'],
-            'نسائي': ['احذية', 'ملابس', 'عطور'],
-            'احذية': ['رياضي', 'كوتشي', 'صندل'],
-            'اكسسوارات': ['ساعات', 'نظارات', 'حقائب']
+        // ===== هيكل التصنيفات الكامل (3 مستويات) =====
+        const CATEGORY_STRUCTURE = {
+            'رجالي': {
+                'ملابس': ['تيشرتات', 'بناطلين', 'رسمي', 'رياضة'],
+                'احذية': ['كاجوال', 'رسمي', 'رياضي', 'شباشب'],
+                'عطور': []
+            },
+            'نسائي': {
+                'ملابس': ['فساتين سهرة', 'كاجوال', 'عبايات'],
+                'احذية': ['كعب عالي', 'فلات', 'رياضي'],
+                'شنط': ['يد', 'ظهر', 'كروس'],
+                'عطور ومكياج': []
+            },
+            'اطفال': {
+                'ملابس': [],
+                'احذية': []
+            },
+            'احذية': {
+                'رياضي': [],
+                'كوتشي': [],
+                'صندل': []
+            },
+            'اكسسوارات': {
+                'ساعات': [],
+                'نظارات': [],
+                'حقائب': []
+            }
         };
         
-        const subcatLabels = {
-            'رجالي': { 'احذية': '👟 احذية', 'ملابس': '👕 ملابس', 'عطور': '🌸 عطور' },
-            'نسائي': { 'احذية': '👟 احذية', 'ملابس': '👕 ملابس', 'عطور': '🌸 عطور' },
-            'احذية': { 'رياضي': '🏃 رياضي', 'كوتشي': '👟 كوتشي', 'صندل': '🩴 صندل' },
-            'اكسسوارات': { 'ساعات': '⌚ ساعات', 'نظارات': '👓 نظارات', 'حقائب': '👜 حقائب' }
-        };
-        
+        // ===== تحديث القسم الفرعي حسب القسم =====
         function updateSubcatOptions(selectId, category) {
             const select = document.getElementById(selectId);
-            const options = subcatOptions[category] || [];
-            const labels = subcatLabels[category] || {};
+            const options = CATEGORY_STRUCTURE[category] || {};
             select.innerHTML = '<option value="">-- اختر --</option>';
-            options.forEach(opt => {
-                const label = labels[opt] || opt;
-                select.innerHTML += `<option value="${opt}">${label}</option>`;
+            Object.keys(options).forEach(subcat => {
+                select.innerHTML += `<option value="${subcat}">${getSubcatIcon(subcat)} ${subcat}</option>`;
             });
         }
         
+        function getSubcatIcon(subcat) {
+            const icons = {
+                'ملابس': '👕',
+                'احذية': '👟',
+                'عطور': '🌸',
+                'عطور ومكياج': '🌸',
+                'شنط': '👜',
+                'رياضي': '🏃',
+                'كوتشي': '👟',
+                'صندل': '🩴',
+                'ساعات': '⌚',
+                'نظارات': '👓',
+                'حقائب': '👜'
+            };
+            return icons[subcat] || '📁';
+        }
+        
+        // ===== تحديث النوع حسب القسم والقسم الفرعي =====
+        function updateTypeOptions(typeSelectId, category, subcategory) {
+            const select = document.getElementById(typeSelectId);
+            const types = CATEGORY_STRUCTURE[category]?.[subcategory] || [];
+            select.innerHTML = '<option value="">-- اختر --</option>';
+            types.forEach(type => {
+                select.innerHTML += `<option value="${type}">${type}</option>`;
+            });
+        }
+        
+        // ===== تحديث القوائم الثلاثة المرتبطة =====
+        function updateAllDropdowns(catSelectId, subcatSelectId, typeSelectId) {
+            const cat = document.getElementById(catSelectId).value;
+            updateSubcatOptions(subcatSelectId, cat);
+            updateTypeOptions(typeSelectId, cat, '');
+        }
+        
+        // ربط القوائم: القسم ← القسم الفرعي ← النوع
         document.getElementById('pCat').addEventListener('change', function() {
             updateSubcatOptions('pSubcat', this.value);
+            updateTypeOptions('pType', this.value, '');
         });
-        document.getElementById('editCat').addEventListener('change', function() {
-            updateSubcatOptions('editSubcat', this.value);
+        document.getElementById('pSubcat').addEventListener('change', function() {
+            const cat = document.getElementById('pCat').value;
+            updateTypeOptions('pType', cat, this.value);
         });
         
-        // معاينة الصور
+        document.getElementById('editCat').addEventListener('change', function() {
+            updateSubcatOptions('editSubcat', this.value);
+            updateTypeOptions('editType', this.value, '');
+        });
+        document.getElementById('editSubcat').addEventListener('change', function() {
+            const cat = document.getElementById('editCat').value;
+            updateTypeOptions('editType', cat, this.value);
+        });
+        
+        // ===== معاينة الصور =====
         document.getElementById('pImage').addEventListener('change', function(e) {
             const p = document.getElementById('addPreview');
             if (e.target.files[0]) { p.src = URL.createObjectURL(e.target.files[0]); p.classList.add('show'); }
@@ -368,6 +435,7 @@
             if (e.target.files[0]) { p.src = URL.createObjectURL(e.target.files[0]); p.classList.add('show'); }
         });
         
+        // ===== تحميل المنتجات =====
         async function loadProducts() {
             try {
                 const res = await fetch('/api/admin/products');
@@ -392,7 +460,7 @@
             tbody.innerHTML = products.map(p => `
                 <tr>
                     <td><img src="${p.image}" class="prod-img" onerror="this.src='https://via.placeholder.com/45?text=?'"></td>
-                    <td><strong>${p.name}</strong></td>
+                    <td><strong>${p.name}</strong><br><small style="color:#8888AA;">${p.subcategory || ''} ${p.type ? '→ ' + p.type : ''}</small></td>
                     <td>${p.price} ريال</td>
                     <td>${p.stock}</td>
                     <td>${catBadge(p.category)}</td>
@@ -405,7 +473,7 @@
             `).join('');
         }
         
-        // إضافة
+        // ===== إضافة منتج =====
         document.getElementById('addForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('pName').value.trim();
@@ -419,6 +487,7 @@
             fd.append('stock', parseInt(document.getElementById('pStock').value) || 0);
             fd.append('category', document.getElementById('pCat').value);
             fd.append('subcategory', document.getElementById('pSubcat').value);
+            fd.append('type', document.getElementById('pType').value);
             fd.append('size', document.getElementById('pSize').value.trim());
             fd.append('color', document.getElementById('pColor').value.trim());
             const file = document.getElementById('pImage').files[0];
@@ -443,7 +512,7 @@
             } catch(e) { showAlert('❌ خطأ', 'error'); }
         });
         
-        // تعديل
+        // ===== تعديل منتج =====
         async function openEdit(id) {
             try {
                 const res = await fetch(`/api/product/${id}`);
@@ -454,7 +523,13 @@
                 document.getElementById('editDesc').value = p.description || '';
                 document.getElementById('editStock').value = p.stock || 0;
                 document.getElementById('editCat').value = p.category || 'رجالي';
+                
+                // تحديث القسم الفرعي والنوع
+                updateSubcatOptions('editSubcat', p.category || 'رجالي');
                 document.getElementById('editSubcat').value = p.subcategory || '';
+                updateTypeOptions('editType', p.category || 'رجالي', p.subcategory || '');
+                document.getElementById('editType').value = p.type || '';
+                
                 document.getElementById('editSize').value = p.size || 'قياسي';
                 document.getElementById('editColor').value = p.color || 'متنوع';
                 document.getElementById('editImageUrl').value = p.image || '';
@@ -481,6 +556,7 @@
             fd.append('stock', parseInt(document.getElementById('editStock').value) || 0);
             fd.append('category', document.getElementById('editCat').value);
             fd.append('subcategory', document.getElementById('editSubcat').value);
+            fd.append('type', document.getElementById('editType').value);
             fd.append('size', document.getElementById('editSize').value.trim());
             fd.append('color', document.getElementById('editColor').value.trim());
             const file = document.getElementById('editImage').files[0];
@@ -504,7 +580,7 @@
             } catch(e) { showAlert('❌ خطأ', 'error'); }
         });
         
-        // حذف
+        // ===== حذف منتج =====
         async function deleteProduct(id) {
             if (!confirm('⚠️ متأكد من الحذف؟')) return;
             try {
