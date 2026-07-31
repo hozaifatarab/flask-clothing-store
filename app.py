@@ -30,6 +30,25 @@ CORS(app)
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs('static/images', exist_ok=True)
 
+# ==================== هيكل التصنيفات ====================
+CATEGORY_STRUCTURE = {
+    'رجالي': {
+        'ملابس': ['تيشرتات', 'بناطلين', 'رسمي', 'رياضة'],
+        'احذية': ['كاجوال', 'رسمي', 'رياضي', 'شباشب'],
+        'عطور': []
+    },
+    'نسائي': {
+        'ملابس': ['فساتين سهرة', 'كاجوال', 'عبايات'],
+        'احذية': ['كعب عالي', 'فلات', 'رياضي'],
+        'شنط': ['يد', 'ظهر', 'كروس'],
+        'عطور ومكياج': []
+    },
+    'اطفال': {
+        'ملابس': [],
+        'احذية': []
+    }
+}
+
 # ==================== قاعدة البيانات ====================
 def get_db():
     if 'db' not in g:
@@ -55,6 +74,7 @@ def init_db():
         price REAL NOT NULL,
         category TEXT NOT NULL DEFAULT 'رجالي',
         subcategory TEXT DEFAULT '',
+        type TEXT DEFAULT '',
         stock INTEGER DEFAULT 0,
         available INTEGER DEFAULT 1,
         image TEXT DEFAULT '',
@@ -109,14 +129,21 @@ def init_db():
     c.execute('SELECT COUNT(*) as cnt FROM products')
     if c.fetchone()['cnt'] == 0:
         for p in products_seed:
-            c.execute('''INSERT INTO products (name, description, price, category, subcategory, stock, available, image, size, color, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            c.execute('''INSERT INTO products (name, description, price, category, subcategory, type, stock, available, image, size, color, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                 (p['name'], p.get('description', ''), p['price'], p['category'],
-                 p.get('subcategory', ''), p.get('stock', 0), 1 if p.get('stock', 0) > 0 else 0,
+                 p.get('subcategory', ''), p.get('type', ''), p.get('stock', 0), 1 if p.get('stock', 0) > 0 else 0,
                  p['image'], p.get('size', 'قياسي'), p.get('color', 'متنوع'), datetime.now().isoformat()))
         conn.commit()
         print(f"[OK] Seeded {len(products_seed)} products")
     else:
+        # التحقق من وجود عمود type وإضافته إذا لم يكن موجوداً
+        try:
+            c.execute('SELECT type FROM products LIMIT 1')
+        except sqlite3.OperationalError:
+            c.execute('ALTER TABLE products ADD COLUMN type TEXT DEFAULT ""')
+            conn.commit()
+            print("[OK] Added 'type' column to existing products table")
         print("[OK] Database already exists")
     
     conn.close()
@@ -144,6 +171,38 @@ def login_required(f):
             return redirect(url_for('admin_login'))
         return f(*args, **kwargs)
     return wrapper
+
+def get_products(category=None, subcategory=None, ptype=None):
+    """جلب المنتجات حسب التصنيفات (1, 2, أو 3 مستويات)"""
+    conn = get_db()
+    c = conn.cursor()
+    
+    if category and subcategory and ptype:
+        c.execute('''SELECT * FROM products 
+                     WHERE category = ? AND subcategory = ? AND type = ? 
+                     ORDER BY id''', (category, subcategory, ptype))
+    elif category and subcategory:
+        c.execute('''SELECT * FROM products 
+                     WHERE category = ? AND subcategory = ? 
+                     ORDER BY id''', (category, subcategory))
+    elif category:
+        c.execute('''SELECT * FROM products 
+                     WHERE category = ? 
+                     ORDER BY id''', (category,))
+    else:
+        c.execute('SELECT * FROM products ORDER BY id')
+    
+    return c.fetchall()
+
+def get_page_title(category, subcategory=None, ptype=None):
+    """توليد عنوان الصفحة حسب التصنيفات"""
+    if category and subcategory and ptype:
+        return f'{ptype} - {subcategory} {category}'
+    elif category and subcategory:
+        return f'{subcategory} {category}'
+    elif category:
+        return f'قسم {category}'
+    return 'جميع المنتجات'
 
 # ==================== التحكم الأساسي ====================
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -187,7 +246,7 @@ def home():
 def index():
     conn = get_db()
     products = conn.cursor().execute('SELECT * FROM products ORDER BY id').fetchall()
-    return render_template('index.html', products=products)
+    return render_template('index.html', products=products, title='الرئيسية', current_category='all', current_subcategory='', current_type='')
 
 @app.route('/product/<int:pid>')
 def product_detail(pid):
@@ -201,101 +260,134 @@ def product_detail(pid):
 def cart():
     return render_template('index.html')
 
+# ===== صفحات الرجالي =====
 @app.route('/men')
 def men():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('رجالي',)).fetchall()
-    return render_template('men.html', products=products, title='قسم الرجالي', current_category='رجالي')
-
-@app.route('/men/shoes')
-def men_shoes():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('رجالي', 'احذية')).fetchall()
-    return render_template('men_shoes.html', products=products, title='احذية رجالية', current_category='رجالي', current_subcategory='احذية')
+    products = get_products(category='رجالي')
+    return render_template('index.html', products=products, title='قسم الرجالي', current_category='رجالي', current_subcategory='', current_type='')
 
 @app.route('/men/clothes')
 def men_clothes():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('رجالي', 'ملابس')).fetchall()
-    return render_template('men_clothes.html', products=products, title='ملابس رجالية', current_category='رجالي', current_subcategory='ملابس')
+    products = get_products(category='رجالي', subcategory='ملابس')
+    return render_template('index.html', products=products, title='ملابس رجالية', current_category='رجالي', current_subcategory='ملابس', current_type='')
+
+@app.route('/men/clothes/<ptype>')
+def men_clothes_type(ptype):
+    products = get_products(category='رجالي', subcategory='ملابس', ptype=ptype)
+    return render_template('index.html', products=products, title=f'{ptype} رجالي', current_category='رجالي', current_subcategory='ملابس', current_type=ptype)
+
+@app.route('/men/shoes')
+def men_shoes():
+    products = get_products(category='رجالي', subcategory='احذية')
+    return render_template('index.html', products=products, title='احذية رجالية', current_category='رجالي', current_subcategory='احذية', current_type='')
+
+@app.route('/men/shoes/<ptype>')
+def men_shoes_type(ptype):
+    products = get_products(category='رجالي', subcategory='احذية', ptype=ptype)
+    return render_template('index.html', products=products, title=f'{ptype} رجالي', current_category='رجالي', current_subcategory='احذية', current_type=ptype)
 
 @app.route('/men/perfume')
 def men_perfume():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('رجالي', 'عطور')).fetchall()
-    return render_template('men_perfume.html', products=products, title='عطور رجالية', current_category='رجالي', current_subcategory='عطور')
+    products = get_products(category='رجالي', subcategory='عطور')
+    return render_template('index.html', products=products, title='عطور رجالية', current_category='رجالي', current_subcategory='عطور', current_type='')
 
+# ===== صفحات النسائي =====
 @app.route('/women')
 def women():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('نسائي',)).fetchall()
-    return render_template('women.html', products=products, title='قسم النسائي', current_category='نسائي')
+    products = get_products(category='نسائي')
+    return render_template('index.html', products=products, title='قسم النسائي', current_category='نسائي', current_subcategory='', current_type='')
 
 @app.route('/women/clothes')
 def women_clothes():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('نسائي', 'ملابس')).fetchall()
-    return render_template('women_clothes.html', products=products, title='ملابس نسائية', current_category='نسائي', current_subcategory='ملابس')
+    products = get_products(category='نسائي', subcategory='ملابس')
+    return render_template('index.html', products=products, title='ملابس نسائية', current_category='نسائي', current_subcategory='ملابس', current_type='')
+
+@app.route('/women/clothes/<ptype>')
+def women_clothes_type(ptype):
+    products = get_products(category='نسائي', subcategory='ملابس', ptype=ptype)
+    return render_template('index.html', products=products, title=f'{ptype} نسائي', current_category='نسائي', current_subcategory='ملابس', current_type=ptype)
 
 @app.route('/women/shoes')
 def women_shoes():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('نسائي', 'احذية')).fetchall()
-    return render_template('women_shoes.html', products=products, title='احذية نسائية', current_category='نسائي', current_subcategory='احذية')
+    products = get_products(category='نسائي', subcategory='احذية')
+    return render_template('index.html', products=products, title='احذية نسائية', current_category='نسائي', current_subcategory='احذية', current_type='')
+
+@app.route('/women/shoes/<ptype>')
+def women_shoes_type(ptype):
+    products = get_products(category='نسائي', subcategory='احذية', ptype=ptype)
+    return render_template('index.html', products=products, title=f'{ptype} نسائي', current_category='نسائي', current_subcategory='احذية', current_type=ptype)
+
+@app.route('/women/bags')
+def women_bags():
+    products = get_products(category='نسائي', subcategory='شنط')
+    return render_template('index.html', products=products, title='شنط نسائية', current_category='نسائي', current_subcategory='شنط', current_type='')
+
+@app.route('/women/bags/<ptype>')
+def women_bags_type(ptype):
+    products = get_products(category='نسائي', subcategory='شنط', ptype=ptype)
+    return render_template('index.html', products=products, title=f'{ptype} نسائي', current_category='نسائي', current_subcategory='شنط', current_type=ptype)
 
 @app.route('/women/perfume')
 def women_perfume():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('نسائي', 'عطور')).fetchall()
-    return render_template('women_perfume.html', products=products, title='عطور نسائية', current_category='نسائي', current_subcategory='عطور')
+    products = get_products(category='نسائي', subcategory='عطور ومكياج')
+    return render_template('index.html', products=products, title='عطور ومكياج نسائي', current_category='نسائي', current_subcategory='عطور ومكياج', current_type='')
 
+# ===== صفحات اطفال =====
+@app.route('/kids')
+def kids():
+    products = get_products(category='اطفال')
+    return render_template('index.html', products=products, title='قسم الاطفال', current_category='اطفال', current_subcategory='', current_type='')
+
+@app.route('/kids/clothes')
+def kids_clothes():
+    products = get_products(category='اطفال', subcategory='ملابس')
+    return render_template('index.html', products=products, title='ملابس اطفال', current_category='اطفال', current_subcategory='ملابس', current_type='')
+
+@app.route('/kids/shoes')
+def kids_shoes():
+    products = get_products(category='اطفال', subcategory='احذية')
+    return render_template('index.html', products=products, title='احذية اطفال', current_category='اطفال', current_subcategory='احذية', current_type='')
+
+# ===== الإكسسوارات (تبقى كما هي للتوافق) =====
 @app.route('/shoes')
 def shoes():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('احذية',)).fetchall()
-    return render_template('shoes.html', products=products, title='قسم الاحذية', current_category='احذية')
+    products = get_products(category='احذية')
+    return render_template('index.html', products=products, title='قسم الاحذية', current_category='احذية', current_subcategory='', current_type='')
 
 @app.route('/accessories')
 def accessories():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', ('اكسسوارات',)).fetchall()
-    return render_template('accessories.html', products=products, title='قسم الاكسسوارات', current_category='اكسسوارات')
+    products = get_products(category='اكسسوارات')
+    return render_template('index.html', products=products, title='قسم الاكسسوارات', current_category='اكسسوارات', current_subcategory='', current_type='')
 
 @app.route('/shoes/رياضي')
 def shoes_riyadi():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('احذية', 'رياضي')).fetchall()
-    return render_template('shoes_riyadi.html', products=products, title='احذية رياضية', current_category='احذية', current_subcategory='رياضي')
+    products = get_products(category='احذية', subcategory='رياضي')
+    return render_template('index.html', products=products, title='احذية رياضية', current_category='احذية', current_subcategory='رياضي', current_type='')
 
 @app.route('/shoes/كوتشي')
 def shoes_kotchi():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('احذية', 'كوتشي')).fetchall()
-    return render_template('shoes_kotchi.html', products=products, title='كوتشي', current_category='احذية', current_subcategory='كوتشي')
+    products = get_products(category='احذية', subcategory='كوتشي')
+    return render_template('index.html', products=products, title='كوتشي', current_category='احذية', current_subcategory='كوتشي', current_type='')
 
 @app.route('/shoes/صندل')
 def shoes_sandal():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('احذية', 'صندل')).fetchall()
-    return render_template('shoes_sandal.html', products=products, title='صنادل', current_category='احذية', current_subcategory='صندل')
+    products = get_products(category='احذية', subcategory='صندل')
+    return render_template('index.html', products=products, title='صنادل', current_category='احذية', current_subcategory='صندل', current_type='')
 
 @app.route('/accessories/ساعات')
 def acc_watches():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('اكسسوارات', 'ساعات')).fetchall()
-    return render_template('accessories_watches.html', products=products, title='ساعات', current_category='اكسسوارات', current_subcategory='ساعات')
+    products = get_products(category='اكسسوارات', subcategory='ساعات')
+    return render_template('index.html', products=products, title='ساعات', current_category='اكسسوارات', current_subcategory='ساعات', current_type='')
 
 @app.route('/accessories/نظارات')
 def acc_glasses():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('اكسسوارات', 'نظارات')).fetchall()
-    return render_template('accessories_glasses.html', products=products, title='نظارات', current_category='اكسسوارات', current_subcategory='نظارات')
+    products = get_products(category='اكسسوارات', subcategory='نظارات')
+    return render_template('index.html', products=products, title='نظارات', current_category='اكسسوارات', current_subcategory='نظارات', current_type='')
 
 @app.route('/accessories/حقائب')
 def acc_bags():
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id', ('اكسسوارات', 'حقائب')).fetchall()
-    return render_template('accessories_bags.html', products=products, title='حقائب', current_category='اكسسوارات', current_subcategory='حقائب')
+    products = get_products(category='اكسسوارات', subcategory='حقائب')
+    return render_template('index.html', products=products, title='حقائب', current_category='اكسسوارات', current_subcategory='حقائب', current_type='')
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
@@ -305,18 +397,23 @@ def uploaded_file(filename):
 @app.route('/api/products')
 def api_products():
     category = request.args.get('category', 'all')
+    subcategory = request.args.get('subcategory', '')
+    ptype = request.args.get('type', '')
     search = request.args.get('search', '')
     conn = get_db()
     c = conn.cursor()
     
-    if category != 'all' and search:
-        c.execute('SELECT * FROM products WHERE category = ? AND (name LIKE ? OR description LIKE ?) ORDER BY id',
-                  (category, f'%{search}%', f'%{search}%'))
+    if search:
+        c.execute('SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR type LIKE ?) ORDER BY id',
+                  (f'%{search}%', f'%{search}%', f'%{search}%'))
+    elif category != 'all' and subcategory and ptype:
+        c.execute('SELECT * FROM products WHERE category = ? AND subcategory = ? AND type = ? ORDER BY id',
+                  (category, subcategory, ptype))
+    elif category != 'all' and subcategory:
+        c.execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id',
+                  (category, subcategory))
     elif category != 'all':
         c.execute('SELECT * FROM products WHERE category = ? ORDER BY id', (category,))
-    elif search:
-        c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? ORDER BY id',
-                  (f'%{search}%', f'%{search}%'))
     else:
         c.execute('SELECT * FROM products ORDER BY id')
     
@@ -329,6 +426,21 @@ def api_product(pid):
     if not product:
         return jsonify({'error': 'غير موجود'}), 404
     return jsonify(dict(product))
+
+# ==================== API التصنيفات ====================
+@app.route('/api/categories')
+def api_categories():
+    """إرجاع هيكل التصنيفات بالكامل (للاستخدام في القوائم المنسدلة)"""
+    return jsonify(CATEGORY_STRUCTURE)
+
+@app.route('/api/categories/types')
+def api_category_types():
+    """إرجاع الأنواع حسب القسم والقسم الفرعي"""
+    category = request.args.get('category', '')
+    subcategory = request.args.get('subcategory', '')
+    if category in CATEGORY_STRUCTURE and subcategory in CATEGORY_STRUCTURE[category]:
+        return jsonify(CATEGORY_STRUCTURE[category][subcategory])
+    return jsonify([])
 
 # ==================== API الشات ====================
 @app.route('/api/messages', methods=['GET', 'POST', 'DELETE'])
@@ -482,6 +594,7 @@ def api_admin_products():
     price = float(data.get('price', 0))
     category = data.get('category', 'رجالي')
     subcategory = data.get('subcategory', '').strip()
+    ptype = data.get('type', '').strip()
     stock = int(data.get('stock', 0))
     available = 1 if stock > 0 else 0
     if not image:
@@ -494,9 +607,9 @@ def api_admin_products():
     
     conn = get_db()
     c = conn.cursor()
-    c.execute('''INSERT INTO products (name, description, price, category, subcategory, stock, available, image, size, color, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-        (name, description, price, category, subcategory, stock, available, image, size, color, datetime.now().isoformat()))
+    c.execute('''INSERT INTO products (name, description, price, category, subcategory, type, stock, available, image, size, color, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (name, description, price, category, subcategory, ptype, stock, available, image, size, color, datetime.now().isoformat()))
     conn.commit()
     c.execute('SELECT * FROM products WHERE id = ?', (c.lastrowid,))
     return jsonify(dict(c.fetchone()))
@@ -528,6 +641,7 @@ def api_admin_product(pid):
     price = float(data.get('price', 0))
     category = data.get('category', 'رجالي')
     subcategory = data.get('subcategory', '').strip()
+    ptype = data.get('type', '').strip()
     stock = int(data.get('stock', 0))
     available = 1 if stock > 0 else 0
     if not image:
@@ -536,11 +650,11 @@ def api_admin_product(pid):
     color = data.get('color', 'متنوع').strip()
     
     if image:
-        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, subcategory=?, stock=?, available=?, image=?, size=?, color=? WHERE id=?''',
-                  (name, description, price, category, subcategory, stock, available, image, size, color, pid))
+        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, subcategory=?, type=?, stock=?, available=?, image=?, size=?, color=? WHERE id=?''',
+                  (name, description, price, category, subcategory, ptype, stock, available, image, size, color, pid))
     else:
-        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, subcategory=?, stock=?, available=?, size=?, color=? WHERE id=?''',
-                  (name, description, price, category, subcategory, stock, available, size, color, pid))
+        c.execute('''UPDATE products SET name=?, description=?, price=?, category=?, subcategory=?, type=?, stock=?, available=?, size=?, color=? WHERE id=?''',
+                  (name, description, price, category, subcategory, ptype, stock, available, size, color, pid))
     conn.commit()
     c.execute('SELECT * FROM products WHERE id = ?', (pid,))
     return jsonify(dict(c.fetchone()))
@@ -686,15 +800,15 @@ def search_products_in_db(query):
     search_text = ' '.join(terms)
     
     try:
-        c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? LIMIT 5',
-                  (f'%{search_text}%', f'%{search_text}%'))
+        c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? OR type LIKE ? LIMIT 5',
+                  (f'%{search_text}%', f'%{search_text}%', f'%{search_text}%'))
         products = c.fetchall()
         
         if not products:
             for term in terms:
                 if len(term) > 1:
-                    c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? LIMIT 3',
-                              (f'%{term}%', f'%{term}%'))
+                    c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? OR type LIKE ? LIMIT 3',
+                              (f'%{term}%', f'%{term}%', f'%{term}%'))
                     products = c.fetchall()
                     if products:
                         break
@@ -811,8 +925,8 @@ def api_chat():
     
     for keyword, term in product_keywords.items():
         if keyword in msg_lower:
-            c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ?) AND stock > 0 LIMIT 6",
-                      (f'%{term}%', f'%{term}%', f'%{term}%', f'%{term}%'))
+            c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ? OR type LIKE ?) AND stock > 0 LIMIT 6",
+                      (f'%{term}%', f'%{term}%', f'%{term}%', f'%{term}%', f'%{term}%'))
             products = [dict(p) for p in c.fetchall()]
             if products:
                 for p in products:
@@ -835,8 +949,8 @@ def api_chat():
     q = ' '.join(q.split()).strip()
     
     if len(q) >= 2:
-        c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ?) AND stock > 0 LIMIT 5",
-                  (f'%{q}%', f'%{q}%', f'%{q}%', f'%{q}%'))
+        c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ? OR type LIKE ?) AND stock > 0 LIMIT 5",
+                  (f'%{q}%', f'%{q}%', f'%{q}%', f'%{q}%', f'%{q}%'))
         products = [dict(p) for p in c.fetchall()]
         if products:
             for p in products:
