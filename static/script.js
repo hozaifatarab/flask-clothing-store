@@ -175,6 +175,8 @@ async function viewDetails(pid) {
         if (!detail) return;
         
         const inStock = p.stock > 0;
+        const maxQty = p.stock || 10;
+        
         detail.innerHTML = `
         <div class="product-detail-wrap">
             <div class="detail-img">
@@ -185,6 +187,7 @@ async function viewDetails(pid) {
                 <div class="detail-rating">⭐⭐⭐⭐⭐ (4.8/5)</div>
                 <div class="detail-price">${p.price} ريال</div>
                 <div class="detail-desc">${p.description || ''}</div>
+                
                 <div class="detail-specs">
                     <div class="spec-row"><span class="spec-label">القسم</span><span class="spec-value">${p.category}</span></div>
                     ${p.subcategory ? `<div class="spec-row"><span class="spec-label">القسم الفرعي</span><span class="spec-value">${p.subcategory}</span></div>` : ''}
@@ -194,17 +197,89 @@ async function viewDetails(pid) {
                     <div class="spec-row"><span class="spec-label">المخزون</span><span class="spec-value">${p.stock} قطعة</span></div>
                     <div class="spec-row"><span class="spec-label">الحالة</span><span class="spec-value">${inStock ? '✅ متوفر' : '❌ غير متوفر'}</span></div>
                 </div>
+                
+                <div class="detail-qty-section">
+                    <label class="qty-label">الكمية:</label>
+                    <div class="detail-qty-selector">
+                        <button class="qty-btn" onclick="changeDetailQty(-1, ${maxQty})">−</button>
+                        <span id="detailQtyDisplay" class="qty-display">1</span>
+                        <button class="qty-btn" onclick="changeDetailQty(1, ${maxQty})">+</button>
+                    </div>
+                </div>
+                
+                <div class="detail-total">
+                    الإجمالي: <span id="detailTotalPrice">${p.price}</span> ريال
+                </div>
+                
                 <div class="detail-btns">
-                    <button class="btn-add-cart" onclick="addToCart(${p.id}); closeModal('productModal')" ${!inStock ? 'disabled' : ''}>🛒 أضف للسلة</button>
-                    <button class="btn-wishlist" onclick="showAlert('✅ تمت الإضافة للمفضلة', 'success')">❤️ مفضلة</button>
+                    <button class="btn-add-cart" onclick="addToCartFromDetail(${p.id})" ${!inStock ? 'disabled' : ''}>🛒 أضف للسلة</button>
+                    <button class="btn-buy-now" onclick="buyNowFromDetail(${p.id})" ${!inStock ? 'disabled' : ''}>💳 شراء الآن</button>
                 </div>
             </div>
-        </div>`;
+        </div>
+        <script>
+            window._detailProduct = { id: ${p.id}, price: ${p.price}, name: '${p.name.replace(/'/g, "\\'")}', stock: ${p.stock}, size: '${(p.size || 'قياسي').replace(/'/g, "\\'")}', color: '${(p.color || 'متنوع').replace(/'/g, "\\'")}' };
+        </script>`;
         
         openModal('productModal');
     } catch (e) {
         showAlert('خطأ في تحميل التفاصيل', 'error');
     }
+}
+
+// Quantity control in detail modal
+function changeDetailQty(delta, maxQty) {
+    const display = document.getElementById('detailQtyDisplay');
+    const totalEl = document.getElementById('detailTotalPrice');
+    if (!display || !totalEl || !window._detailProduct) return;
+    
+    let qty = parseInt(display.textContent) + delta;
+    if (qty < 1) qty = 1;
+    if (qty > maxQty) qty = maxQty;
+    
+    display.textContent = qty;
+    totalEl.textContent = (window._detailProduct.price * qty).toFixed(0);
+}
+
+function addToCartFromDetail(pid) {
+    const display = document.getElementById('detailQtyDisplay');
+    const qty = display ? parseInt(display.textContent) : 1;
+    const p = window._detailProduct;
+    if (!p) return;
+    
+    const product = allProducts.find(x => x.id === pid);
+    if (!product) { showAlert('المنتج غير موجود', 'error'); return; }
+    if (product.stock <= 0) { showAlert('غير متوفر', 'error'); return; }
+    
+    const item = cart.find(x => x.id === pid);
+    if (item) {
+        if (item.quantity + qty <= product.stock) item.quantity += qty;
+        else { showAlert('الكمية القصوى المتوفرة', 'warning'); return; }
+    } else {
+        cart.push({ id: p.id, name: p.name, price: p.price, quantity: qty, size: p.size || 'قياسي', color: p.color || 'متنوع' });
+    }
+    
+    saveCart();
+    updateCartCount();
+    showAlert(`✅ تمت إضافة ${qty} × ${p.name} للسلة`, 'success');
+    closeModal('productModal');
+}
+
+function buyNowFromDetail(pid) {
+    const display = document.getElementById('detailQtyDisplay');
+    const qty = display ? parseInt(display.textContent) : 1;
+    const p = window._detailProduct;
+    if (!p) return;
+    
+    const product = allProducts.find(x => x.id === pid);
+    if (!product) { showAlert('المنتج غير موجود', 'error'); return; }
+    if (product.stock <= 0) { showAlert('غير متوفر', 'error'); return; }
+    
+    // Set quantity for buy now modal
+    buyCurrentQty = qty;
+    
+    // Trigger buyNow with the product id
+    buyNow(pid);
 }
 
 // ===== السلة =====
