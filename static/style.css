@@ -2117,3 +2117,124 @@ input, textarea, select { font-family: 'Tajawal', sans-serif; }
 
 /* ===== إخفاء الإشعارات بشكل نهائي ===== */
 .chat-btn{position:relative}
+
+/* ===== زر السلة الدائري ===== */
+#cart-button {
+    position: fixed;
+    bottom: 100px;
+    left: 25px;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00B894, #00A381);
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 8px 20px rgba(0, 184, 148, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+#cart-button:hover {
+    transform: scale(1.1);
+}
+
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 24px;
+    height: 24px;
+    background: var(--accent);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-dark);
+    visibility: visible !important;
+}
+
+/* ===== خيارات الدفع في المودال ===== */
+.payment-options-grid {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.payment-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.payment-option-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: rgba(255, 255, 255, 0.03);
+    transition: var(--transition);
+    width: 100%;
+    text-align: center;
+}
+
+.payment-option input[type="radio"]:checked + .payment-option-content {
+    border-color: var(--primary);
+    background: rgba(108, 92, 231, 0.1);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+
+.payment-option:hover .payment-option-content {
+    border-color: var(--primary);
+    background: rgba(108, 92, 231, 0.05);
+}
+
+.payment-option-icon {
+    font-size: 24px;
+}
+
+.payment-option-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* ===== خيارات الدفع في الشراء المباشر ===== */
+.buy-payment-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.buy-payment-options .payment-option-content {
+    flex-direction: row;
+    gap: 6px;
+    padding: 8px 12px;
+}
+
+.buy-payment-options .payment-option-icon {
+    font-size: 18px;
+}
+
+.buy-payment-options .payment-option-label {
+    font-size: 12px;
+}
+

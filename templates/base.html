@@ -209,7 +209,31 @@
                 <h3 style="font-size:16px;margin-bottom:12px;color:var(--text);">📋 بيانات الشراء:</h3>
                 <input type="text" id="customerName" class="input-field" placeholder="الاسم الكامل">
                 <input type="text" id="customerPhone" class="input-field" placeholder="رقم الهاتف">
-                <input type="text" id="customerEmail" class="input-field" placeholder="العنوان">
+                <input type="text" id="customerAddress" class="input-field" placeholder="العنوان">
+                <h3 style="font-size:16px;margin:12px 0 10px;color:var(--text);">💳 طريقة الدفع:</h3>
+                <div class="payment-options-grid" id="cartPaymentOptions">
+                    <label class="payment-option">
+                        <input type="radio" name="cartPaymentMethod" value="كاش" checked>
+                        <span class="payment-option-content">
+                            <span class="payment-option-icon">💰</span>
+                            <span class="payment-option-label">كاش عند الاستلام</span>
+                        </span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="cartPaymentMethod" value="تحويل بنكي">
+                        <span class="payment-option-content">
+                            <span class="payment-option-icon">🏦</span>
+                            <span class="payment-option-label">تحويل بنكي</span>
+                        </span>
+                    </label>
+                    <label class="payment-option">
+                        <input type="radio" name="cartPaymentMethod" value="فوري">
+                        <span class="payment-option-content">
+                            <span class="payment-option-icon">💳</span>
+                            <span class="payment-option-label">فوري</span>
+                        </span>
+                    </label>
+                </div>
                 <button class="checkout-btn" onclick="checkoutCart()">✅ إتمام الشراء</button>
             </div>
         </div>
@@ -252,6 +276,16 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- ===== زر السلة الدائري ===== -->
+    <button id="cart-button" class="cart-btn" onclick="openCart()" title="سلة التسوق">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
+    </button>
 
     <!-- ===== زر الشات الدائري ===== -->
     <button id="chat-button" class="chat-btn" onclick="toggleChat()" title="فتح المحادثة">

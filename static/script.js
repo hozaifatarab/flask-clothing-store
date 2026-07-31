@@ -231,6 +231,16 @@ function saveCart() { localStorage.setItem('cart', JSON.stringify(cart)); }
 function updateCartCount() {
     const count = cart.reduce((t, i) => t + i.quantity, 0);
     document.querySelectorAll('.cart-count, #cartBadge').forEach(el => { if (el) el.textContent = count; });
+    // إظهار/إخفاء شارة السلة
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+        if (count > 0) {
+            badge.style.display = 'flex';
+            badge.textContent = count;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
 }
 
 function openCart() {
@@ -305,11 +315,13 @@ function updateTotal() {
 async function checkoutCart() {
     const name = document.getElementById('customerName')?.value.trim();
     const phone = document.getElementById('customerPhone')?.value.trim();
-    const address = document.getElementById('customerEmail')?.value.trim() || '';
+    const address = document.getElementById('customerAddress')?.value.trim() || '';
     
     if (!name || !phone) { showAlert('يرجى إدخال الاسم والهاتف', 'error'); return; }
     if (cart.length === 0) { showAlert('السلة فارغة', 'error'); return; }
     
+    // قراءة طريقة الدفع المحددة
+    const paymentMethod = document.querySelector('input[name="cartPaymentMethod"]:checked')?.value || 'كاش';
     const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
     
     try {
@@ -318,14 +330,20 @@ async function checkoutCart() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 customer_name: name, customer_phone: phone,
-                customer_address: address, items: cart, total_price: total
+                customer_address: address, items: cart, total_price: total,
+                payment_method: paymentMethod
             })
         });
         const data = await res.json();
         if (res.ok) {
-            showAlert(data.message, 'success');
+            // رسالة تأكيد حسب طريقة الدفع
+            let msg = data.message;
+            if (paymentMethod === 'تحويل بنكي') {
+                msg += '\n📱 بنكك: 123456789 (حساب FASHION HUB)\n📸 أرسل صورة الإيداع على واتساب 249127599044';
+            }
+            showAlert(`✅ تم تأكيد طلبك رقم ${data.order_id}!`, 'success');
             cart = []; saveCart(); updateCartCount(); closeCart();
-            ['customerName','customerPhone','customerEmail'].forEach(id => {
+            ['customerName','customerPhone','customerAddress'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
@@ -874,6 +892,32 @@ function buyNow(pid) {
                         <button class="qty-btn" onclick="changeBuyQty(1)">+</button>
                     </div>
                 </div>
+                <div class="buy-form-row">
+                    <label style="display:block;font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:4px;">💳 طريقة الدفع</label>
+                    <div class="buy-payment-options">
+                        <label class="payment-option" style="flex:1;">
+                            <input type="radio" name="buyPaymentMethod" value="كاش" checked>
+                            <span class="payment-option-content" style="flex-direction:row;gap:6px;">
+                                <span class="payment-option-icon">💰</span>
+                                <span class="payment-option-label" style="font-size:12px;">كاش</span>
+                            </span>
+                        </label>
+                        <label class="payment-option" style="flex:1;">
+                            <input type="radio" name="buyPaymentMethod" value="تحويل بنكي">
+                            <span class="payment-option-content" style="flex-direction:row;gap:6px;">
+                                <span class="payment-option-icon">🏦</span>
+                                <span class="payment-option-label" style="font-size:12px;">تحويل</span>
+                            </span>
+                        </label>
+                        <label class="payment-option" style="flex:1;">
+                            <input type="radio" name="buyPaymentMethod" value="فوري">
+                            <span class="payment-option-content" style="flex-direction:row;gap:6px;">
+                                <span class="payment-option-icon">💳</span>
+                                <span class="payment-option-label" style="font-size:12px;">فوري</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
                 <div class="buy-total-row">
                     الإجمالي: <span id="buyTotalPrice">${p.price}</span> ريال
                 </div>
@@ -917,6 +961,9 @@ async function submitBuyOrder(pid) {
     const p = allProducts.find(x => x.id === pid);
     if (!p) { showAlert('المنتج غير موجود', 'error'); return; }
     
+    // قراءة طريقة الدفع المحددة
+    const paymentMethod = document.querySelector('input[name="buyPaymentMethod"]:checked')?.value || 'كاش';
+    
     const items = [{ id: p.id, name: p.name, price: p.price, quantity: qty, size: p.size || 'قياسي', color: p.color || 'متنوع' }];
     const total = p.price * qty;
     
@@ -926,12 +973,17 @@ async function submitBuyOrder(pid) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 customer_name: name, customer_phone: phone,
-                customer_address: address, items: items, total_price: total
+                customer_address: address, items: items, total_price: total,
+                payment_method: paymentMethod
             })
         });
         const data = await res.json();
         if (res.ok) {
-            showAlert(`✅ تم تأكيد طلبك بنجاح! رقم الطلب: ${data.order_id}`, 'success');
+            let msg = `✅ تم تأكيد طلبك بنجاح! رقم الطلب: ${data.order_id}`;
+            if (paymentMethod === 'تحويل بنكي') {
+                msg += '\n🏦 بنكك: 123456789\n📸 أرسل صورة الإيداع على واتساب 249127599044';
+            }
+            showAlert(msg, 'success');
             closeModal('buyModal');
             buyCurrentQty = 1;
         } else showAlert(data.error, 'error');
