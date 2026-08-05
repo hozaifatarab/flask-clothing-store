@@ -2,8 +2,7 @@
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 let allProducts = [];
 let currentCategory = 'all';
-let isChatMinimized = false;
-let isChatMaximized = false;
+let buyCurrentQty = 1;
 
 // ===== التهيئة =====
 document.addEventListener('DOMContentLoaded', function() {
@@ -81,23 +80,23 @@ function displayProducts(products) {
     
     grid.innerHTML = products.map(p => {
         const inStock = p.stock > 0;
-        const catBadge = p.category ? `<span class="cat-tag cat-${p.category}">${p.category}</span>` : '';
-        const subcatBadge = p.subcategory ? `<span class="cat-tag cat-sub">${p.subcategory}</span>` : '';
-        const typeBadge = p.type ? `<span class="cat-tag cat-type">${p.type}</span>` : '';
+        const catBadge = p.category ? `<span class="cat-tag cat-${p.category}">${escapeHtml(p.category)}</span>` : '';
+        const subcatBadge = p.subcategory ? `<span class="cat-tag cat-sub">${escapeHtml(p.subcategory)}</span>` : '';
+        const typeBadge = p.type ? `<span class="cat-tag cat-type">${escapeHtml(p.type)}</span>` : '';
         const categoriesHtml = (catBadge || subcatBadge || typeBadge) ? `<div class="product-categories">${catBadge}${subcatBadge}${typeBadge}</div>` : '';
         return `
         <div class="product-card">
             <div class="product-img-wrap">
-                <img src="${p.image || ''}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300?text=?'">
+                <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}" onerror="this.src='https://via.placeholder.com/300?text=?'">
                 ${p.stock > 0 && p.stock <= 5 ? '<span class="product-badge badge-sale">محدود</span>' : ''}
             </div>
             <div class="product-body">
-                <div class="product-name">${p.name}</div>
-                <div class="product-desc">${p.description || ''}</div>
+                <div class="product-name">${escapeHtml(p.name)}</div>
+                <div class="product-desc">${escapeHtml(p.description || '')}</div>
                 ${categoriesHtml}
                 <div class="product-meta">
-                    <span class="meta-tag">📐 ${p.size || 'قياسي'}</span>
-                    <span class="meta-tag">🎨 ${p.color || 'متنوع'}</span>
+                    <span class="meta-tag">📐 ${escapeHtml(p.size || 'قياسي')}</span>
+                    <span class="meta-tag">🎨 ${escapeHtml(p.color || 'متنوع')}</span>
                 </div>
                 <div class="product-price">${p.price} ريال</div>
                 <div class="product-stock ${inStock ? 'stock-ok' : 'stock-out'}">
@@ -180,20 +179,20 @@ async function viewDetails(pid) {
         detail.innerHTML = `
         <div class="product-detail-wrap">
             <div class="detail-img">
-                <img src="${p.image || ''}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400?text=?'">
+                <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}" onerror="this.src='https://via.placeholder.com/400?text=?'">
             </div>
             <div class="detail-info">
-                <h2>${p.name}</h2>
+                <h2>${escapeHtml(p.name)}</h2>
                 <div class="detail-rating">⭐⭐⭐⭐⭐ (4.8/5)</div>
                 <div class="detail-price">${p.price} ريال</div>
-                <div class="detail-desc">${p.description || ''}</div>
+                <div class="detail-desc">${escapeHtml(p.description || '')}</div>
                 
                 <div class="detail-specs">
-                    <div class="spec-row"><span class="spec-label">القسم</span><span class="spec-value">${p.category}</span></div>
-                    ${p.subcategory ? `<div class="spec-row"><span class="spec-label">القسم الفرعي</span><span class="spec-value">${p.subcategory}</span></div>` : ''}
-                    ${p.type ? `<div class="spec-row"><span class="spec-label">النوع</span><span class="spec-value">${p.type}</span></div>` : ''}
-                    <div class="spec-row"><span class="spec-label">الحجم</span><span class="spec-value">${p.size || 'قياسي'}</span></div>
-                    <div class="spec-row"><span class="spec-label">اللون</span><span class="spec-value">${p.color || 'متنوع'}</span></div>
+                    <div class="spec-row"><span class="spec-label">القسم</span><span class="spec-value">${escapeHtml(p.category)}</span></div>
+                    ${p.subcategory ? `<div class="spec-row"><span class="spec-label">القسم الفرعي</span><span class="spec-value">${escapeHtml(p.subcategory)}</span></div>` : ''}
+                    ${p.type ? `<div class="spec-row"><span class="spec-label">النوع</span><span class="spec-value">${escapeHtml(p.type)}</span></div>` : ''}
+                    <div class="spec-row"><span class="spec-label">الحجم</span><span class="spec-value">${escapeHtml(p.size || 'قياسي')}</span></div>
+                    <div class="spec-row"><span class="spec-label">اللون</span><span class="spec-value">${escapeHtml(p.color || 'متنوع')}</span></div>
                     <div class="spec-row"><span class="spec-label">المخزون</span><span class="spec-value">${p.stock} قطعة</span></div>
                     <div class="spec-row"><span class="spec-label">الحالة</span><span class="spec-value">${inStock ? '✅ متوفر' : '❌ غير متوفر'}</span></div>
                 </div>
@@ -342,8 +341,8 @@ function displayCart() {
     div.innerHTML = cart.map((item, i) => `
         <div class="cart-item">
             <div>
-                <div class="cart-item-name">${item.name}</div>
-                <div class="cart-item-detail">📐 ${item.size} | 🎨 ${item.color}</div>
+                <div class="cart-item-name">${escapeHtml(item.name)}</div>
+                <div class="cart-item-detail">📐 ${escapeHtml(item.size)} | 🎨 ${escapeHtml(item.color)}</div>
                 <div class="cart-item-price">${item.price} ريال</div>
             </div>
             <div class="cart-qty">
@@ -491,8 +490,6 @@ function toggleChat() {
         panel.classList.remove('maximized');
         btn.style.display = 'none';
         mini.style.display = 'none';
-        isChatMinimized = false;
-        isChatMaximized = false;
     }
 }
 
@@ -504,13 +501,11 @@ function minimizeChat() {
     mini.style.display = 'flex';
     const btn = document.getElementById('chat-button');
     if (btn) btn.style.display = 'none';
-    isChatMinimized = true;
 }
 
 function maximizeChat() {
     const panel = document.getElementById('chatPanel');
     panel.classList.toggle('maximized');
-    isChatMaximized = !isChatMaximized;
 }
 
 function restoreChat() {
@@ -521,7 +516,6 @@ function restoreChat() {
     mini.style.display = 'none';
     const btn = document.getElementById('chat-button');
     if (btn) btn.style.display = 'none';
-    isChatMinimized = false;
 }
 
 function closeChatWithPrompt() {
@@ -814,8 +808,6 @@ async function sendMsg() {
 }
 
 // ===== الدفع داخل الشات =====
-let chatCheckoutItems = [];
-
 function showPaymentOptions() {
     const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
     if (cartItems.length === 0) {
@@ -823,7 +815,6 @@ function showPaymentOptions() {
         return;
     }
     
-    chatCheckoutItems = cartItems;
     const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
     const itemsList = cartItems.map(i => `• ${i.name} x${i.quantity} = ${(i.price * i.quantity).toFixed(0)} ريال`).join('\n');
     
@@ -866,12 +857,13 @@ function showPaymentOptions() {
 }
 
 function startChatCheckout(paymentMethod) {
-    if (chatCheckoutItems.length === 0) {
+    const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+    if (cartItems.length === 0) {
         addBotMessage('⚠️ لا توجد منتجات في السلة للشراء.', []);
         return;
     }
     
-    const total = chatCheckoutItems.reduce((s, i) => s + i.price * i.quantity, 0);
+    const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
     
     addBotMessage(
         `✅ اخترت: ${paymentMethod}\n\n📋 أدخل بياناتك:\n(الاسم ورقم الهاتف)\n\nمثال:\n"أحمد محمد، 0912345678، الخرطوم"`,
@@ -879,7 +871,7 @@ function startChatCheckout(paymentMethod) {
     );
     
     // تخزين البيانات مؤقتاً لانتظار إدخال المستخدم
-    window._chatPaymentData = { paymentMethod, items: chatCheckoutItems, total, step: 'awaiting_info' };
+    window._chatPaymentData = { paymentMethod, items: cartItems, total, step: 'awaiting_info' };
 }
 
 async function submitChatOrder(name, phone, address, paymentMethod, items) {
@@ -924,8 +916,6 @@ async function submitChatOrder(name, phone, address, paymentMethod, items) {
 }
 
 // ===== الشراء المباشر (Buy Now) =====
-let buyCurrentQty = 1;
-
 function buyNow(pid) {
     const p = allProducts.find(x => x.id === pid);
     if (!p) { showAlert('المنتج غير موجود', 'error'); return; }
@@ -938,9 +928,9 @@ function buyNow(pid) {
     content.innerHTML = `
         <div class="buy-direct-wrap">
             <div class="buy-product-summary">
-                <img src="${p.image || ''}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/80?text=?'" class="buy-product-img">
+                <img src="${escapeHtml(p.image || '')}" alt="${escapeHtml(p.name)}" onerror="this.src='https://via.placeholder.com/80?text=?'" class="buy-product-img">
                 <div>
-                    <div class="buy-product-name">${p.name}</div>
+                    <div class="buy-product-name">${escapeHtml(p.name)}</div>
                     <div class="buy-product-price">${p.price} ريال</div>
                     <div class="buy-product-stock ${inStock ? 'stock-ok' : 'stock-out'}">${inStock ? '✅ متوفر' : '❌ غير متوفر'}</div>
                 </div>

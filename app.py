@@ -60,6 +60,63 @@ CATEGORY_STRUCTURE = {
     }
 }
 
+# ==================== ردود البوت الثابتة (مرتبة حسب طول الكلمة) ====================
+BOT_STATIC_RESPONSES = {
+    'بكم التوصيل': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
+    'توصيل': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
+    'شحن': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
+    'سعر': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
+    'بكم': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
+    'سعرو': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
+    'مقاس': 'متوفر كل المقاسات من S لحد XXL 👕 وريني المنتج بتأكد ليك المقاس',
+    'دفع': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
+    'بنكك': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
+    'تحويل': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
+    'خامة': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
+    'جودة': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
+    'اصلي': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
+    'عرض': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع',
+    'خصم': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع',
+    'مرتجع': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب 🔄',
+    'استبدال': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب 🔄',
+    'وين': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان 📍',
+    'محل': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان 📍',
+    'رقم': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
+    'واتس': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
+    'اتصل': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
+    'دوام': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة',
+    'مواعيد': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة',
+    'اطفال': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه',
+    'بيبي': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه',
+}
+# ترتيب تنازلي حسب طول الكلمة لتجنب التطابق الجزئي الخاطئ
+BOT_STATIC_RESPONSES = dict(sorted(BOT_STATIC_RESPONSES.items(), key=lambda x: len(x[0]), reverse=True))
+
+# كلمات مفتاحية للبحث عن الأقسام
+CATEGORY_KEYWORDS = {
+    'رجالي': 'رجالي', 'رجال': 'رجالي', 'شبابي': 'رجالي', 'ولادي': 'رجالي',
+    'نسائي': 'نسائي', 'نساء': 'نسائي', 'بنات': 'نسائي', 'حريم': 'نسائي', 'حريمي': 'نسائي',
+    'احذية': 'احذية', 'حذاء': 'احذية', 'شوز': 'احذية',
+    'اكسسوارات': 'اكسسوارات', 'اكسسوار': 'اكسسوارات',
+}
+
+# كلمات مفتاحية للبحث عن المنتجات
+PRODUCT_KEYWORDS = {
+    'فستان': 'فستان', 'فساتين': 'فستان', 'دريس': 'فستان',
+    'تيشرت': 'تيشرت', 'بلوزة': 'بلوزة', 'قميص': 'قميص',
+    'بنطلون': 'بنطلون', 'جينز': 'جينز', 'بناطيل': 'بنطلون',
+    'عباية': 'عباية', 'عبايات': 'عباية', 'طرحة': 'طرحة',
+    'جاكيت': 'جاكيت', 'هودي': 'هودي', 'بدلة': 'بدلة',
+    'تنورة': 'تنورة', 'بلايزر': 'بلايزر', 'جمبسوت': 'جمبسوت',
+    'حزام': 'حزام', 'بوت': 'بوت', 'صندل': 'صندل',
+    'كعب': 'كعب', 'بولو': 'بولو', 'كتان': 'كتان',
+}
+
+# كلمات يجب إزالتها من استعلامات البحث
+REMOVE_WORDS = ['عاوز', 'عايز', 'دلني', 'وريني', 'شوف', 'ارني', 'اقترح',
+                'عندك', 'في', 'متوفر', 'ال', 'هو', 'دا', 'ده', 'دي',
+                'بكم', 'كام', 'كم', 'شنو', 'ايش', 'ماذا', 'و', 'او', 'من']
+
 # ==================== قاعدة البيانات ====================
 def get_db():
     if 'db' not in g:
@@ -128,7 +185,6 @@ def init_db():
         c.execute('INSERT INTO admin_credentials (id, username, password) VALUES (1, ?, ?)',
                   ('admin', hashed))
     else:
-        # ترقية كلمة المرور الحالية إذا كانت غير مشفرة
         c.execute('SELECT password, username FROM admin_credentials WHERE id = 1')
         row = c.fetchone()
         if row and not row['password'].startswith('scrypt:'):
@@ -184,36 +240,80 @@ def login_required(f):
     return wrapper
 
 def get_products(category=None, subcategory=None, ptype=None):
-    """جلب المنتجات حسب التصنيفات (1, 2, أو 3 مستويات)"""
     conn = get_db()
     c = conn.cursor()
     
     if category and subcategory and ptype:
-        c.execute('''SELECT * FROM products 
-                     WHERE category = ? AND subcategory = ? AND type = ? 
-                     ORDER BY id''', (category, subcategory, ptype))
+        c.execute('SELECT * FROM products WHERE category = ? AND subcategory = ? AND type = ? ORDER BY id',
+                  (category, subcategory, ptype))
     elif category and subcategory:
-        c.execute('''SELECT * FROM products 
-                     WHERE category = ? AND subcategory = ? 
-                     ORDER BY id''', (category, subcategory))
+        c.execute('SELECT * FROM products WHERE category = ? AND subcategory = ? ORDER BY id',
+                  (category, subcategory))
     elif category:
-        c.execute('''SELECT * FROM products 
-                     WHERE category = ? 
-                     ORDER BY id''', (category,))
+        c.execute('SELECT * FROM products WHERE category = ? ORDER BY id', (category,))
     else:
         c.execute('SELECT * FROM products ORDER BY id')
     
     return c.fetchall()
 
-def get_page_title(category, subcategory=None, ptype=None):
-    """توليد عنوان الصفحة حسب التصنيفات"""
-    if category and subcategory and ptype:
-        return f'{ptype} - {subcategory} {category}'
-    elif category and subcategory:
-        return f'{subcategory} {category}'
-    elif category:
-        return f'قسم {category}'
-    return 'جميع المنتجات'
+def clean_search_query(query):
+    """إزالة الكلمات غير المهمة من استعلام البحث"""
+    q = query.lower().strip()
+    for w in REMOVE_WORDS:
+        q = q.replace(w, ' ')
+    return ' '.join(q.split()).strip()
+
+def format_price(price):
+    """تنسيق السعر بإضافة فواصل"""
+    if isinstance(price, (int, float)):
+        return f"{int(price):,}"
+    return str(price or 0)
+
+def create_order_from_data(data, is_chat_checkout=False):
+    """إنشاء طلب جديد في قاعدة البيانات والتحقق من المخزون"""
+    name = data.get('customer_name', '').strip()
+    phone = data.get('customer_phone', '').strip()
+    address = data.get('customer_address', '').strip()
+    items = data.get('items', [])
+    total = data.get('total_price', 0)
+    payment_method = data.get('payment_method', 'كاش')
+    
+    if not name or not phone or not items:
+        return None, 'البيانات ناقصة'
+    
+    conn = get_db()
+    c = conn.cursor()
+    
+    # التحقق من المخزون
+    for item in items:
+        product = c.execute('SELECT stock, name FROM products WHERE id = ?', (item['id'],)).fetchone()
+        if not product:
+            return None, f'المنتج رقم {item["id"]} غير موجود'
+        qty = item.get('quantity', 1)
+        if product['stock'] < qty:
+            return None, f'الكمية المطلوبة من "{item.get("name", product["name"])}" غير متوفرة (المتوفر: {product["stock"]})'
+    
+    payment_status = 'pending'
+    if payment_method == 'تحويل بنكي':
+        payment_status = 'awaiting_transfer'
+    
+    c.execute('INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, status, payment_method, payment_status, items, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+              (name, phone, address, total, 'pending', payment_method, payment_status, json.dumps(items), datetime.now().isoformat()))
+    order_id = c.lastrowid
+    
+    for item in items:
+        c.execute('UPDATE products SET stock = stock - ? WHERE id = ?', (item.get('quantity', 1), item['id']))
+    conn.commit()
+    
+    # رسالة تأكيد حسب طريقة الدفع
+    if payment_method == 'كاش':
+        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n💰 طريقة الدفع: كاش عند الاستلام\n📦 سيتم التواصل معاك خلال 24 ساعة'
+    elif payment_method == 'تحويل بنكي':
+        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n🏦 طريقة الدفع: تحويل بنكي\n📱 بنكك: 123456789 (حساب FASHION HUB)\n📸 يرجى إرسال صورة الإيداع عبر الواتساب 249127599044'
+    else:
+        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n💰 طريقة الدفع: {payment_method}\n📦 سيتم التواصل معاك قريباً'
+    
+    return {'order_id': order_id, 'message': msg}, None
 
 # ==================== التحكم الأساسي ====================
 @app.route('/admin/login', methods=['GET', 'POST'])
@@ -260,7 +360,8 @@ def home():
 def index():
     conn = get_db()
     products = conn.cursor().execute('SELECT * FROM products ORDER BY id').fetchall()
-    return render_template('index.html', products=products, title='الرئيسية', current_category='all', current_subcategory='', current_type='')
+    return render_template('index.html', products=products, title='الرئيسية',
+                           current_category='all', current_subcategory='', current_type='')
 
 @app.route('/product/<int:pid>')
 def product_detail(pid):
@@ -274,9 +375,9 @@ def product_detail(pid):
 def cart():
     return render_template('index.html')
 
-# ===== Generic Category Route Handler =====
+# ===== صفحات التصنيفات (مولد آلي) =====
 def render_category_page(category, subcategory=None, ptype=None, title=None):
-    """Generic handler for all category pages"""
+    """دالة مولدة لجميع صفحات التصنيفات"""
     products = get_products(category=category, subcategory=subcategory, ptype=ptype)
     if not title:
         if subcategory and ptype:
@@ -359,7 +460,7 @@ def kids_clothes():
 def kids_shoes():
     return render_category_page('اطفال', 'احذية', title='احذية اطفال')
 
-# ===== الإكسسوارات (تبقى كما هي للتوافق) =====
+# ===== الأحذية الرئيسية والإكسسوارات =====
 @app.route('/shoes')
 def shoes():
     return render_category_page('احذية')
@@ -437,12 +538,10 @@ def api_product(pid):
 # ==================== API التصنيفات ====================
 @app.route('/api/categories')
 def api_categories():
-    """إرجاع هيكل التصنيفات بالكامل (للاستخدام في القوائم المنسدلة)"""
     return jsonify(CATEGORY_STRUCTURE)
 
 @app.route('/api/categories/types')
 def api_category_types():
-    """إرجاع الأنواع حسب القسم والقسم الفرعي"""
     category = request.args.get('category', '')
     subcategory = request.args.get('subcategory', '')
     if category in CATEGORY_STRUCTURE and subcategory in CATEGORY_STRUCTURE[category]:
@@ -499,40 +598,10 @@ def api_admin_message():
 # ==================== API الطلبات ====================
 @app.route('/api/orders', methods=['POST'])
 def api_create_order():
-    data = request.get_json()
-    name = data.get('customer_name', '').strip()
-    phone = data.get('customer_phone', '').strip()
-    address = data.get('customer_address', '').strip()
-    items = data.get('items', [])
-    total = data.get('total_price', 0)
-    
-    if not name or not phone or not items:
-        return jsonify({'error': 'البيانات ناقصة'}), 400
-    
-    conn = get_db()
-    c = conn.cursor()
-    
-    # التحقق من المخزون المتوفر
-    for item in items:
-        product = c.execute('SELECT stock FROM products WHERE id = ?', (item['id'],)).fetchone()
-        if not product:
-            return jsonify({'error': f'المنتج رقم {item["id"]} غير موجود'}), 400
-        qty = item.get('quantity', 1)
-        if product['stock'] < qty:
-            return jsonify({'error': f'الكمية المطلوبة من "{item.get("name", "")}" غير متوفرة (المتوفر: {product["stock"]})'}), 400
-    
-    payment_method = data.get('payment_method', 'كاش')
-    payment_status = data.get('payment_status', 'pending')
-    
-    c.execute('INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, status, payment_method, payment_status, items, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-              (name, phone, address, total, 'pending', payment_method, payment_status, json.dumps(items), datetime.now().isoformat()))
-    order_id = c.lastrowid
-    
-    for item in items:
-        c.execute('UPDATE products SET stock = stock - ? WHERE id = ?', (item.get('quantity', 1), item['id']))
-    conn.commit()
-    
-    return jsonify({'success': True, 'order_id': order_id, 'message': f'✅ تم استلام طلبك رقم {order_id}'})
+    result, error = create_order_from_data(request.get_json())
+    if error:
+        return jsonify({'error': error}), 400
+    return jsonify({'success': True, 'order_id': result['order_id'], 'message': result['message']})
 
 @app.route('/api/orders/<int:oid>')
 def api_get_order(oid):
@@ -694,145 +763,29 @@ def api_update_order_status(oid):
 def api_chat_checkout():
     """إنشاء طلب مباشرة من الشات مع طريقة الدفع"""
     data = request.get_json()
-    name = data.get('customer_name', '').strip()
-    phone = data.get('customer_phone', '').strip()
-    address = data.get('customer_address', '').strip()
-    items = data.get('items', [])
-    total = data.get('total_price', 0)
-    payment_method = data.get('payment_method', 'كاش')
+    result, error = create_order_from_data(data, is_chat_checkout=True)
+    if error:
+        return jsonify({'error': error}), 400
     
-    if not name or not phone or not items:
-        return jsonify({'error': 'البيانات ناقصة'}), 400
-    
-    conn = get_db()
-    c = conn.cursor()
-    
-    # التحقق من المخزون
-    for item in items:
-        product = c.execute('SELECT stock, name FROM products WHERE id = ?', (item['id'],)).fetchone()
-        if not product:
-            return jsonify({'error': f'المنتج رقم {item["id"]} غير موجود'}), 400
-        qty = item.get('quantity', 1)
-        if product['stock'] < qty:
-            return jsonify({'error': f'الكمية المطلوبة من "{item.get("name", product["name"])}" غير متوفرة (المتوفر: {product["stock"]})'}), 400
-    
-    payment_status = 'pending'
-    if payment_method == 'تحويل بنكي':
-        payment_status = 'awaiting_transfer'
-    
-    c.execute('INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, status, payment_method, payment_status, items, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-              (name, phone, address, total, 'pending', payment_method, payment_status, json.dumps(items), datetime.now().isoformat()))
-    order_id = c.lastrowid
-    
-    for item in items:
-        c.execute('UPDATE products SET stock = stock - ? WHERE id = ?', (item.get('quantity', 1), item['id']))
-    conn.commit()
-    
-    # رسالة تأكيد حسب طريقة الدفع
-    if payment_method == 'كاش':
-        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n💰 طريقة الدفع: كاش عند الاستلام\n📦 سيتم التواصل معاك خلال 24 ساعة'
-    elif payment_method == 'تحويل بنكي':
-        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n🏦 طريقة الدفع: تحويل بنكي\n📱 بنكك: 123456789 (حساب FASHION HUB)\n📸 يرجى إرسال صورة الإيداع عبر الواتساب 249127599044'
-    else:
-        msg = f'✅ تم تأكيد طلبك رقم {order_id}!\n💰 طريقة الدفع: {payment_method}\n📦 سيتم التواصل معاك قريباً'
+    order = {
+        'id': result['order_id'],
+        'customer_name': data.get('customer_name', ''),
+        'customer_phone': data.get('customer_phone', ''),
+        'customer_address': data.get('customer_address', ''),
+        'total_price': data.get('total_price', 0),
+        'payment_method': data.get('payment_method', 'كاش'),
+        'payment_status': 'awaiting_transfer' if data.get('payment_method') == 'تحويل بنكي' else 'pending',
+        'items': json.dumps(data.get('items', []))
+    }
     
     return jsonify({
         'success': True,
-        'order_id': order_id,
-        'message': msg,
-        'order': {
-            'id': order_id,
-            'customer_name': name,
-            'customer_phone': phone,
-            'customer_address': address,
-            'total_price': total,
-            'payment_method': payment_method,
-            'payment_status': payment_status,
-            'items': json.dumps(items)
-        }
+        'order_id': result['order_id'],
+        'message': result['message'],
+        'order': order
     })
 
-# ==================== دوال مساعدة للبوت ====================
-
-def product_card_html(p):
-    """توليد HTML لبطاقة منتج واحدة"""
-    return f'''
-    <div class="chat-product-card">
-        <img src="{p.get('image','')}" alt="{p.get('name','')}" class="chat-product-img" onerror="this.src='https://via.placeholder.com/80?text=?'">
-        <div class="chat-product-info">
-            <div class="chat-product-name">{p.get('name','')}</div>
-            <div class="chat-product-desc">{p.get('description','')[:60]}{'...' if len(p.get('description','')) > 60 else ''}</div>
-            <div class="chat-product-price">{p.get('price',0)} ريال</div>
-            <div class="chat-product-stock">{'✅ متوفر' if p.get('stock',0) > 0 else '❌ غير متوفر'}</div>
-        </div>
-    </div>'''
-
-def search_products_in_db(query):
-    """البحث عن منتجات في قاعدة البيانات"""
-    conn = get_db()
-    c = conn.cursor()
-    
-    # كلمات يجب إزالتها من الاستعلام
-    remove_words = ['عاوز', 'عايز', 'دلني', 'وريني', 'شوف', 'ارني', 'اقترح',
-                    'عندك', 'في', 'متوفر', 'ال', 'هو', 'دا', 'ده', 'دي',
-                    'بكم', 'كام', 'كم', 'شنو', 'ايش', 'ماذا', 'و', 'او', 'من']
-    q = query
-    for w in remove_words:
-        q = q.replace(w, ' ')
-    q = ' '.join(q.split())
-    q = q.strip()
-    
-    if len(q) < 2:
-        return None
-    
-    # كلمات مفتاحية للمنتجات
-    keywords = {
-        'قميص': 'قميص', 'كتان': 'كتان', 'رمادي': 'رمادي', 'بولو': 'بولو',
-        'اسود': 'اسود', 'جينز': 'جينز', 'ازرق': 'ازرق', 'رسمي': 'رسمي',
-        'ابيض': 'ابيض', 'حذاء': 'حذاء', 'بني': 'بني', 'رياضي': 'رياضي',
-        'فستان': 'فستان', 'احمر': 'احمر', 'زفاف': 'زفاف', 'سهرة': 'سهرة',
-        'صيفي': 'صيفي', 'مشجر': 'مشجر', 'عمل': 'عمل', 'اوفيس': 'عمل',
-        'بوت': 'بوت', 'صندل': 'صندل', 'كعب': 'كعب', 'عالي': 'عالي',
-        'رجالي': 'رجالي', 'نسائي': 'نسائي', 'شبابي': 'رجالي', 'بنات': 'نسائي',
-        'دريس': 'فستان', 'شوز': 'حذاء', 'هودي': 'هودي', 'تيشرت': 'تيشرت',
-        'جاكيت': 'جاكيت', 'بلوزة': 'بلوزة', 'عباية': 'عباية', 'بدلة': 'بدلة',
-        'تنورة': 'تنورة', 'بلايزر': 'بلايزر', 'حزام': 'حزام', 'جمبسوت': 'جمبسوت',
-        'اطفال': 'اطفال', 'بيبي': 'اطفال', 'ولادي': 'رجالي', 'حريمي': 'نسائي',
-    }
-    
-    terms = []
-    for word in q.split():
-        terms.append(keywords.get(word, word))
-    
-    search_text = ' '.join(terms)
-    
-    try:
-        c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? OR type LIKE ? LIMIT 5',
-                  (f'%{search_text}%', f'%{search_text}%', f'%{search_text}%'))
-        products = c.fetchall()
-        
-        if not products:
-            for term in terms:
-                if len(term) > 1:
-                    c.execute('SELECT * FROM products WHERE name LIKE ? OR description LIKE ? OR type LIKE ? LIMIT 3',
-                              (f'%{term}%', f'%{term}%', f'%{term}%'))
-                    products = c.fetchall()
-                    if products:
-                        break
-        
-        if products:
-            return [dict(p) for p in products]
-    except:
-        return None
-    return None
-
-def get_products_by_category(cat):
-    """جلب المنتجات حسب الفئة"""
-    conn = get_db()
-    products = conn.cursor().execute('SELECT * FROM products WHERE category = ? ORDER BY id', (cat,)).fetchall()
-    return [dict(p) for p in products] if products else None
-
-# ==================== النظام الجديد للبوت (الرئيسي) ====================
+# ==================== النظام الموحد للشات ====================
 @app.route('/api/chat', methods=['POST'])
 def api_chat():
     """النظام الموحد للشات - يقرأ من قاعدة البيانات ويعرض المنتجات بالصور والبيانات"""
@@ -852,119 +805,52 @@ def api_chat():
             'products': []
         })
     
-    # 2. ردود ثابتة (معلومات المتجر) - مرتبة حسب طول الكلمة المفتاحية (الأطول أولاً)
-    static_responses_raw = {
-        'توصيل': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
-        'شحن': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
-        'بكم التوصيل': 'بنوصل امدرمان والخرطوم 3000 جنيه خلال 24 ساعة 🚚 الولايات 5000 جنيه خلال 3 ايام',
-        'سعر': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
-        'بكم': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
-        'سعرو': 'اسعارنا: تيشرت 15,000 - 20,000 | فستان 25,000 - 40,000 | بنطلون 18,000 - 30,000 جنيه. عايز سعر منتج معين؟',
-        'مقاس': 'متوفر كل المقاسات من S لحد XXL 👕 وريني المنتج بتأكد ليك المقاس',
-        'دفع': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
-        'بنكك': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
-        'تحويل': 'متاح: كاش عند الاستلام او تحويل بنك او فوري 💳',
-        'خامة': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
-        'جودة': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
-        'اصلي': 'كل شغلنا قطن 100% ومستورد. ضمان سنة ضد عيوب التصنيع ✅',
-        'عرض': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع',
-        'خصم': '🔥 عرض اليوم: اشتري قطعتين والتالتة مجانا. ساري لحد نهاية الاسبوع',
-        'مرتجع': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب 🔄',
-        'استبدال': 'مسموح الاستبدال خلال 3 ايام لو في عيب مصنعي. بنرسل ليك مندوب 🔄',
-        'وين': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان 📍',
-        'محل': 'نحن متجر الكتروني في امدرمان. البيع اونلاين والتوصيل لكل السودان 📍',
-        'رقم': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
-        'واتس': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
-        'اتصل': '📞 تواصل معانا: 249127599044 واتساب او اتصال. موجودين 9 صباحاً ل 9 مساءً',
-        'دوام': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة',
-        'مواعيد': 'شغلنا من 9 الصبح ل 9 المساء كل يوم 📅 الجمعة اجازة',
-        'اطفال': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه',
-        'بيبي': 'قسم الاطفال متوفر من عمر سنة ل 12 سنة. الاسعار من 10,000 جنيه',
-    }
-    
-    # ترتيب حسب طول الكلمة (الأطول أولاً) لتجنب المشاكل مثل "بكم التوصيل" تطابق "بكم" قبل "توصيل"
-    static_responses = dict(sorted(static_responses_raw.items(), key=lambda x: len(x[0]), reverse=True))
-    
-    for keyword, response in static_responses.items():
+    # 2. ردود ثابتة (معلومات المتجر)
+    for keyword, response in BOT_STATIC_RESPONSES.items():
         if keyword in msg_lower:
             return jsonify({'text': response, 'products': []})
     
-    # 3. البحث عن منتجات حسب القسم
-    category_keywords = {
-        'رجالي': 'رجالي', 'رجال': 'رجالي', 'شبابي': 'رجالي', 'ولادي': 'رجالي',
-        'نسائي': 'نسائي', 'نساء': 'نسائي', 'بنات': 'نسائي', 'حريم': 'نسائي', 'حريمي': 'نسائي',
-        'احذية': 'احذية', 'حذاء': 'احذية', 'شوز': 'احذية',
-        'اكسسوارات': 'اكسسوارات', 'اكسسوار': 'اكسسوارات',
-    }
-    
-    for keyword, cat in category_keywords.items():
+    # 3. بحث عن منتجات حسب القسم
+    for keyword, cat in CATEGORY_KEYWORDS.items():
         if keyword in msg_lower:
-            products = get_products_by_category(cat)
+            products = get_products(category=cat)
             if products:
-                for p in products:
-                    if isinstance(p.get('price'), (int, float)):
-                        p['price_text'] = f"{int(p['price']):,}"
-                    else:
-                        p['price_text'] = str(p.get('price', 0))
-                if cat == 'رجالي':
-                    text = 'الملابس الرجالية المتوفرة 👔:'
-                elif cat == 'نسائي':
-                    text = 'الملابس النسائية المتوفرة 👗:'
-                elif cat == 'احذية':
-                    text = 'الاحذية المتوفرة عندنا 👟:'
-                else:
-                    text = 'الاكسسوارات المتوفرة ⌚:'
-                return jsonify({'text': text, 'products': products})
+                result = [dict(p) for p in products]
+                for p in result:
+                    p['price_text'] = format_price(p.get('price', 0))
+                category_names = {
+                    'رجالي': 'الملابس الرجالية المتوفرة 👔:',
+                    'نسائي': 'الملابس النسائية المتوفرة 👗:',
+                    'احذية': 'الاحذية المتوفرة عندنا 👟:',
+                }
+                text = category_names.get(cat, 'الاكسسوارات المتوفرة ⌚:')
+                return jsonify({'text': text, 'products': result})
             else:
                 return jsonify({'text': f'قسم {cat} متوفر فيه تشكيلة واسعة. اسعارنا من 15,000 جنيه', 'products': []})
     
-    # 4. البحث بكلمة مفتاحية للمنتج
-    product_keywords = {
-        'فستان': 'فستان', 'فساتين': 'فستان', 'دريس': 'فستان',
-        'تيشرت': 'تيشرت', 'بلوزة': 'بلوزة', 'قميص': 'قميص',
-        'بنطلون': 'بنطلون', 'جينز': 'جينز', 'بناطيل': 'بنطلون',
-        'عباية': 'عباية', 'عبايات': 'عباية', 'طرحة': 'طرحة',
-        'جاكيت': 'جاكيت', 'هودي': 'هودي', 'بدلة': 'بدلة',
-        'تنورة': 'تنورة', 'بلايزر': 'بلايزر', 'جمبسوت': 'جمبسوت',
-        'حزام': 'حزام', 'بوت': 'بوت', 'صندل': 'صندل',
-        'كعب': 'كعب', 'بولو': 'بولو', 'كتان': 'كتان',
-    }
-    
-    for keyword, term in product_keywords.items():
+    # 4. بحث بكلمة مفتاحية للمنتج
+    for keyword, term in PRODUCT_KEYWORDS.items():
         if keyword in msg_lower:
             c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ? OR type LIKE ?) AND stock > 0 LIMIT 6",
                       (f'%{term}%', f'%{term}%', f'%{term}%', f'%{term}%', f'%{term}%'))
             products = [dict(p) for p in c.fetchall()]
             if products:
                 for p in products:
-                    if isinstance(p.get('price'), (int, float)):
-                        p['price_text'] = f"{int(p['price']):,}"
-                    else:
-                        p['price_text'] = str(p.get('price', 0))
+                    p['price_text'] = format_price(p.get('price', 0))
                 return jsonify({
                     'text': f'لقيتلك منتجات "{term}" ✅:',
                     'products': products
                 })
     
-    # 5. بحث عام في قاعدة البيانات
-    remove_words = ['عاوز', 'عايز', 'دلني', 'وريني', 'شوف', 'ارني', 'اقترح',
-                    'عندك', 'في', 'متوفر', 'ال', 'هو', 'دا', 'ده', 'دي',
-                    'بكم', 'كام', 'كم', 'شنو', 'ايش', 'ماذا', 'و', 'او', 'من']
-    q = msg_lower
-    for w in remove_words:
-        q = q.replace(w, ' ')
-    q = ' '.join(q.split()).strip()
-    
+    # 5. بحث عام
+    q = clean_search_query(msg_lower)
     if len(q) >= 2:
         c.execute("SELECT * FROM products WHERE (name LIKE ? OR description LIKE ? OR color LIKE ? OR size LIKE ? OR type LIKE ?) AND stock > 0 LIMIT 5",
                   (f'%{q}%', f'%{q}%', f'%{q}%', f'%{q}%', f'%{q}%'))
         products = [dict(p) for p in c.fetchall()]
         if products:
             for p in products:
-                if isinstance(p.get('price'), (int, float)):
-                    p['price_text'] = f"{int(p['price']):,}"
-                else:
-                    p['price_text'] = str(p.get('price', 0))
+                p['price_text'] = format_price(p.get('price', 0))
             return jsonify({
                 'text': 'لقيتلك المنتجات دي ✅:',
                 'products': products
