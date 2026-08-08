@@ -133,9 +133,9 @@ function filterSubcategory(category, subcategory) {
     currentCategory = category;
     // تحديث حالة أزرار الأقسام
     document.querySelectorAll('.cat-pill').forEach(p => p.classList.toggle('active', p.dataset.cat === category));
-    // تفعيل/إلغاء تفعيل أزرار الفئات الفرعية
-    document.querySelectorAll('.subcat-pill').forEach(p => {
-        p.classList.toggle('active', p.textContent.trim() === (subcategory || 'الكل') || (!subcategory && p.textContent.includes('الكل')));
+    // تفعيل/إلغاء تفعيل بطاقات الفئات الفرعية
+    document.querySelectorAll('.subcat-card').forEach(p => {
+        p.classList.toggle('active', p.dataset.subcat === subcategory);
     });
     document.getElementById('searchInput').value = '';
     // إعادة تحميل المنتجات مع القسم والقسم الفرعي
@@ -145,6 +145,9 @@ function filterSubcategory(category, subcategory) {
         setTimeout(() => {
             const filtered = allProducts.filter(p => p.category === category && p.subcategory === subcategory);
             displayProducts(filtered);
+            // تمرير سلس إلى شبكة المنتجات
+            const grid = document.getElementById('productsGrid');
+            if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 200);
     } else {
         loadProducts(category, '');

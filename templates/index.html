@@ -127,25 +127,31 @@
         <h2 style="margin-bottom:12px;font-size:22px;font-weight:800;">فئات {{ current_category }}</h2>
         <div class="categories-cards-grid">
             {% for subcat, types in category_structure[current_category].items() %}
-            <div class="category-card" role="button" onclick="filterSubcategory('{{ current_category }}','{{ subcat }}')" style="cursor:pointer;">
-                <div class="card-icon-wrapper">
-                    <div class="card-icon">📁</div>
-                    <div class="card-icon-bg"></div>
-                </div>
-                <div class="card-content">
-                    <h3 class="card-title">{{ subcat }}</h3>
-                    <p class="card-desc">تصفح {{ subcat }} داخل {{ current_category }}</p>
-                    <div class="card-subcategories">
-                        {% for t in types[:3] %}
-                        <span class="subcat-tag">{{ t }}</span>
-                        {% endfor %}
+                {% set base = '/women' if current_category == 'نسائي' else '/men' if current_category == 'رجالي' else '/kids' if current_category == 'اطفال' else '/shoes' if current_category == 'احذية' else '/accessories' %}
+                {% if subcat == 'ملابس' %}{% set subpath = 'clothes' %}
+                {% elif subcat == 'احذية' %}{% set subpath = 'shoes' %}
+                {% elif subcat == 'شنط' %}{% set subpath = 'bags' %}
+                {% elif subcat == 'عطور ومكياج' %}{% set subpath = 'perfume' %}
+                {% else %}{% set subpath = subcat|urlencode %}{% endif %}
+                <a class="category-card subcat-card" data-subcat="{{ subcat }}" href="{{ base }}/{{ subpath }}" style="cursor:pointer; text-decoration:none; color:inherit;">
+                    <div class="card-icon-wrapper">
+                        <div class="card-icon">📁</div>
+                        <div class="card-icon-bg"></div>
                     </div>
-                </div>
-                <div class="card-footer">
-                    <span class="card-link">استعرض</span>
-                    <div class="card-arrow">←</div>
-                </div>
-            </div>
+                    <div class="card-content">
+                        <h3 class="card-title">{{ subcat }}</h3>
+                        <p class="card-desc">تصفح {{ subcat }} داخل {{ current_category }}</p>
+                        <div class="card-subcategories">
+                            {% for t in types[:3] %}
+                            <span class="subcat-tag">{{ t }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-link">استعرض</span>
+                        <div class="card-arrow">←</div>
+                    </div>
+                </a>
             {% endfor %}
         </div>
     </div>
@@ -154,10 +160,13 @@
 {% endif %}
 
 <!-- ===== منتجات الشبكة ===== -->
+{% if current_category and current_category != 'all' %}
+<!-- ===== منتجات الشبكة ===== -->
 <section class="products-section">
     <div class="container">
         <div id="productsGrid" class="products-grid"></div>
     </div>
 </section>
+{% endif %}
 
 {% endblock %}
