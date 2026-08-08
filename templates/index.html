@@ -10,7 +10,6 @@
         </div>
         
         <div class="categories-cards-grid">
-            
             <!-- قسم نسائي - مميز -->
             <a href="/women" class="category-card card-women featured">
                 <div class="card-badge">✨ الأكثر مبيعاً</div>
@@ -117,11 +116,42 @@
                     <div class="card-arrow">←</div>
                 </div>
             </a>
-
         </div>
     </div>
 </section>
-{% endblock %}
+
+{# ===== بطاقات الفئات الفرعية داخل القسم (تظهر عند الدخول لقسم محدد) ===== #}
+{% if current_category and current_category != 'all' and current_category in category_structure %}
+<section class="subcategories-hero">
+    <div class="container">
+        <h2 style="margin-bottom:12px;font-size:22px;font-weight:800;">فئات {{ current_category }}</h2>
+        <div class="categories-cards-grid">
+            {% for subcat, types in category_structure[current_category].items() %}
+            <div class="category-card" role="button" onclick="filterSubcategory('{{ current_category }}','{{ subcat }}')" style="cursor:pointer;">
+                <div class="card-icon-wrapper">
+                    <div class="card-icon">📁</div>
+                    <div class="card-icon-bg"></div>
+                </div>
+                <div class="card-content">
+                    <h3 class="card-title">{{ subcat }}</h3>
+                    <p class="card-desc">تصفح {{ subcat }} داخل {{ current_category }}</p>
+                    <div class="card-subcategories">
+                        {% for t in types[:3] %}
+                        <span class="subcat-tag">{{ t }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="card-link">استعرض</span>
+                    <div class="card-arrow">←</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <style>.subcategories-hero { padding: 24px 0 18px; }</style>
+</section>
+{% endif %}
 
 <!-- ===== منتجات الشبكة ===== -->
 <section class="products-section">

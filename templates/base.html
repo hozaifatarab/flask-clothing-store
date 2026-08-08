@@ -255,6 +255,39 @@
         </div>
     </div>
 
+    <!-- ===== مودال الدفع من الشات ===== -->
+    <div id="chatCheckoutModal" class="modal">
+        <div class="modal-content" style="max-width:520px;">
+            <button class="modal-close" onclick="closeModal('chatCheckoutModal')">&times;</button>
+            <div id="chatCheckoutContent">
+                <h2>إتمام الطلب عبر الشات</h2>
+                <div id="chatCheckoutItems" style="margin-bottom:12px;"></div>
+                <input type="text" id="chatCustomerName" class="input-field" placeholder="الاسم الكامل">
+                <input type="text" id="chatCustomerPhone" class="input-field" placeholder="رقم الهاتف">
+                <input type="text" id="chatCustomerAddress" class="input-field" placeholder="العنوان (المدينة/المنطقة)">
+                <div style="margin:8px 0;font-size:14px;font-weight:700;color:var(--text-muted);">طريقة الدفع:</div>
+                <div id="chatCheckoutPayment" style="margin-bottom:12px;display:flex;gap:8px;">
+                    <label class="payment-option" style="flex:1;">
+                        <input type="radio" name="chatPaymentMethod" value="كاش" checked>
+                        <span class="payment-option-content">
+                            <span class="payment-option-icon">💰</span>
+                            <span class="payment-option-label">كاش عند الاستلام</span>
+                        </span>
+                    </label>
+                    <label class="payment-option" style="flex:1;">
+                        <input type="radio" name="chatPaymentMethod" value="تحويل بنكي">
+                        <span class="payment-option-content">
+                            <span class="payment-option-icon">🏦</span>
+                            <span class="payment-option-label">تحويل بنكي</span>
+                        </span>
+                    </label>
+                </div>
+                <div style="margin-bottom:12px;font-size:16px;font-weight:800;color:var(--accent);">الإجمالي: <span id="chatCheckoutTotal">0</span> ريال</div>
+                <button class="checkout-btn" onclick="submitChatCheckoutFromModal()">✅ إرسال الطلب</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== مودال الخروج من الشات ===== -->
     <div id="exitChatModal" class="modal">
         <div class="modal-content exit-modal">

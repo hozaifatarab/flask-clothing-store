@@ -662,7 +662,7 @@ function addBotMessage(text, products = []) {
                 if (p.id) viewDetails(p.id);
             };
             
-            // Add buy button for each product card
+            // Add buy button inside each product card
             const buyBtn = document.createElement('button');
             buyBtn.className = 'chat-buy-btn';
             buyBtn.innerHTML = '💳 شراء الآن';
@@ -670,8 +670,8 @@ function addBotMessage(text, products = []) {
                 e.stopPropagation();
                 buyFromChat(p.id);
             };
-            container.appendChild(buyBtn);
-            
+            // append buy button to card so it's visually attached to the product
+            card.appendChild(buyBtn);
             container.appendChild(card);
         });
         
@@ -862,16 +862,31 @@ function startChatCheckout(paymentMethod) {
         addBotMessage('⚠️ لا توجد منتجات في السلة للشراء.', []);
         return;
     }
-    
-    const total = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
-    
-    addBotMessage(
-        `✅ اخترت: ${paymentMethod}\n\n📋 أدخل بياناتك:\n(الاسم ورقم الهاتف)\n\nمثال:\n"أحمد محمد، 0912345678، الخرطوم"`,
-        []
-    );
-    
-    // تخزين البيانات مؤقتاً لانتظار إدخال المستخدم
-    window._chatPaymentData = { paymentMethod, items: cartItems, total, step: 'awaiting_info' };
+    // افتح مودال يحتوي على نموذج لجمع بيانات العميل بدل الاعتماد على إدخال نصي
+    showChatCheckoutModal(paymentMethod, cartItems);
+}
+
+function showChatCheckoutModal(paymentMethod, items) {
+    const container = document.getElementById('chatCheckoutItems');
+    const totalEl = document.getElementById('chatCheckoutTotal');
+    if (!container || !totalEl) return;
+    container.innerHTML = items.map(i => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03);">`+
+        `<div style="font-weight:700">${escapeHtml(i.name)} x${i.quantity}</div><div style="color:var(--accent);font-weight:800">${(i.price*i.quantity).toFixed(0)}</div></div>`).join('');
+    const total = items.reduce((s,i) => s + i.price*i.quantity, 0);
+    totalEl.textContent = total.toFixed(0);
+
+    // افتراض اختيار طريقة الدفع
+    const radios = document.getElementsByName('chatPaymentMethod');
+    radios.forEach(r => { r.checked = (r.value === paymentMethod); });
+
+    // تخزين بيانات مؤقتة في عنصر المودال
+    const modal = document.getElementById('chatCheckoutContent');
+    if (modal) {
+        modal.dataset.items = JSON.stringify(items);
+        modal.dataset.paymentMethod = paymentMethod;
+    }
+
+    openModal('chatCheckoutModal');
 }
 
 async function submitChatOrder(name, phone, address, paymentMethod, items) {
@@ -912,6 +927,41 @@ async function submitChatOrder(name, phone, address, paymentMethod, items) {
         }
     } catch (e) {
         addBotMessage('❌ عذراً، حدث خطأ في الاتصال. حاول مرة أخرى', []);
+    }
+}
+
+async function submitChatCheckoutFromModal() {
+    const name = document.getElementById('chatCustomerName')?.value.trim();
+    const phone = document.getElementById('chatCustomerPhone')?.value.trim();
+    const address = document.getElementById('chatCustomerAddress')?.value.trim() || '';
+    const paymentMethod = document.querySelector('input[name="chatPaymentMethod"]:checked')?.value || 'كاش';
+    const modal = document.getElementById('chatCheckoutContent');
+    const items = modal && modal.dataset.items ? JSON.parse(modal.dataset.items) : (JSON.parse(localStorage.getItem('cart')) || []);
+    if (!name || !phone) { showAlert('يرجى إدخال الاسم والهاتف', 'error'); return; }
+    if (!items || items.length === 0) { showAlert('السلة فارغة', 'error'); return; }
+
+    const total = items.reduce((s,i) => s + i.price*i.quantity, 0);
+
+    try {
+        const res = await fetch('/api/chat/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customer_name: name, customer_phone: phone, customer_address: address, items: items, total_price: total, payment_method: paymentMethod })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            // تفريغ السلة المحلية
+            cart = []; saveCart(); updateCartCount();
+            closeModal('chatCheckoutModal');
+            addBotMessage(data.message, []);
+            if (paymentMethod === 'تحويل بنكي') {
+                setTimeout(() => addBotMessage('📸 بعد ما تعمل التحويل، أرسل صورة الإيصال على الواتساب: 249127599044', []), 800);
+            }
+        } else {
+            showAlert(data.error || 'خطأ في إنشاء الطلب', 'error');
+        }
+    } catch (e) {
+        showAlert('خطأ في الاتصال بالخادم', 'error');
     }
 }
 
